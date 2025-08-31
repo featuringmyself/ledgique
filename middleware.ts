@@ -9,11 +9,13 @@ const isProtectedRoute = createRouteMatcher([
   '/team(.*)',
   '/profile(.*)',
   '/settings(.*)',
-  '/(.*)'
+  // Remove '/(.*)' - this was protecting ALL routes
 ])
 
 export default clerkMiddleware((auth, req) => {
-  if (isProtectedRoute(req)) auth.protect()
+  if (isProtectedRoute(req)) {
+    auth.protect()
+  }
 })
 
 export const config = {
