@@ -22,6 +22,8 @@ export default function Home() {
   const [loading, setLoading] = useState(true)
   const [projectCount, setProjectCount] = useState("-")
   const [clientCount, setClientCount] = useState("-")
+  const [pendingAmount, setPendingAmount] = useState("-")
+  const [revenue, setRevenue] = useState("-")
 
 
 
@@ -90,8 +92,37 @@ export default function Home() {
       }
     }
 
+    const fetchPendingAmount = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get('/api/payments/pending/count');
+        setPendingAmount(response.data.totalPendingAmount);
+        console.log(response.data)
+      } catch (error) {
+        console.log(error)
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    const fetchTotalRevenue = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get('/api/payments/revenue');
+        setRevenue(response.data);
+        console.log(response.data)
+      } catch (error) {
+        console.log(error)
+      } finally {
+        setLoading(false);
+      }
+    
+    }
+
     fetchProjects();
     fetchClients();
+    fetchTotalRevenue();
+    fetchPendingAmount();
   }, []);
   return (
     <div className="flex h-full w-full flex-1 flex-col gap-2 rounded-tl-2xl border border-neutral-200 bg-gray-50 p-2 md:p-6 dark:border-neutral-700 dark:bg-neutral-900">
@@ -101,7 +132,7 @@ export default function Home() {
           <div className="bg-gradient-to-br from-blue-50 to-cyan-50 p-6 rounded-3xl border border-blue-100/50">
             <h3 className="text-gray-600 text-sm font-medium mb-3">Total Revenue</h3>
             <div className="flex items-end justify-between">
-              <p className="text-4xl font-bold text-gray-900">721K</p>
+              <p className="text-4xl font-bold text-gray-900">₹{revenue}</p>
               <div className="flex items-center text-green-600 text-sm font-medium">
                 <span>+11.01%</span>
                 <IconTrendingUp size={16} className="ml-1" />
@@ -134,7 +165,7 @@ export default function Home() {
           <div className="bg-gradient-to-br from-purple-50 to-indigo-50 p-6 rounded-3xl border border-purple-100/50">
             <h3 className="text-gray-600 text-sm font-medium mb-3">Pending Payments</h3>
             <div className="flex items-end justify-between">
-              <p className="text-4xl font-bold text-gray-900">239K</p>
+              <p className="text-4xl font-bold text-gray-900">₹{pendingAmount}</p>
               <div className="flex items-center text-green-600 text-sm font-medium">
                 <span>+6.08%</span>
                 <IconTrendingUp size={16} className="ml-1" />
