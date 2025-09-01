@@ -1,6 +1,8 @@
 "use client";
+import axios from "axios";
 import { IconTrendingUp, IconTrendingDown } from "@tabler/icons-react";
 import dynamic from 'next/dynamic';
+import { useEffect, useState } from "react";
 
 // Dynamically import Recharts components to avoid SSR issues
 const LineChart = dynamic(() => import('recharts').then((mod) => mod.LineChart), { ssr: false });
@@ -17,6 +19,12 @@ const Pie = dynamic(() => import('recharts').then((mod) => mod.Pie), { ssr: fals
 const Cell = dynamic(() => import('recharts').then((mod) => mod.Cell), { ssr: false });
 
 export default function Home() {
+  const [loading, setLoading] = useState(true)
+  const [projectCount, setProjectCount] = useState("-")
+  const [clientCount, setClientCount] = useState("-")
+
+
+
   // Data for Total Clients chart - More dynamic with ups and downs
   const clientsData = [
     { month: 'Jan', currentWeek: 12000000, previousWeek: 10000000 },
@@ -55,7 +63,36 @@ export default function Home() {
     { name: 'Mexico', value: 30.8, color: '#10b981' },
     { name: 'Other', value: 8.1, color: '#f59e0b' },
   ];
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get('/api/projects/active/count');
+        setProjectCount(response.data);
+        console.log(response.data)
+      } catch (error) {
+        console.log(error)
+      } finally {
+        setLoading(false);
+      }
+    }
 
+    const fetchClients = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get('/api/clients/active/count');
+        setClientCount(response.data);
+        console.log(response.data)
+      } catch (error) {
+        console.log(error)
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchProjects();
+    fetchClients();
+  }, []);
   return (
     <div className="flex h-full w-full flex-1 flex-col gap-2 rounded-tl-2xl border border-neutral-200 bg-gray-50 p-2 md:p-6 dark:border-neutral-700 dark:bg-neutral-900">
       <div className="space-y-6">
@@ -75,7 +112,7 @@ export default function Home() {
           <div className="bg-gradient-to-br from-purple-50 to-indigo-50 p-6 rounded-3xl border border-purple-100/50">
             <h3 className="text-gray-600 text-sm font-medium mb-3">Active Projects</h3>
             <div className="flex items-end justify-between">
-              <p className="text-4xl font-bold text-gray-900">120</p>
+              <p className="text-4xl font-bold text-gray-900">{projectCount}</p>
               <div className="flex items-center text-red-500 text-sm font-medium">
                 <span>-0.03%</span>
                 <IconTrendingDown size={16} className="ml-1" />
@@ -84,9 +121,9 @@ export default function Home() {
           </div>
 
           <div className="bg-gradient-to-br from-blue-50 to-cyan-50 p-6 rounded-3xl border border-blue-100/50">
-            <h3 className="text-gray-600 text-sm font-medium mb-3">New Clients</h3>
+            <h3 className="text-gray-600 text-sm font-medium mb-3">Active Clients</h3>
             <div className="flex items-end justify-between">
-              <p className="text-4xl font-bold text-gray-900">32</p>
+              <p className="text-4xl font-bold text-gray-900">{clientCount}</p>
               <div className="flex items-center text-green-600 text-sm font-medium">
                 <span>+15.03%</span>
                 <IconTrendingUp size={16} className="ml-1" />

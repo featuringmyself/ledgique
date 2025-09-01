@@ -2,6 +2,8 @@ import prisma from "@/lib/prisma";
 
 export async function GET() {
   try {
+
+    //for prod => showing clients of the specific user
     const client = await prisma.client.findMany({
         select: {
             id: true,
@@ -18,9 +20,8 @@ export async function GET() {
                 take: 1,
             },
             createdAt: true,
-            updatedAt: true,
             status: true
-        }
+        },
     });
 
     return new Response(JSON.stringify(client), {

@@ -265,9 +265,8 @@ async function main() {
     }),
   ]);
 
-  console.log('📋 Created projects');
-
-  // Create Tasks
+  console.log('📋 Created projects'); 
+ // Create Tasks
   const tasks = await Promise.all([
     // Tasks for E-commerce Platform Redesign
     prisma.task.create({
