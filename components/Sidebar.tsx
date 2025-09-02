@@ -120,7 +120,7 @@ export function Sidebar({ children }: { children?: React.ReactNode }) {
     ];
 
     return (
-        <div className="flex w-full h-screen overflow-hidden bg-gray-100 dark:bg-neutral-800">
+        <div className="flex w-full min-h-screen bg-gray-100 dark:bg-neutral-800">
             <SidebarUI open={open} setOpen={handleSetOpen} hoverOpen={true}>
                 <SidebarBody className="justify-between gap-10">
                     <div className="flex flex-1 flex-col overflow-x-hidden overflow-y-auto">

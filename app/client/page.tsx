@@ -35,6 +35,14 @@ export default function ClientPage() {
     fetchClients();
   }, []);
 
+  if (loading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 bg-white w-full min-h-screen">
       {/* Top Actions */}

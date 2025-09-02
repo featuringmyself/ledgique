@@ -551,6 +551,7 @@ async function main() {
         transactionId: 'TXN_EC_001',
         invoiceNumber: 'INV-2024-001',
         projectId: projects[0].id,
+        clientId: clients[0].id,
       },
     }),
     prisma.payment.create({
@@ -568,6 +569,7 @@ async function main() {
         transactionId: 'TXN_EC_002',
         invoiceNumber: 'INV-2024-002',
         projectId: projects[0].id,
+        clientId: clients[0].id,
       },
     }),
     prisma.payment.create({
@@ -585,6 +587,7 @@ async function main() {
         netAmount: 30940.00,
         invoiceNumber: 'INV-2024-003',
         projectId: projects[0].id,
+        clientId: clients[0].id,
       },
     }),
 
@@ -604,6 +607,7 @@ async function main() {
         transactionId: 'PP_ENV_001',
         invoiceNumber: 'INV-2024-004',
         projectId: projects[1].id,
+        clientId: clients[1].id,
       },
     }),
     prisma.payment.create({
@@ -621,6 +625,7 @@ async function main() {
         transactionId: 'PP_ENV_002',
         invoiceNumber: 'INV-2024-005',
         projectId: projects[1].id,
+        clientId: clients[1].id,
       },
     }),
 
@@ -638,6 +643,7 @@ async function main() {
         transactionId: 'CC_MVP_001',
         invoiceNumber: 'INV-2024-006',
         projectId: projects[3].id,
+        clientId: clients[3].id,
       },
     }),
 
@@ -657,6 +663,7 @@ async function main() {
         transactionId: 'BT_HEALTH_001',
         invoiceNumber: 'INV-2024-007',
         projectId: projects[6].id,
+        clientId: clients[5].id,
       },
     }),
     prisma.payment.create({
@@ -674,6 +681,7 @@ async function main() {
         netAmount: 47775.00,
         invoiceNumber: 'INV-2024-008',
         projectId: projects[6].id,
+        clientId: clients[5].id,
       },
     }),
 
@@ -693,6 +701,7 @@ async function main() {
         transactionId: 'CHQ_EDU_001',
         invoiceNumber: 'INV-2024-009',
         projectId: projects[7].id,
+        clientId: clients[6].id,
       },
     }),
     prisma.payment.create({
@@ -710,6 +719,7 @@ async function main() {
         transactionId: 'BT_EDU_002',
         invoiceNumber: 'INV-2024-010',
         projectId: projects[7].id,
+        clientId: clients[6].id,
       },
     }),
 
@@ -729,6 +739,7 @@ async function main() {
         netAmount: 136500.00,
         invoiceNumber: 'INV-2025-001',
         projectId: projects[8].id,
+        clientId: clients[7].id,
       },
     }),
 
@@ -748,6 +759,7 @@ async function main() {
         transactionId: 'CRYPTO_ART_001',
         invoiceNumber: 'INV-2024-011',
         projectId: projects[9].id,
+        clientId: clients[8].id,
       },
     }),
     prisma.payment.create({
@@ -765,6 +777,7 @@ async function main() {
         netAmount: 30257.50,
         invoiceNumber: 'INV-2024-012',
         projectId: projects[9].id,
+        clientId: clients[8].id,
       },
     }),
 
@@ -784,6 +797,89 @@ async function main() {
         transactionId: 'BT_CONSULT_001',
         invoiceNumber: 'INV-2024-013',
         projectId: projects[11].id,
+        clientId: clients[10].id,
+      },
+    }),
+
+    // December 2024 payments for monthly revenue
+    prisma.payment.create({
+      data: {
+        amount: 42000.00,
+        date: new Date('2024-12-05'),
+        description: 'Monthly milestone payment',
+        type: PaymentType.MILESTONE,
+        method: PaymentMethod.BANK_TRANSFER,
+        status: PaymentStatus.COMPLETED,
+        taxAmount: 3780.00,
+        netAmount: 38220.00,
+        transactionId: 'BT_DEC_001',
+        invoiceNumber: 'INV-2024-016',
+        projectId: projects[0].id,
+        clientId: clients[0].id,
+      },
+    }),
+    prisma.payment.create({
+      data: {
+        amount: 28500.00,
+        date: new Date('2024-12-08'),
+        description: 'Dashboard development completion',
+        type: PaymentType.MILESTONE,
+        method: PaymentMethod.STRIPE,
+        status: PaymentStatus.COMPLETED,
+        taxAmount: 2565.00,
+        netAmount: 25935.00,
+        transactionId: 'STR_DEC_002',
+        invoiceNumber: 'INV-2024-017',
+        projectId: projects[1].id,
+        clientId: clients[1].id,
+      },
+    }),
+    prisma.payment.create({
+      data: {
+        amount: 65000.00,
+        date: new Date('2024-12-12'),
+        description: 'Healthcare portal milestone',
+        type: PaymentType.MILESTONE,
+        method: PaymentMethod.BANK_TRANSFER,
+        status: PaymentStatus.COMPLETED,
+        taxAmount: 5850.00,
+        netAmount: 59150.00,
+        transactionId: 'BT_DEC_003',
+        invoiceNumber: 'INV-2024-018',
+        projectId: projects[6].id,
+        clientId: clients[5].id,
+      },
+    }),
+    prisma.payment.create({
+      data: {
+        amount: 35000.00,
+        date: new Date('2024-12-15'),
+        description: 'Art installation progress payment',
+        type: PaymentType.MILESTONE,
+        method: PaymentMethod.CRYPTO,
+        status: PaymentStatus.COMPLETED,
+        taxAmount: 3150.00,
+        netAmount: 31850.00,
+        transactionId: 'CRYPTO_DEC_004',
+        invoiceNumber: 'INV-2024-019',
+        projectId: projects[9].id,
+        clientId: clients[8].id,
+      },
+    }),
+    prisma.payment.create({
+      data: {
+        amount: 18750.00,
+        date: new Date('2024-12-18'),
+        description: 'Additional feature development',
+        type: PaymentType.PARTIAL,
+        method: PaymentMethod.UPI,
+        status: PaymentStatus.COMPLETED,
+        taxAmount: 1687.50,
+        netAmount: 17062.50,
+        transactionId: 'UPI_DEC_005',
+        invoiceNumber: 'INV-2024-020',
+        projectId: projects[7].id,
+        clientId: clients[6].id,
       },
     }),
 
@@ -801,6 +897,7 @@ async function main() {
         transactionId: 'REFUND_001',
         invoiceNumber: 'REF-2024-001',
         projectId: projects[1].id,
+        clientId: clients[1].id,
       },
     }),
     prisma.payment.create({
@@ -816,6 +913,7 @@ async function main() {
         netAmount: 10920.00,
         invoiceNumber: 'INV-2024-014',
         projectId: projects[0].id,
+        clientId: clients[0].id,
       },
     }),
     prisma.payment.create({
@@ -831,6 +929,7 @@ async function main() {
         transactionId: 'RZP_SUPPORT_001',
         invoiceNumber: 'INV-2024-015',
         projectId: projects[3].id,
+        clientId: clients[3].id,
       },
     }),
   ]);

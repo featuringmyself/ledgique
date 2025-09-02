@@ -66,6 +66,7 @@ model Client {
 
   // Relations
   projects Project[]
+  payments Payment[]
   user     User?     @relation(fields: [userId], references: [id])
 
   @@map("clients")
@@ -178,6 +179,8 @@ model Payment {
   // Relations
   projectId String
   project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  clientId  String
+  client    Client  @relation(fields: [clientId], references: [id], onDelete: Cascade)
 
   // Timestamps
   createdAt DateTime @default(now())

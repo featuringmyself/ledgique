@@ -66,64 +66,37 @@ export default function Home() {
     { name: 'Other', value: 8.1, color: '#f59e0b' },
   ];
   useEffect(() => {
-    const fetchProjects = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('/api/projects/active/count');
-        setProjectCount(response.data);
-        console.log(response.data)
+        const [projectsRes, clientsRes, revenueRes, pendingRes] = await Promise.all([
+          axios.get('/api/projects/active/count'),
+          axios.get('/api/clients/active/count'),
+          axios.get('/api/payments/revenue'),
+          axios.get('/api/payments/pending/count')
+        ]);
+        
+        setProjectCount(projectsRes.data);
+        setClientCount(clientsRes.data);
+        setRevenue(revenueRes.data);
+        setPendingAmount(pendingRes.data.totalPendingAmount);
       } catch (error) {
-        console.log(error)
+        console.error('Error fetching dashboard data:', error);
       } finally {
         setLoading(false);
       }
-    }
+    };
 
-    const fetchClients = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get('/api/clients/active/count');
-        setClientCount(response.data);
-        console.log(response.data)
-      } catch (error) {
-        console.log(error)
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    const fetchPendingAmount = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get('/api/payments/pending/count');
-        setPendingAmount(response.data.totalPendingAmount);
-        console.log(response.data)
-      } catch (error) {
-        console.log(error)
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    const fetchTotalRevenue = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get('/api/payments/revenue');
-        setRevenue(response.data);
-        console.log(response.data)
-      } catch (error) {
-        console.log(error)
-      } finally {
-        setLoading(false);
-      }
-
-    }
-
-    fetchProjects();
-    fetchClients();
-    fetchTotalRevenue();
-    fetchPendingAmount();
+    fetchData();
   }, []);
+  if (loading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-full w-full flex-1 flex-col gap-2 rounded-tl-2xl border border-neutral-200 bg-gray-50 p-2 md:p-6 dark:border-neutral-700 dark:bg-neutral-900">
       <div className="space-y-6">
