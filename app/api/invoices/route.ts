@@ -1,6 +1,12 @@
 import { NextResponse } from 'next/server';
 import prisma  from "@/lib/prisma";
 
+interface InvoiceItem {
+  description: string;
+  quantity: number;
+  unitPrice: number;
+}
+
 export async function GET() {
   try {
     const invoices = await prisma.invoice.findMany({
@@ -68,7 +74,7 @@ export async function POST(request: Request) {
     } = body;
 
     // Calculate totals
-    const subtotal = items.reduce((sum: number, item: any) => sum + (item.quantity * item.unitPrice), 0);
+    const subtotal = items.reduce((sum: number, item: InvoiceItem) => sum + (item.quantity * item.unitPrice), 0);
     const taxAmount = subtotal * (taxRate / 100);
     const totalAmount = subtotal + taxAmount - (discountAmount || 0);
 
@@ -103,7 +109,7 @@ export async function POST(request: Request) {
         notes,
         terms,
         items: {
-          create: items.map((item: any) => ({
+          create: items.map((item: InvoiceItem) => ({
             description: item.description,
             quantity: item.quantity,
             unitPrice: item.unitPrice,

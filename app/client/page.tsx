@@ -1,5 +1,6 @@
 "use client";
 import axios from "axios";
+import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { IconPlus, IconFilter, IconSortDescending, IconSearch, IconCalendar, IconDots } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
@@ -47,9 +48,11 @@ export default function ClientPage() {
     <div className="p-6 bg-white w-full min-h-screen">
       {/* Top Actions */}
       <div className="flex items-center gap-4 mb-6">
-        <button className="p-2 hover:bg-gray-100 rounded">
-          <IconPlus size={20} />
-        </button>
+        <Link href="/client/add">
+          <button className="p-2 hover:bg-gray-100 rounded">
+            <IconPlus size={20} />
+          </button>
+        </Link>
         <button className="p-2 hover:bg-gray-100 rounded">
           <IconFilter size={20} />
         </button>
