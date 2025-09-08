@@ -1,4 +1,4 @@
-import { PrismaClient, ClientStatus, ProjectStatus, Priority, PaymentType, PaymentMethod, PaymentStatus } from '@/app/generated/prisma';
+import { PrismaClient, ClientStatus, ProjectStatus, Priority, PaymentType, PaymentMethod, PaymentStatus, InvoiceStatus } from '@/app/generated/prisma';
 
 const prisma = new PrismaClient();
 
@@ -6,6 +6,8 @@ async function main() {
   console.log('🌱 Starting database seeding...');
 
   // Clear existing data
+  await prisma.invoiceItem.deleteMany();
+  await prisma.invoice.deleteMany();
   await prisma.payment.deleteMany();
   await prisma.task.deleteMany();
   await prisma.project.deleteMany();
@@ -934,8 +936,458 @@ async function main() {
     }),
   ]);
 
-  console.log('💳 Created payments'); 
- // Create Tasks
+  console.log('💳 Created payments');
+
+  // Create Invoices with Items
+  const invoices = await Promise.all([
+    // Invoice 1 - E-commerce Platform Design Phase
+    prisma.invoice.create({
+      data: {
+        invoiceNumber: 'INV-2024-001',
+        title: 'E-commerce Platform - Design Phase',
+        description: 'UI/UX Design and wireframes for e-commerce platform redesign',
+        issueDate: new Date('2024-08-01'),
+        dueDate: new Date('2024-08-31'),
+        status: InvoiceStatus.PAID,
+        subtotal: 23205.00,
+        taxRate: 0.09,
+        taxAmount: 2088.45,
+        totalAmount: 25293.45,
+        clientId: clients[0].id,
+        projectId: projects[0].id,
+        notes: 'Payment due within 30 days of invoice date.',
+        terms: 'Net 30 payment terms. Late payments subject to 1.5% monthly service charge.',
+        items: {
+          create: [
+            {
+              description: 'UI/UX Design Consultation',
+              quantity: 40,
+              unitPrice: 150.00,
+              totalPrice: 6000.00,
+            },
+            {
+              description: 'Wireframe Development',
+              quantity: 32,
+              unitPrice: 125.00,
+              totalPrice: 4000.00,
+            },
+            {
+              description: 'Design System Creation',
+              quantity: 24,
+              unitPrice: 175.00,
+              totalPrice: 4200.00,
+            },
+            {
+              description: 'Prototype Development',
+              quantity: 36,
+              unitPrice: 160.00,
+              totalPrice: 5760.00,
+            },
+            {
+              description: 'User Testing & Feedback',
+              quantity: 20,
+              unitPrice: 140.00,
+              totalPrice: 2800.00,
+            },
+            {
+              description: 'Design Documentation',
+              quantity: 3,
+              unitPrice: 215.00,
+              totalPrice: 645.00,
+            },
+          ],
+        },
+      },
+    }),
+
+    // Invoice 2 - Environmental Dashboard Development
+    prisma.invoice.create({
+      data: {
+        invoiceNumber: 'INV-2024-002',
+        title: 'Environmental Data Dashboard - Phase 1',
+        description: 'Data analysis and dashboard component development',
+        issueDate: new Date('2024-09-01'),
+        dueDate: new Date('2024-10-01'),
+        status: InvoiceStatus.PAID,
+        subtotal: 12285.00,
+        taxRate: 0.08,
+        taxAmount: 982.80,
+        totalAmount: 13267.80,
+        clientId: clients[1].id,
+        projectId: projects[1].id,
+        notes: 'Non-profit discount applied. Thank you for your environmental mission.',
+        terms: 'Net 30 payment terms.',
+        items: {
+          create: [
+            {
+              description: 'Data Analysis & Requirements Gathering',
+              quantity: 24,
+              unitPrice: 120.00,
+              totalPrice: 2880.00,
+            },
+            {
+              description: 'Dashboard Architecture Design',
+              quantity: 16,
+              unitPrice: 145.00,
+              totalPrice: 2320.00,
+            },
+            {
+              description: 'Chart Component Development',
+              quantity: 32,
+              unitPrice: 135.00,
+              totalPrice: 4320.00,
+            },
+            {
+              description: 'Data Integration Setup',
+              quantity: 20,
+              unitPrice: 155.00,
+              totalPrice: 3100.00,
+            },
+          ],
+        },
+      },
+    }),
+
+    // Invoice 3 - Healthcare Portal Security Phase
+    prisma.invoice.create({
+      data: {
+        invoiceNumber: 'INV-2024-003',
+        title: 'HIPAA-Compliant Patient Portal - Security Implementation',
+        description: 'Security assessment, compliance documentation, and authentication system',
+        issueDate: new Date('2024-09-15'),
+        dueDate: new Date('2024-10-15'),
+        status: InvoiceStatus.PAID,
+        subtotal: 40950.00,
+        taxRate: 0.10,
+        taxAmount: 4095.00,
+        totalAmount: 45045.00,
+        clientId: clients[5].id,
+        projectId: projects[6].id,
+        notes: 'HIPAA compliance certification included. All security standards met.',
+        terms: 'Net 30 payment terms. Security audit report provided upon payment.',
+        items: {
+          create: [
+            {
+              description: 'HIPAA Compliance Assessment',
+              quantity: 40,
+              unitPrice: 200.00,
+              totalPrice: 8000.00,
+            },
+            {
+              description: 'Security Architecture Design',
+              quantity: 32,
+              unitPrice: 225.00,
+              totalPrice: 7200.00,
+            },
+            {
+              description: 'Authentication System Development',
+              quantity: 48,
+              unitPrice: 185.00,
+              totalPrice: 8880.00,
+            },
+            {
+              description: 'Encryption Implementation',
+              quantity: 24,
+              unitPrice: 210.00,
+              totalPrice: 5040.00,
+            },
+            {
+              description: 'Security Testing & Audit',
+              quantity: 36,
+              unitPrice: 175.00,
+              totalPrice: 6300.00,
+            },
+            {
+              description: 'Compliance Documentation',
+              quantity: 30,
+              unitPrice: 185.00,
+              totalPrice: 5550.00,
+            },
+          ],
+        },
+      },
+    }),
+
+    // Invoice 4 - K-12 LMS Development (Current)
+    prisma.invoice.create({
+      data: {
+        invoiceNumber: 'INV-2024-004',
+        title: 'K-12 Learning Management System - Core Development',
+        description: 'Student dashboard, teacher portal, and accessibility features',
+        issueDate: new Date('2024-11-01'),
+        dueDate: new Date('2024-12-01'),
+        status: InvoiceStatus.SENT,
+        subtotal: 63700.00,
+        taxRate: 0.09,
+        taxAmount: 5733.00,
+        totalAmount: 69433.00,
+        clientId: clients[6].id,
+        projectId: projects[7].id,
+        notes: 'Accessibility compliance (WCAG 2.1) included. Mobile-responsive design.',
+        terms: 'Net 30 payment terms. Progress demos scheduled bi-weekly.',
+        items: {
+          create: [
+            {
+              description: 'Student Dashboard Development',
+              quantity: 60,
+              unitPrice: 165.00,
+              totalPrice: 9900.00,
+            },
+            {
+              description: 'Teacher Portal Creation',
+              quantity: 72,
+              unitPrice: 170.00,
+              totalPrice: 12240.00,
+            },
+            {
+              description: 'Parent Communication System',
+              quantity: 48,
+              unitPrice: 155.00,
+              totalPrice: 7440.00,
+            },
+            {
+              description: 'Progress Analytics Engine',
+              quantity: 56,
+              unitPrice: 180.00,
+              totalPrice: 10080.00,
+            },
+            {
+              description: 'Accessibility Compliance (WCAG 2.1)',
+              quantity: 40,
+              unitPrice: 190.00,
+              totalPrice: 7600.00,
+            },
+            {
+              description: 'Mobile App Development',
+              quantity: 88,
+              unitPrice: 185.00,
+              totalPrice: 16280.00,
+            },
+          ],
+        },
+      },
+    }),
+
+    // Invoice 5 - Art Installation Platform (Pending)
+    prisma.invoice.create({
+      data: {
+        invoiceNumber: 'INV-2024-005',
+        title: 'Interactive Art Installation Platform - AR/VR Integration',
+        description: 'Creative development, AR/VR capabilities, and content management system',
+        issueDate: new Date('2024-12-01'),
+        dueDate: new Date('2024-12-31'),
+        status: InvoiceStatus.VIEWED,
+        subtotal: 30257.50,
+        taxRate: 0.08,
+        taxAmount: 2420.60,
+        totalAmount: 32678.10,
+        clientId: clients[8].id,
+        projectId: projects[9].id,
+        notes: 'Cutting-edge AR/VR technology integration. Custom hardware setup included.',
+        terms: 'Net 30 payment terms. Hardware procurement upon 50% advance payment.',
+        items: {
+          create: [
+            {
+              description: 'Creative Concept Development',
+              quantity: 32,
+              unitPrice: 175.00,
+              totalPrice: 5600.00,
+            },
+            {
+              description: 'AR/VR Integration Development',
+              quantity: 48,
+              unitPrice: 220.00,
+              totalPrice: 10560.00,
+            },
+            {
+              description: 'Interactive UI Design',
+              quantity: 28,
+              unitPrice: 165.00,
+              totalPrice: 4620.00,
+            },
+            {
+              description: 'Content Management System',
+              quantity: 36,
+              unitPrice: 155.00,
+              totalPrice: 5580.00,
+            },
+            {
+              description: 'Hardware Setup & Configuration',
+              quantity: 24,
+              unitPrice: 185.00,
+              totalPrice: 4440.00,
+            },
+          ],
+        },
+      },
+    }),
+
+    // Invoice 6 - Trading Platform (Future)
+    prisma.invoice.create({
+      data: {
+        invoiceNumber: 'INV-2025-001',
+        title: 'High-Frequency Trading Platform - Architecture & Setup',
+        description: 'System architecture design and low-latency infrastructure setup',
+        issueDate: new Date('2025-01-15'),
+        dueDate: new Date('2025-02-14'),
+        status: InvoiceStatus.DRAFT,
+        subtotal: 136500.00,
+        taxRate: 0.10,
+        taxAmount: 13650.00,
+        totalAmount: 150150.00,
+        clientId: clients[7].id,
+        projectId: projects[8].id,
+        notes: 'Ultra-low latency requirements. 24/7 monitoring and support included.',
+        terms: 'Net 30 payment terms. Milestone-based payments with performance guarantees.',
+        items: {
+          create: [
+            {
+              description: 'System Architecture Design',
+              quantity: 80,
+              unitPrice: 300.00,
+              totalPrice: 24000.00,
+            },
+            {
+              description: 'Low-Latency Infrastructure Setup',
+              quantity: 120,
+              unitPrice: 275.00,
+              totalPrice: 33000.00,
+            },
+            {
+              description: 'Real-time Data Processing Engine',
+              quantity: 96,
+              unitPrice: 285.00,
+              totalPrice: 27360.00,
+            },
+            {
+              description: 'Risk Management System',
+              quantity: 72,
+              unitPrice: 265.00,
+              totalPrice: 19080.00,
+            },
+            {
+              description: 'Performance Monitoring Setup',
+              quantity: 48,
+              unitPrice: 245.00,
+              totalPrice: 11760.00,
+            },
+            {
+              description: 'Regulatory Compliance Framework',
+              quantity: 84,
+              unitPrice: 255.00,
+              totalPrice: 21420.00,
+            },
+          ],
+        },
+      },
+    }),
+
+    // Invoice 7 - Overdue Invoice Example
+    prisma.invoice.create({
+      data: {
+        invoiceNumber: 'INV-2024-006',
+        title: 'Mobile App Development - Research & Planning',
+        description: 'Framework evaluation and initial planning phase',
+        issueDate: new Date('2024-10-01'),
+        dueDate: new Date('2024-10-31'),
+        status: InvoiceStatus.OVERDUE,
+        subtotal: 8500.00,
+        taxRate: 0.08,
+        taxAmount: 680.00,
+        totalAmount: 9180.00,
+        clientId: clients[0].id,
+        projectId: projects[5].id,
+        notes: 'Project currently on hold. Payment required to resume development.',
+        terms: 'Net 30 payment terms. Late payment fees may apply.',
+        items: {
+          create: [
+            {
+              description: 'Mobile Framework Research',
+              quantity: 16,
+              unitPrice: 150.00,
+              totalPrice: 2400.00,
+            },
+            {
+              description: 'Technical Planning & Documentation',
+              quantity: 24,
+              unitPrice: 135.00,
+              totalPrice: 3240.00,
+            },
+            {
+              description: 'UI/UX Planning for Mobile',
+              quantity: 20,
+              unitPrice: 145.00,
+              totalPrice: 2900.00,
+            },
+          ],
+        },
+      },
+    }),
+
+    // Invoice 8 - Cancelled Project Invoice
+    prisma.invoice.create({
+      data: {
+        invoiceNumber: 'INV-2024-007',
+        title: 'Business Process Automation - Initial Analysis',
+        description: 'Process analysis and workflow automation planning',
+        issueDate: new Date('2024-07-01'),
+        dueDate: new Date('2024-07-31'),
+        status: InvoiceStatus.CANCELLED,
+        subtotal: 13650.00,
+        taxRate: 0.09,
+        taxAmount: 1228.50,
+        totalAmount: 14878.50,
+        clientId: clients[10].id,
+        projectId: projects[11].id,
+        notes: 'Project cancelled by client. Partial work completed and billed.',
+        terms: 'Cancellation terms apply. Payment for completed work only.',
+        items: {
+          create: [
+            {
+              description: 'Business Process Analysis',
+              quantity: 32,
+              unitPrice: 165.00,
+              totalPrice: 5280.00,
+            },
+            {
+              description: 'Workflow Documentation',
+              quantity: 24,
+              unitPrice: 145.00,
+              totalPrice: 3480.00,
+            },
+            {
+              description: 'Initial Consultation & Planning',
+              quantity: 30,
+              unitPrice: 163.00,
+              totalPrice: 4890.00,
+            },
+          ],
+        },
+      },
+    }),
+  ]);
+
+  console.log('📄 Created invoices with items');
+
+  // Link some payments to invoices
+  await prisma.payment.update({
+    where: { id: payments[0].id },
+    data: { invoiceId: invoices[0].id },
+  });
+  
+  await prisma.payment.update({
+    where: { id: payments[3].id },
+    data: { invoiceId: invoices[1].id },
+  });
+  
+  await prisma.payment.update({
+    where: { id: payments[7].id },
+    data: { invoiceId: invoices[2].id },
+  });
+
+  console.log('🔗 Linked payments to invoices');
+
+  // Create Tasks
   const tasks = await Promise.all([
     // Tasks for E-commerce Platform Redesign
     prisma.task.create({
