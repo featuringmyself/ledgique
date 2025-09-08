@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
 import prisma  from "@/lib/prisma";
 
 interface InvoiceItem {
@@ -9,7 +10,22 @@ interface InvoiceItem {
 
 export async function GET() {
   try {
+    const { userId } = await auth();
+    
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     const invoices = await prisma.invoice.findMany({
+      where: {
+        OR: [
+          { client: { clerkId: userId } },
+          { project: { clerkId: userId } }
+        ]
+      },
       include: {
         client: {
           select: {

@@ -4,8 +4,7 @@ import prisma from '@/lib/prisma';
 
 export async function POST(request: Request) {
   try {
-    const { userId } = await auth();
-    
+    const { userId } = await auth();  
     if (!userId) {
       return NextResponse.json(
         { error: 'Unauthorized' },
@@ -24,17 +23,7 @@ export async function POST(request: Request) {
       notes,
     } = body;
 
-    // Find the user by clerkId
-    const user = await prisma.user.findUnique({
-      where: { clerkId: userId },
-    });
 
-    if (!user) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
-    }
 
     // Create the client
     const client = await prisma.client.create({
@@ -46,8 +35,9 @@ export async function POST(request: Request) {
         address,
         website,
         notes,
-        userId: user.id,
+        clerkId: userId,
       },
+
     });
 
     return NextResponse.json(client);

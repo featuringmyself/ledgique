@@ -1,5 +1,5 @@
 "use client";
-import React, { Dispatch, SetStateAction } from "react";
+import React, { Dispatch, SetStateAction, useEffect } from "react";
 import { Sidebar as SidebarUI, SidebarBody, SidebarLink, useSidebar } from "./ui/sidebar";
 import { useSidebarState } from "./providers/SidebarProvider";
 import {
@@ -122,17 +122,19 @@ export function Sidebar({ children }: { children?: React.ReactNode }) {
     return (
         <div className="flex w-full min-h-screen bg-gray-100 dark:bg-neutral-800">
             <SidebarUI open={open} setOpen={handleSetOpen} hoverOpen={true}>
-                <SidebarBody className="justify-between gap-10">
-                    <div className="flex flex-1 flex-col overflow-x-hidden overflow-y-auto">
-                        <LogoComponent />
-                        <div className="mt-8 flex flex-col gap-2">
+                <SidebarBody className="justify-between gap-10 h-full">
+                    <div className="flex flex-1 flex-col overflow-hidden min-h-0">
+                        <div className="flex-shrink-0">
+                            <LogoComponent />
+                        </div>
+                        <div className="mt-8 flex flex-col gap-2 overflow-y-auto flex-1 min-h-0 pr-2">
                             {links.map((link, idx) => (
                                 <SidebarLink key={idx} link={link} />
                             ))}
-                            <LogoutButton />
                         </div>
                     </div>
-                    <div>
+                    <div className="border-t border-neutral-200 dark:border-neutral-700 pt-4">
+                        <LogoutButton />
                         <SidebarLink
                             link={{
                                 label: user?.fullName || user?.emailAddresses[0]?.emailAddress || "User",
@@ -151,7 +153,7 @@ export function Sidebar({ children }: { children?: React.ReactNode }) {
                     </div>
                 </SidebarBody>
             </SidebarUI>
-            <main className="flex flex-1">
+            <main className="flex flex-1 ml-[60px] md:ml-[60px]">
                 {children || <Dashboard />}
             </main>
         </div>
@@ -171,7 +173,7 @@ const LogoutButton = () => {
 
     return (
         <SignOutButton>
-            <div className="flex items-center gap-2 p-2 text-sm font-normal text-neutral-700 hover:bg-gray-100 dark:text-neutral-200 dark:hover:bg-neutral-800 rounded-md transition-colors cursor-pointer">
+            <div className="flex items-center gap-2 p-2 mb-2 text-sm font-normal text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors cursor-pointer">
                 <IconArrowLeft className="h-5 w-5 shrink-0" />
                 {effectiveOpen && <span>Logout</span>}
             </div>

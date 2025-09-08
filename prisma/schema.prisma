@@ -32,23 +32,7 @@ enum Priority {
   URGENT
 }
 
-model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  clerkId   String   @unique
-  name      String
-  role      String   @default("USER")
-  avatar    String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
-  // Relations
-  projects Project[]
-  clients  Client[]
-  tasks    Task[]
-
-  @@map("users")
-}
 
 model Client {
   id        String       @id @default(uuid())
@@ -60,7 +44,7 @@ model Client {
   website   String?
   notes     String?
   status    ClientStatus @default(ACTIVE)
-  userId    String?
+  clerkId   String?
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
 
@@ -68,7 +52,6 @@ model Client {
   projects Project[]
   payments Payment[]
   invoices Invoice[]
-  user     User?     @relation(fields: [userId], references: [id])
 
   @@map("clients")
 }
@@ -78,7 +61,7 @@ model Project {
   name         String
   description  String?
   clientId     String // Fixed: Changed from Int to String
-  userId       String
+  clerkId      String
   deliverables String[]      @default([])
   status       ProjectStatus @default(PENDING)
   priority     Priority      @default(MEDIUM)
@@ -92,7 +75,6 @@ model Project {
 
   // Relations
   client   Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  user     User?     @relation(fields: [userId], references: [id])
   tasks    Task[]
   payments Payment[]
   invoices Invoice[]
@@ -105,7 +87,7 @@ model Task {
   title          String
   description    String?
   projectId      String // Fixed: Changed from Int to String
-  userId         String?
+  clerkId        String?
   status         ProjectStatus @default(PENDING)
   priority       Priority      @default(MEDIUM)
   dueDate        DateTime?
@@ -117,7 +99,6 @@ model Task {
 
   // Relations
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  user    User?   @relation(fields: [userId], references: [id])
 
   @@map("tasks")
 }

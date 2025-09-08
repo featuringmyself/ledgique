@@ -1,14 +1,27 @@
 import { NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
 import prisma from '@/lib/prisma';
 
 export async function GET() {
   try {
+    const { userId } = await auth();
+    
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     const result = await prisma.payment.aggregate({
       _sum: {
         amount: true,
       },
       where: {
         status: 'PENDING',
+        project: {
+          clerkId: userId,
+        },
       },
     });
     

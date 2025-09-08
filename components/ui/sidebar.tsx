@@ -15,6 +15,8 @@ interface Links {
   isExpandable?: boolean;
 }
 
+export { type Links };
+
 interface SidebarContextProps {
   open: boolean;
   setOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -102,7 +104,7 @@ export const DesktopSidebar = ({
     <>
       <motion.div
         className={cn(
-          "h-full px-4 py-4 hidden  md:flex md:flex-col bg-neutral-100 dark:bg-neutral-800 w-[300px] shrink-0",
+          "fixed left-0 top-0 h-screen px-4 py-4 hidden md:flex md:flex-col bg-neutral-100 dark:bg-neutral-800 w-[300px] shrink-0 overflow-hidden z-50",
           className
         )}
         animate={{
@@ -183,7 +185,15 @@ export const SidebarLink = ({
 
   const effectiveOpen = open || hoverOpen;
   const isActive = pathname === link.href || (link.children && link.children.some(child => pathname === child.href));
-  const shouldExpand = effectiveOpen && (isActive || isHovered) && (link.children && link.children.length > 0);
+  const shouldExpand = effectiveOpen && isExpanded && (link.children && link.children.length > 0);
+
+  // Reset expanded state when sidebar closes
+  React.useEffect(() => {
+    if (!effectiveOpen) {
+      setIsExpanded(false);
+      setIsHovered(false);
+    }
+  }, [effectiveOpen]);
 
   const handleClick = (e: React.MouseEvent) => {
     if (link.children && link.children.length > 0) {
@@ -197,14 +207,14 @@ export const SidebarLink = ({
 
   const handleMouseEnter = () => {
     setIsHovered(true);
-    if (link.children && link.children.length > 0) {
+    if (effectiveOpen && link.children && link.children.length > 0) {
       setIsExpanded(true);
     }
   };
 
   const handleMouseLeave = () => {
     setIsHovered(false);
-    if (!isActive && link.children && link.children.length > 0) {
+    if (link.children && link.children.length > 0) {
       setIsExpanded(false);
     }
   };
@@ -218,7 +228,7 @@ export const SidebarLink = ({
         <div
           onClick={handleClick}
           className={cn(
-            "flex items-center justify-between gap-2 group/sidebar py-2 px-1 rounded-md cursor-pointer transition-colors",
+            "flex items-center justify-between gap-2 group/sidebar py-2  rounded-md cursor-pointer transition-colors",
             isActive ? "bg-neutral-200 dark:bg-neutral-700" : "hover:bg-neutral-100 dark:hover:bg-neutral-800",
             className
           )}
@@ -344,3 +354,5 @@ export const SidebarSubLink = ({
     </Link>
   );
 };
+
+

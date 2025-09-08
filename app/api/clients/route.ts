@@ -14,23 +14,9 @@ export async function GET() {
       });
     }
 
-    // Find the user by clerkId
-    const user = await prisma.user.findUnique({
-      where: { clerkId: userId },
-    });
-
-    if (!user) {
-      return new Response(JSON.stringify({ error: "User not found" }), {
-        status: 404,
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-    }
-
     const client = await prisma.client.findMany({
         where: {
-            userId: user.id,
+            clerkId: userId,
         },
         select: {
             id: true,

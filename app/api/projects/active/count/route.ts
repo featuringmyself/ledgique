@@ -1,16 +1,27 @@
+import { auth } from '@clerk/nextjs/server';
 import prisma from "@/lib/prisma";
 
 export async function GET() {
     try {
-        //for prod => showing projects of the specific user
-        const projects = await prisma.project.count({
-            where: {
-                status: 'IN_PROGRESS'
-            }
-        })
-        console.log(projects);
+        const { userId } = await auth();
+        
+        if (!userId) {
+            return new Response(JSON.stringify({ error: "Unauthorized" }), {
+                status: 401,
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+        }
 
-        return new Response(JSON.stringify(projects), { status: 200 });
+        const count = await prisma.project.count({
+            where: {
+                status: 'IN_PROGRESS',
+                clerkId: userId,
+            }
+        });
+
+        return new Response(JSON.stringify(count), { status: 200 });
     } catch (error) {
         console.error('Failed to count projects:', error);
         return new Response(JSON.stringify({ error: "Failed to count projects" }), {
