@@ -1,4 +1,4 @@
-import type { User, Logo } from "../types/sidebar";
+import type { Logo } from "../types/sidebar";
 
 export const SIDEBAR_CONFIG = {
     // Animation settings

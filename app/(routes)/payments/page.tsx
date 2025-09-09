@@ -6,9 +6,6 @@ import {
   IconTrendingUp,
   IconTrendingDown,
   IconCreditCard,
-  IconClock,
-  IconCheck,
-  IconX,
 } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
 
@@ -81,18 +78,7 @@ export default function PaymentsPage() {
     fetchData();
   }, []);
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "COMPLETED":
-        return <IconCheck className="h-4 w-4 text-green-600" />;
-      case "PENDING":
-        return <IconClock className="h-4 w-4 text-yellow-600" />;
-      case "FAILED":
-        return <IconX className="h-4 w-4 text-red-600" />;
-      default:
-        return <IconClock className="h-4 w-4 text-gray-600" />;
-    }
-  };
+
 
   const getStatusBadge = (status: string) => {
     const baseClasses = "px-3 py-1 rounded-full text-xs font-medium";

@@ -24,11 +24,11 @@ export default function Home() {
   const [clientCount, setClientCount] = useState("-")
   const [pendingAmount, setPendingAmount] = useState("-")
   const [revenue, setRevenue] = useState("-")
-  const [monthlyData, setMonthlyData] = useState<any[]>([])
-  const [projectStatusData, setProjectStatusData] = useState<any[]>([])
-  const [paymentMethodsData, setPaymentMethodsData] = useState<any[]>([])
-  const [clientSourcesData, setClientSourcesData] = useState<any[]>([])
-  const [recentActivity, setRecentActivity] = useState<any[]>([])
+  const [monthlyData, setMonthlyData] = useState<{month: string; clients: number; projects: number}[]>([])
+  const [projectStatusData, setProjectStatusData] = useState<{name: string; value: number; color: string}[]>([])
+  const [paymentMethodsData, setPaymentMethodsData] = useState<{method: string; count: number; percentage: string}[]>([])
+  const [clientSourcesData, setClientSourcesData] = useState<{name: string; percentage: number}[]>([])
+  const [recentActivity, setRecentActivity] = useState<{type: string; title: string; date: string; amount?: string}[]>([])
   useEffect(() => {
     const fetchData = async () => {
       try {

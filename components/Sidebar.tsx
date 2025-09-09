@@ -1,5 +1,5 @@
 "use client";
-import React, { Dispatch, SetStateAction, useEffect } from "react";
+import React, { Dispatch, SetStateAction } from "react";
 import { Sidebar as SidebarUI, SidebarBody, SidebarLink, useSidebar } from "./ui/sidebar";
 import { useSidebarState } from "./providers/SidebarProvider";
 import {

@@ -6,25 +6,28 @@ import type { NavigationLink, User, Logo } from "../types/sidebar";
 // Mock framer-motion
 jest.mock("motion/react", () => ({
     motion: {
-        span: ({ children, ...props }: any) => <span {...props}>{children}</span>,
+        span: ({ children, ...props }: React.ComponentProps<'span'>) => <span {...props}>{children}</span>,
     },
 }));
 
 // Mock Next.js Image component
 jest.mock("next/image", () => ({
     __esModule: true,
-    default: ({ src, alt, ...props }: any) => <img src={src} alt={alt} {...props} />,
+    default: ({ src, alt, ...props }: React.ComponentProps<'img'>) => (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={src} alt={alt} {...props} />
+    ),
 }));
 
 // Mock UI components
 jest.mock("../ui/sidebar", () => ({
-    Sidebar: ({ children, open }: any) => (
+    Sidebar: ({ children, open }: {children: React.ReactNode; open: boolean}) => (
         <div data-testid="sidebar" data-open={open}>
             {children}
         </div>
     ),
-    SidebarBody: ({ children }: any) => <div data-testid="sidebar-body">{children}</div>,
-    SidebarLink: ({ link }: any) => (
+    SidebarBody: ({ children }: {children: React.ReactNode}) => <div data-testid="sidebar-body">{children}</div>,
+    SidebarLink: ({ link }: {link: {href: string; onClick?: () => void; icon: React.ReactNode; label: string}}) => (
         <a href={link.href} onClick={link.onClick} data-testid="sidebar-link">
             {link.icon}
             {link.label}
@@ -180,8 +183,8 @@ describe("AppSidebar", () => {
 });
 
 describe("Logo Component", () => {
-    it("renders logo with text and link", () => {
-        const { Logo } = require("../Sidebar");
+    it("renders logo with text and link", async () => {
+        const { Logo } = await import("../Sidebar");
         
         render(<Logo text="Test Logo" href="/home" />);
         
@@ -191,8 +194,8 @@ describe("Logo Component", () => {
 });
 
 describe("LogoIcon Component", () => {
-    it("renders logo icon with link", () => {
-        const { LogoIcon } = require("../Sidebar");
+    it("renders logo icon with link", async () => {
+        const { LogoIcon } = await import("../Sidebar");
         
         render(<LogoIcon href="/home" />);
         

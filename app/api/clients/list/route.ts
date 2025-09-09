@@ -34,7 +34,7 @@ export async function GET() {
         "Content-Type": "application/json",
       },
     });
-  } catch (error) {
+  } catch {
     return new Response(JSON.stringify({ error: "Failed to fetch clients" }), {
       status: 500,
       headers: {

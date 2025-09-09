@@ -95,7 +95,7 @@ export const DesktopSidebar = ({
   children,
   ...props
 }: React.ComponentProps<typeof motion.div>) => {
-  const { open, animate, setOpen } = useSidebar();
+  const { open, animate } = useSidebar();
   const [hoverOpen, setHoverOpen] = useState(false);
 
   const effectiveOpen = open || hoverOpen;
@@ -181,7 +181,7 @@ export const SidebarLink = ({
   const { open, animate, hoverOpen } = useSidebar();
   const pathname = usePathname();
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
+  const [, setIsHovered] = useState(false);
 
   const effectiveOpen = open || hoverOpen;
   const isActive = pathname === link.href || (link.children && link.children.some(child => pathname === child.href));

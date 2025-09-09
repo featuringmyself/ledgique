@@ -35,7 +35,7 @@ export async function GET() {
     }));
 
     return NextResponse.json(methodPercentages);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Failed to fetch payment methods" }, { status: 500 });
   }
 }
