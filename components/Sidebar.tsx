@@ -11,7 +11,8 @@ import {
     IconUsersGroup,
     IconCreditCardPay,
     IconBriefcase,
-    IconWallet
+    IconWallet,
+    IconReceipt
 } from "@tabler/icons-react";
 import { motion } from "motion/react";
 import logo from "@/public/logo.png"
@@ -116,6 +117,23 @@ export function Sidebar({ children }: { children?: React.ReactNode }) {
                     label: "Payment History",
                     href: "/payments/history",
                     icon: <IconCreditCardPay className="h-4 w-4 shrink-0 text-neutral-600 dark:text-neutral-400" />,
+                },
+            ],
+        },
+        {
+            label: "Expenses",
+            href: "/expenses",
+            icon: <IconReceipt className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />,
+            children: [
+                {
+                    label: "All Expenses",
+                    href: "/expenses",
+                    icon: <IconReceipt className="h-4 w-4 shrink-0 text-neutral-600 dark:text-neutral-400" />,
+                },
+                {
+                    label: "Add Expense",
+                    href: "/expenses/add",
+                    icon: <IconReceipt className="h-4 w-4 shrink-0 text-neutral-600 dark:text-neutral-400" />,
                 },
             ],
         },
