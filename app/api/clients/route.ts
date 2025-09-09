@@ -22,6 +22,11 @@ export async function GET() {
             id: true,
             name: true,
             address: true,
+            clientSource: {
+                select: {
+                    name: true
+                }
+            },
             projects: {
                 select: {
                     id: true,

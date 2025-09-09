@@ -21,6 +21,7 @@ export async function POST(request: Request) {
       address,
       website,
       notes,
+      clientSourceId,
     } = body;
 
 
@@ -35,6 +36,7 @@ export async function POST(request: Request) {
         address,
         website,
         notes,
+        clientSourceId: clientSourceId || null,
         clerkId: userId,
       },
 

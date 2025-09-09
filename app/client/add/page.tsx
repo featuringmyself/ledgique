@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,9 @@ export default function AddClientPage() {
   const [loading, setLoading] = useState(false);
   const [showProjectForm, setShowProjectForm] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [clientSources, setClientSources] = useState<{id: string, name: string}[]>([]);
+  const [newSourceName, setNewSourceName] = useState("");
+  const [showNewSource, setShowNewSource] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -28,6 +31,7 @@ export default function AddClientPage() {
     address: "",
     website: "",
     notes: "",
+    clientSourceId: "",
   });
   const [projectData, setProjectData] = useState<Project>({
     name: "",
@@ -37,6 +41,31 @@ export default function AddClientPage() {
     startDate: "",
     endDate: "",
   });
+
+  useEffect(() => {
+    const fetchSources = async () => {
+      try {
+        const response = await axios.get('/api/client-sources');
+        setClientSources(response.data);
+      } catch (error) {
+        console.error('Error fetching client sources:', error);
+      }
+    };
+    fetchSources();
+  }, []);
+
+  const createNewSource = async () => {
+    if (!newSourceName.trim()) return;
+    try {
+      const response = await axios.post('/api/client-sources', { name: newSourceName });
+      setClientSources([...clientSources, response.data]);
+      setFormData({ ...formData, clientSourceId: response.data.id });
+      setNewSourceName("");
+      setShowNewSource(false);
+    } catch (error) {
+      console.error('Error creating source:', error);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,7 +96,7 @@ export default function AddClientPage() {
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
@@ -182,6 +211,41 @@ export default function AddClientPage() {
                 placeholder="Enter website URL"
                 className="border-gray-300"
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Client From
+              </label>
+              <div className="space-y-2">
+                <select
+                  name="clientSourceId"
+                  value={formData.clientSourceId}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="">Select source (optional)</option>
+                  {clientSources.map(source => (
+                    <option key={source.id} value={source.id}>{source.name}</option>
+                  ))}
+                </select>
+                {showNewSource ? (
+                  <div className="flex gap-2">
+                    <Input
+                      value={newSourceName}
+                      onChange={(e) => setNewSourceName(e.target.value)}
+                      placeholder="Enter new source name"
+                      className="flex-1"
+                    />
+                    <Button type="button" onClick={createNewSource} size="sm">Add</Button>
+                    <Button type="button" variant="outline" onClick={() => setShowNewSource(false)} size="sm">Cancel</Button>
+                  </div>
+                ) : (
+                  <Button type="button" variant="outline" onClick={() => setShowNewSource(true)} size="sm">
+                    <IconPlus size={16} className="mr-1" /> Add New Source
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
 

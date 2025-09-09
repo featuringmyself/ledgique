@@ -24,62 +24,46 @@ export default function Home() {
   const [clientCount, setClientCount] = useState("-")
   const [pendingAmount, setPendingAmount] = useState("-")
   const [revenue, setRevenue] = useState("-")
-
-
-
-  // Data for Total Clients chart - More dynamic with ups and downs
-  const clientsData = [
-    { month: 'Jan', currentWeek: 12000000, previousWeek: 10000000 },
-    { month: 'Feb', currentWeek: 18000000, previousWeek: 14000000 },
-    { month: 'Mar', currentWeek: 14000000, previousWeek: 16000000 },
-    { month: 'Apr', currentWeek: 25000000, previousWeek: 18000000 },
-    { month: 'May', currentWeek: 22000000, previousWeek: 20000000 },
-    { month: 'Jun', currentWeek: 30000000, previousWeek: 24000000 },
-    { month: 'Jul', currentWeek: 28000000, previousWeek: 26000000 },
-  ];
-
-  // Data for Support Tickets - More varied data
-  const supportData = [
-    { name: 'Billing', value: 45, color: '#8b5cf6' },
-    { name: 'Technical', value: 78, color: '#10b981' },
-    { name: 'Review', value: 62, color: '#f59e0b' },
-    { name: 'Follow-up', value: 89, color: '#3b82f6' },
-    { name: 'F-R', value: 34, color: '#ef4444' },
-    { name: 'Other', value: 56, color: '#06b6d4' },
-  ];
-
-  // Data for Marketing & SEO - More dynamic values
-  const marketingData = [
-    { name: 'SEO', value: 65, color: '#8b5cf6' },
-    { name: 'Social', value: 89, color: '#10b981' },
-    { name: 'Email', value: 45, color: '#f59e0b' },
-    { name: 'PPC', value: 92, color: '#3b82f6' },
-    { name: 'Content', value: 73, color: '#ef4444' },
-    { name: 'Organic', value: 98, color: '#06b6d4' },
-  ];
-
-  // Data for Client Location Pie Chart
-  const locationData = [
-    { name: 'United States', value: 38.6, color: '#1f2937' },
-    { name: 'Canada', value: 22.5, color: '#6366f1' },
-    { name: 'Mexico', value: 30.8, color: '#10b981' },
-    { name: 'Other', value: 8.1, color: '#f59e0b' },
-  ];
+  const [monthlyData, setMonthlyData] = useState<any[]>([])
+  const [projectStatusData, setProjectStatusData] = useState<any[]>([])
+  const [paymentMethodsData, setPaymentMethodsData] = useState<any[]>([])
+  const [clientSourcesData, setClientSourcesData] = useState<any[]>([])
+  const [recentActivity, setRecentActivity] = useState<any[]>([])
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [projectsRes, clientsRes, revenueRes, pendingRes] = await Promise.all([
+        const [
+          projectsRes, 
+          clientsRes, 
+          revenueRes, 
+          pendingRes,
+          monthlyRes,
+          projectStatusRes,
+          paymentMethodsRes,
+          clientSourcesRes,
+          recentActivityRes
+        ] = await Promise.all([
           axios.get('/api/projects/active/count'),
           axios.get('/api/clients/active/count'),
           axios.get('/api/payments/revenue'),
-          axios.get('/api/payments/pending/count')
+          axios.get('/api/payments/pending/count'),
+          axios.get('/api/dashboard/monthly-stats'),
+          axios.get('/api/dashboard/project-status'),
+          axios.get('/api/payments/methods'),
+          axios.get('/api/dashboard/client-sources'),
+          axios.get('/api/dashboard/recent-activity')
         ]);
         
         setProjectCount(projectsRes.data);
         setClientCount(clientsRes.data);
         setRevenue(revenueRes.data);
         setPendingAmount(pendingRes.data.totalPendingAmount);
+        setMonthlyData(monthlyRes.data);
+        setProjectStatusData(projectStatusRes.data);
+        setPaymentMethodsData(paymentMethodsRes.data);
+        setClientSourcesData(clientSourcesRes.data);
+        setRecentActivity(recentActivityRes.data);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
       } finally {
@@ -152,25 +136,28 @@ export default function Home() {
           <div className="col-span-2 bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center space-x-8">
-                <button className="text-gray-900 font-semibold border-b-2 border-gray-900 pb-2">Total Clients</button>
-                <button className="text-gray-400 font-medium">Total Projects</button>
-                <button className="text-gray-400 font-medium">Operating Status</button>
+                <button className="text-gray-900 font-semibold border-b-2 border-gray-900 pb-2">Monthly Growth</button>
+                <button className="text-gray-400 font-medium">Clients vs Projects</button>
               </div>
               <div className="flex items-center space-x-6">
                 <div className="flex items-center">
                   <div className="w-3 h-3 bg-gray-900 rounded-full mr-2"></div>
-                  <span className="text-sm text-gray-600 font-medium">Current Week</span>
+                  <span className="text-sm text-gray-600 font-medium">Clients</span>
                 </div>
                 <div className="flex items-center">
                   <div className="w-3 h-3 bg-gray-300 rounded-full mr-2"></div>
-                  <span className="text-sm text-gray-600 font-medium">Previous Week</span>
+                  <span className="text-sm text-gray-600 font-medium">Projects</span>
                 </div>
               </div>
             </div>
 
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={clientsData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <LineChart data={monthlyData.map(item => ({ 
+                  month: item.month, 
+                  currentWeek: item.clients, 
+                  previousWeek: item.projects 
+                }))} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                   <defs>
                     <linearGradient id="currentWeekGradient" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#1f2937" stopOpacity={0.3} />
@@ -192,7 +179,6 @@ export default function Home() {
                     axisLine={false}
                     tickLine={false}
                     tick={{ fontSize: 12, fill: '#9ca3af' }}
-                    tickFormatter={(value) => `${value / 1000000}M`}
                   />
                   <Tooltip
                     contentStyle={{
@@ -202,7 +188,7 @@ export default function Home() {
                       color: 'white',
                       boxShadow: '0 10px 25px rgba(0,0,0,0.1)'
                     }}
-                    formatter={(value: unknown) => [`${((value as number) / 1000000).toFixed(1)}M`, '']}
+                    formatter={(value: unknown) => [value as string, '']}
                     labelStyle={{ color: '#e5e7eb' }}
                   />
                   <Line
@@ -242,61 +228,34 @@ export default function Home() {
           <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
             <h3 className="text-gray-900 font-semibold mb-6">Clients from</h3>
             <div className="space-y-5">
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600 font-medium">Google</span>
-                <div className="w-24 h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <div className="w-20 h-full bg-gray-300 rounded-full"></div>
+              {clientSourcesData.map((source, index) => (
+                <div key={index} className="flex items-center justify-between">
+                  <span className="text-gray-600 font-medium">{source.name}</span>
+                  <div className="w-24 h-2 bg-gray-100 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-gray-800 rounded-full" 
+                      style={{ width: `${Math.min(source.percentage, 100)}%` }}
+                    ></div>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600 font-medium">YouTube</span>
-                <div className="w-24 h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <div className="w-16 h-full bg-gray-400 rounded-full"></div>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600 font-medium">Instagram</span>
-                <div className="w-24 h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <div className="w-20 h-full bg-gray-800 rounded-full"></div>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600 font-medium">Pinterest</span>
-                <div className="w-24 h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <div className="w-12 h-full bg-gray-300 rounded-full"></div>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600 font-medium">Facebook</span>
-                <div className="w-24 h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <div className="w-16 h-full bg-gray-400 rounded-full"></div>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600 font-medium">Twitter</span>
-                <div className="w-24 h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <div className="w-14 h-full bg-gray-300 rounded-full"></div>
-                </div>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600 font-medium">Tumblr</span>
-                <div className="w-24 h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <div className="w-10 h-full bg-gray-300 rounded-full"></div>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </div>
 
         {/* Bottom Section */}
-        <div className="grid grid-cols-3 gap-6">
+        <div className="grid grid-cols-4 gap-6">
 
 
           <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-            <h3 className="text-gray-900 font-semibold mb-6">Support Tickets</h3>
+            <h3 className="text-gray-900 font-semibold mb-6">Payment Methods</h3>
             <div className="h-48">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={supportData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <BarChart data={paymentMethodsData.map(item => ({
+                  name: item.method.replace('_', ' '),
+                  value: item.count,
+                  color: ['#8b5cf6', '#10b981', '#f59e0b', '#3b82f6', '#ef4444', '#06b6d4'][paymentMethodsData.indexOf(item) % 6]
+                }))} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                   <defs>
                     <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.9} />
@@ -330,8 +289,8 @@ export default function Home() {
                     fill="url(#barGradient)"
                     radius={[6, 6, 0, 0]}
                   >
-                    {supportData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    {paymentMethodsData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={['#8b5cf6', '#10b981', '#f59e0b', '#3b82f6', '#ef4444', '#06b6d4'][index % 6]} />
                     ))}
                   </Bar>
                 </BarChart>
@@ -340,12 +299,12 @@ export default function Home() {
           </div>
 
           <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-            <h3 className="text-gray-900 font-semibold mb-6">Client by Location</h3>
+            <h3 className="text-gray-900 font-semibold mb-6">Project Status</h3>
             <div className="h-48 mb-4">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={locationData}
+                    data={projectStatusData}
                     cx="50%"
                     cy="50%"
                     innerRadius={40}
@@ -353,7 +312,7 @@ export default function Home() {
                     paddingAngle={2}
                     dataKey="value"
                   >
-                    {locationData.map((entry, index) => (
+                    {projectStatusData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
@@ -364,14 +323,14 @@ export default function Home() {
                       borderRadius: '8px',
                       color: 'white'
                     }}
-                    formatter={(value: unknown) => [`${value}%`, '']}
+                    formatter={(value: unknown) => [value as string, '']}
                   />
                 </PieChart>
               </ResponsiveContainer>
             </div>
 
             <div className="space-y-3">
-              {locationData.map((item, index) => (
+              {projectStatusData.map((item, index) => (
                 <div key={index} className="flex items-center justify-between">
                   <div className="flex items-center">
                     <div
@@ -380,17 +339,25 @@ export default function Home() {
                     ></div>
                     <span className="text-gray-600 font-medium">{item.name}</span>
                   </div>
-                  <span className="text-gray-900 font-semibold">{item.value}%</span>
+                  <span className="text-gray-900 font-semibold">{item.value}</span>
                 </div>
               ))}
             </div>
           </div>
 
           <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-            <h3 className="text-gray-900 font-semibold mb-6">Marketing & SEO</h3>
+            <h3 className="text-gray-900 font-semibold mb-6">Payment Methods</h3>
             <div className="h-48">
+              {loading ? (
+                <div className="flex items-center justify-center h-full">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
+                </div>
+              ) : (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={marketingData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                <BarChart data={paymentMethodsData.map(item => ({
+                  name: item.method.replace('_', ' '),
+                  value: parseFloat(item.percentage)
+                }))} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                   <defs>
                     <linearGradient id="marketingGradient" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#10b981" stopOpacity={0.9} />
@@ -426,6 +393,39 @@ export default function Home() {
                   />
                 </BarChart>
               </ResponsiveContainer>
+              )}
+            </div>
+          </div>
+
+          <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+            <h3 className="text-gray-900 font-semibold mb-6">Recent Activity</h3>
+            <div className="space-y-4 max-h-48 overflow-y-auto">
+              {recentActivity.map((activity, index) => (
+                <div key={index} className="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50">
+                  <div className={`w-2 h-2 rounded-full mt-2 ${
+                    activity.type === 'payment' ? 'bg-green-500' :
+                    activity.type === 'project' ? 'bg-blue-500' : 'bg-purple-500'
+                  }`}></div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">
+                      {activity.title}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {new Date(activity.date).toLocaleDateString()}
+                    </p>
+                    {activity.amount && (
+                      <p className="text-xs text-green-600 font-medium">
+                        ₹{activity.amount}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              ))}
+              {recentActivity.length === 0 && (
+                <p className="text-gray-500 text-sm text-center py-8">
+                  No recent activity
+                </p>
+              )}
             </div>
           </div>
 

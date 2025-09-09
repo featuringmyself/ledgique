@@ -34,6 +34,20 @@ enum Priority {
 
 
 
+model ClientSource {
+  id        String   @id @default(uuid())
+  name      String
+  clerkId   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  clients Client[]
+
+  @@unique([name, clerkId])
+  @@map("client_sources")
+}
+
 model Client {
   id        String       @id @default(uuid())
   email     String[]     @default([])
@@ -43,15 +57,18 @@ model Client {
   address   String?
   website   String?
   notes     String?
+  clientSourceId String?
   status    ClientStatus @default(ACTIVE)
   clerkId   String?
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
 
   // Relations
+  clientSource ClientSource? @relation(fields: [clientSourceId], references: [id], onDelete: SetNull)
   projects Project[]
   payments Payment[]
   invoices Invoice[]
+  retainers Retainer[]
 
   @@map("clients")
 }
@@ -78,6 +95,7 @@ model Project {
   tasks    Task[]
   payments Payment[]
   invoices Invoice[]
+  retainers Retainer[]
 
   @@map("projects")
 }
@@ -141,6 +159,13 @@ enum InvoiceStatus {
   VIEWED
   PAID
   OVERDUE
+  CANCELLED
+}
+
+enum RetainerStatus {
+  ACTIVE
+  DEPLETED
+  EXPIRED
   CANCELLED
 }
 
@@ -240,4 +265,29 @@ model InvoiceItem {
   updatedAt   DateTime @updatedAt
   
   @@map("invoice_items")
+}
+
+model Retainer {
+  id            String         @id @default(uuid())
+  title         String
+  description   String?
+  totalAmount   Decimal        @db.Money
+  usedAmount    Decimal        @default(0) @db.Money
+  remainingAmount Decimal      @db.Money
+  hourlyRate    Decimal?       @db.Money
+  status        RetainerStatus @default(ACTIVE)
+  startDate     DateTime       @default(now())
+  endDate       DateTime?
+  
+  // Relations
+  clientId      String
+  client        Client         @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  projectId     String?
+  project       Project?       @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  
+  // Timestamps
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  
+  @@map("retainers")
 }

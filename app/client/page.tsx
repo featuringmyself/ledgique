@@ -9,6 +9,7 @@ interface Client {
   id: string;
   name: string;
   address: string;
+  clientSource: { name: string } | null;
   status: string;
   updatedAt: Date;
   projects: { name: string }[];
@@ -77,6 +78,7 @@ export default function ClientPage() {
               <th className="pb-3 font-normal">User</th>
               <th className="pb-3 font-normal">Project</th>
               <th className="pb-3 font-normal">Address</th>
+              <th className="pb-3 font-normal">Client From</th>
               <th className="pb-3 font-normal">Date</th>
               <th className="pb-3 font-normal">Status</th>
               <th className="pb-3 font-normal"></th>
@@ -97,6 +99,7 @@ export default function ClientPage() {
                 </td>
                 <td className="py-4 text-sm text-gray-900">{clients.projects[0]?.name}</td>
                 <td className="py-4 text-sm text-gray-600">{clients.address}</td>
+                <td className="py-4 text-sm text-gray-600">{clients.clientSource?.name || 'Unknown'}</td>
                 <td className="py-4">
                   <div className="flex items-center gap-2 text-sm text-gray-600">
                     <IconCalendar size={16} className="text-gray-400" />

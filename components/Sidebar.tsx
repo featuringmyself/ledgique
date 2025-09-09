@@ -10,7 +10,8 @@ import {
     IconUsers,
     IconUsersGroup,
     IconCreditCardPay,
-    IconBriefcase
+    IconBriefcase,
+    IconWallet
 } from "@tabler/icons-react";
 import { motion } from "motion/react";
 import logo from "@/public/logo.png"
@@ -68,6 +69,23 @@ export function Sidebar({ children }: { children?: React.ReactNode }) {
             ],
         },
         {
+            label: "Retainers",
+            href: "/retainers",
+            icon: <IconWallet className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />,
+            children: [
+                {
+                    label: "All Retainers",
+                    href: "/retainers",
+                    icon: <IconWallet className="h-4 w-4 shrink-0 text-neutral-600 dark:text-neutral-400" />,
+                },
+                {
+                    label: "Add Retainer",
+                    href: "/retainers/add",
+                    icon: <IconWallet className="h-4 w-4 shrink-0 text-neutral-600 dark:text-neutral-400" />,
+                },
+            ],
+        },
+        {
             label: "Invoice",
             href: "/invoice",
             icon: <IconFileInvoice className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />,
@@ -101,6 +119,7 @@ export function Sidebar({ children }: { children?: React.ReactNode }) {
                 },
             ],
         },
+
         {
             label: "Reports",
             href: "/reports",
