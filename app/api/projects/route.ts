@@ -18,6 +18,14 @@ export async function GET(){
             where: {
                 clerkId: userId,
             },
+            include: {
+                client: {
+                    select: {
+                        name: true,
+                        company: true,
+                    },
+                },
+            },
         });
         
         return new Response(JSON.stringify(projects), { status: 200 });

@@ -9,7 +9,8 @@ import {
     IconFileInvoice,
     IconUsers,
     IconUsersGroup,
-    IconCreditCardPay
+    IconCreditCardPay,
+    IconBriefcase
 } from "@tabler/icons-react";
 import { motion } from "motion/react";
 import logo from "@/public/logo.png"
@@ -46,6 +47,23 @@ export function Sidebar({ children }: { children?: React.ReactNode }) {
                     label: "Add Client",
                     href: "/client/add",
                     icon: <IconUsers className="h-4 w-4 shrink-0 text-neutral-600 dark:text-neutral-400" />,
+                },
+            ],
+        },
+        {
+            label: "Projects",
+            href: "/projects",
+            icon: <IconBriefcase className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />,
+            children: [
+                {
+                    label: "All Projects",
+                    href: "/projects",
+                    icon: <IconBriefcase className="h-4 w-4 shrink-0 text-neutral-600 dark:text-neutral-400" />,
+                },
+                {
+                    label: "Add Project",
+                    href: "/projects/add",
+                    icon: <IconBriefcase className="h-4 w-4 shrink-0 text-neutral-600 dark:text-neutral-400" />,
                 },
             ],
         },
