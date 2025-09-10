@@ -265,7 +265,7 @@ export const SidebarLink = ({
           href={link.href}
           onClick={handleClick}
           className={cn(
-            "flex items-center justify-between gap-2 group/sidebar py-2 px-1 rounded-md cursor-pointer transition-colors",
+            "flex items-center justify-between gap-2 group/sidebar py-2  rounded-md cursor-pointer transition-colors",
             isActive ? "bg-neutral-200 dark:bg-neutral-700" : "hover:bg-neutral-100 dark:hover:bg-neutral-800",
             className
           )}

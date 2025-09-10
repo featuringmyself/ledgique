@@ -24,6 +24,20 @@ export default function Home() {
   const [clientCount, setClientCount] = useState("-")
   const [pendingAmount, setPendingAmount] = useState("-")
   const [revenue, setRevenue] = useState("-")
+  const [revenueChange, setRevenueChange] = useState("+0.00%")
+  const [projectChange, setProjectChange] = useState("+0.00%")
+  const [clientChange, setClientChange] = useState("+0.00%")
+  const [pendingChange, setPendingChange] = useState("+0.00%")
+
+  const getChangeStyle = (change: string) => {
+    const isZero = change.includes('0.00%')
+    const isPositive = change.startsWith('+')
+    return {
+      color: isZero ? 'text-gray-500' : (isPositive ? 'text-green-600' : 'text-red-500'),
+      isPositive,
+      isZero
+    }
+  }
   const [monthlyData, setMonthlyData] = useState<{month: string; clients: number; projects: number}[]>([])
   const [projectStatusData, setProjectStatusData] = useState<{name: string; value: number; color: string}[]>([])
   const [paymentMethodsData, setPaymentMethodsData] = useState<{method: string; count: number; percentage: string}[]>([])
@@ -64,6 +78,27 @@ export default function Home() {
         setPaymentMethodsData(paymentMethodsRes.data);
         setClientSourcesData(clientSourcesRes.data);
         setRecentActivity(recentActivityRes.data);
+        
+        // Fetch percentage changes with fallbacks
+        try {
+          const revenueChangeRes = await axios.get('/api/payments/revenue/change');
+          setRevenueChange(revenueChangeRes.data);
+        } catch { setRevenueChange('0.00%'); }
+        
+        try {
+          const projectChangeRes = await axios.get('/api/projects/change');
+          setProjectChange(projectChangeRes.data);
+        } catch { setProjectChange('0.00%'); }
+        
+        try {
+          const clientChangeRes = await axios.get('/api/clients/change');
+          setClientChange(clientChangeRes.data);
+        } catch { setClientChange('0.00%'); }
+        
+        try {
+          const pendingChangeRes = await axios.get('/api/payments/pending/change');
+          setPendingChange(pendingChangeRes.data);
+        } catch { setPendingChange('0.00%'); }
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
       } finally {
@@ -90,9 +125,12 @@ export default function Home() {
             <h3 className="text-gray-600 text-sm font-medium mb-3">Total Revenue</h3>
             <div className="flex items-end justify-between">
               <p className="text-4xl font-bold text-gray-900">₹{revenue}</p>
-              <div className="flex items-center text-green-600 text-sm font-medium">
-                <span>+11.01%</span>
-                <IconTrendingUp size={16} className="ml-1" />
+              <div className={`flex items-center ${getChangeStyle(revenueChange).color} text-sm font-medium`}>
+                <span>{revenueChange}</span>
+                {!getChangeStyle(revenueChange).isZero && (getChangeStyle(revenueChange).isPositive ? 
+                  <IconTrendingUp size={16} className="ml-1" /> : 
+                  <IconTrendingDown size={16} className="ml-1" />
+                )}
               </div>
             </div>
           </div>
@@ -101,9 +139,12 @@ export default function Home() {
             <h3 className="text-gray-600 text-sm font-medium mb-3">Active Projects</h3>
             <div className="flex items-end justify-between">
               <p className="text-4xl font-bold text-gray-900">{projectCount}</p>
-              <div className="flex items-center text-red-500 text-sm font-medium">
-                <span>-0.03%</span>
-                <IconTrendingDown size={16} className="ml-1" />
+              <div className={`flex items-center ${getChangeStyle(projectChange).color} text-sm font-medium`}>
+                <span>{projectChange}</span>
+                {!getChangeStyle(projectChange).isZero && (getChangeStyle(projectChange).isPositive ? 
+                  <IconTrendingUp size={16} className="ml-1" /> : 
+                  <IconTrendingDown size={16} className="ml-1" />
+                )}
               </div>
             </div>
           </div>
@@ -112,9 +153,12 @@ export default function Home() {
             <h3 className="text-gray-600 text-sm font-medium mb-3">Active Clients</h3>
             <div className="flex items-end justify-between">
               <p className="text-4xl font-bold text-gray-900">{clientCount}</p>
-              <div className="flex items-center text-green-600 text-sm font-medium">
-                <span>+15.03%</span>
-                <IconTrendingUp size={16} className="ml-1" />
+              <div className={`flex items-center ${getChangeStyle(clientChange).color} text-sm font-medium`}>
+                <span>{clientChange}</span>
+                {!getChangeStyle(clientChange).isZero && (getChangeStyle(clientChange).isPositive ? 
+                  <IconTrendingUp size={16} className="ml-1" /> : 
+                  <IconTrendingDown size={16} className="ml-1" />
+                )}
               </div>
             </div>
           </div>
@@ -123,9 +167,12 @@ export default function Home() {
             <h3 className="text-gray-600 text-sm font-medium mb-3">Pending Payments</h3>
             <div className="flex items-end justify-between">
               <p className="text-4xl font-bold text-gray-900">₹{pendingAmount}</p>
-              <div className="flex items-center text-green-600 text-sm font-medium">
-                <span>+6.08%</span>
-                <IconTrendingUp size={16} className="ml-1" />
+              <div className={`flex items-center ${getChangeStyle(pendingChange).color} text-sm font-medium`}>
+                <span>{pendingChange}</span>
+                {!getChangeStyle(pendingChange).isZero && (getChangeStyle(pendingChange).isPositive ? 
+                  <IconTrendingUp size={16} className="ml-1" /> : 
+                  <IconTrendingDown size={16} className="ml-1" />
+                )}
               </div>
             </div>
           </div>

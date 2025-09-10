@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 export async function GET() {
     try {
         const { userId } = await auth();
-        
+        console.log("USER ID: ", userId)
         if (!userId) {
             return new Response(JSON.stringify({ error: "Unauthorized" }), {
                 status: 401,
