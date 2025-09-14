@@ -4,19 +4,36 @@ import { IconTrendingUp, IconTrendingDown } from "@tabler/icons-react";
 import dynamic from 'next/dynamic';
 import { useEffect, useState } from "react";
 
-// Dynamically import Recharts components to avoid SSR issues
-const LineChart = dynamic(() => import('recharts').then((mod) => mod.LineChart), { ssr: false });
-const Line = dynamic(() => import('recharts').then((mod) => mod.Line), { ssr: false });
-const XAxis = dynamic(() => import('recharts').then((mod) => mod.XAxis), { ssr: false });
-const YAxis = dynamic(() => import('recharts').then((mod) => mod.YAxis), { ssr: false });
-const CartesianGrid = dynamic(() => import('recharts').then((mod) => mod.CartesianGrid), { ssr: false });
-const Tooltip = dynamic(() => import('recharts').then((mod) => mod.Tooltip), { ssr: false });
-const ResponsiveContainer = dynamic(() => import('recharts').then((mod) => mod.ResponsiveContainer), { ssr: false });
-const BarChart = dynamic(() => import('recharts').then((mod) => mod.BarChart), { ssr: false });
-const Bar = dynamic(() => import('recharts').then((mod) => mod.Bar), { ssr: false });
-const PieChart = dynamic(() => import('recharts').then((mod) => mod.PieChart), { ssr: false });
-const Pie = dynamic(() => import('recharts').then((mod) => mod.Pie), { ssr: false });
-const Cell = dynamic(() => import('recharts').then((mod) => mod.Cell), { ssr: false });
+// Chart.js imports
+const Line = dynamic(() => import('react-chartjs-2').then((mod) => mod.Line), { ssr: false });
+const Bar = dynamic(() => import('react-chartjs-2').then((mod) => mod.Bar), { ssr: false });
+const Doughnut = dynamic(() => import('react-chartjs-2').then((mod) => mod.Doughnut), { ssr: false });
+
+// Chart.js registration
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  BarElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 export default function Home() {
   const [loading, setLoading] = useState(true)
@@ -121,70 +138,34 @@ export default function Home() {
       <div className="space-y-6">
         {/* Top Stats Cards */}
         <div className="grid grid-cols-4 gap-6">
-          <div className="bg-gradient-to-br from-blue-50 to-cyan-50 p-6 rounded-3xl border border-blue-100/50">
-            <h3 className="text-gray-600 text-sm font-medium mb-3">Total Revenue</h3>
-            <div className="flex items-end justify-between">
-              <p className="text-4xl font-bold text-gray-900">₹{revenue}</p>
-              <div className={`flex items-center ${getChangeStyle(revenueChange).color} text-sm font-medium`}>
-                <span>{revenueChange}</span>
-                {!getChangeStyle(revenueChange).isZero && (getChangeStyle(revenueChange).isPositive ? 
-                  <IconTrendingUp size={16} className="ml-1" /> : 
-                  <IconTrendingDown size={16} className="ml-1" />
-                )}
+          {[
+            { title: "Total Revenue", value: `₹${revenue}`, change: revenueChange, bg: "bg-[#E3F5FF]", border: "border-blue-100/50" },
+            { title: "Active Projects", value: projectCount, change: projectChange, bg: "bg-[#E5ECF6]", border: "border-purple-100/50" },
+            { title: "Active Clients", value: clientCount, change: clientChange, bg: "bg-[#E3F5FF]", border: "border-blue-100/50" },
+            { title: "Pending Payments", value: `₹${pendingAmount}`, change: pendingChange, bg: "bg-[#E5ECF6]", border: "border-purple-100/50" }
+          ].map((card, index) => (
+            <div key={index} className={`${card.bg} p-6 rounded-xl border ${card.border}`}>
+              <h3 className="text-gray-600 font-semibold text-sm mb-3">{card.title}</h3>
+              <div className="flex items-end justify-between">
+                <p className="text-4xl font-bold text-gray-900">{card.value}</p>
+                <div className={`flex items-center ${getChangeStyle(card.change).color} text-sm font-medium`}>
+                  <span>{card.change}</span>
+                  {!getChangeStyle(card.change).isZero && (getChangeStyle(card.change).isPositive ? 
+                    <IconTrendingUp size={16} className="ml-1" /> : 
+                    <IconTrendingDown size={16} className="ml-1" />
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-
-          <div className="bg-gradient-to-br from-purple-50 to-indigo-50 p-6 rounded-3xl border border-purple-100/50">
-            <h3 className="text-gray-600 text-sm font-medium mb-3">Active Projects</h3>
-            <div className="flex items-end justify-between">
-              <p className="text-4xl font-bold text-gray-900">{projectCount}</p>
-              <div className={`flex items-center ${getChangeStyle(projectChange).color} text-sm font-medium`}>
-                <span>{projectChange}</span>
-                {!getChangeStyle(projectChange).isZero && (getChangeStyle(projectChange).isPositive ? 
-                  <IconTrendingUp size={16} className="ml-1" /> : 
-                  <IconTrendingDown size={16} className="ml-1" />
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-gradient-to-br from-blue-50 to-cyan-50 p-6 rounded-3xl border border-blue-100/50">
-            <h3 className="text-gray-600 text-sm font-medium mb-3">Active Clients</h3>
-            <div className="flex items-end justify-between">
-              <p className="text-4xl font-bold text-gray-900">{clientCount}</p>
-              <div className={`flex items-center ${getChangeStyle(clientChange).color} text-sm font-medium`}>
-                <span>{clientChange}</span>
-                {!getChangeStyle(clientChange).isZero && (getChangeStyle(clientChange).isPositive ? 
-                  <IconTrendingUp size={16} className="ml-1" /> : 
-                  <IconTrendingDown size={16} className="ml-1" />
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-gradient-to-br from-purple-50 to-indigo-50 p-6 rounded-3xl border border-purple-100/50">
-            <h3 className="text-gray-600 text-sm font-medium mb-3">Pending Payments</h3>
-            <div className="flex items-end justify-between">
-              <p className="text-4xl font-bold text-gray-900">₹{pendingAmount}</p>
-              <div className={`flex items-center ${getChangeStyle(pendingChange).color} text-sm font-medium`}>
-                <span>{pendingChange}</span>
-                {!getChangeStyle(pendingChange).isZero && (getChangeStyle(pendingChange).isPositive ? 
-                  <IconTrendingUp size={16} className="ml-1" /> : 
-                  <IconTrendingDown size={16} className="ml-1" />
-                )}
-              </div>
-            </div>
-          </div>
+          ))}
         </div>
 
         {/* Middle Section - Chart and Clients */}
         <div className="grid grid-cols-3 gap-6">
-          <div className="col-span-2 bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+          <div className="col-span-2 bg-[#F7F9FB] p-8 rounded-xl shadow-sm border border-gray-100">
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center space-x-8">
                 <button className="text-gray-900 font-semibold border-b-2 border-gray-900 pb-2">Monthly Growth</button>
-                <button className="text-gray-400 font-medium">Clients vs Projects</button>
               </div>
               <div className="flex items-center space-x-6">
                 <div className="flex items-center">
@@ -199,80 +180,68 @@ export default function Home() {
             </div>
 
             <div className="h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={monthlyData.map(item => ({ 
-                  month: item.month, 
-                  currentWeek: item.clients, 
-                  previousWeek: item.projects 
-                }))} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                  <defs>
-                    <linearGradient id="currentWeekGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#1f2937" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#1f2937" stopOpacity={0} />
-                    </linearGradient>
-                    <linearGradient id="previousWeekGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#9ca3af" stopOpacity={0.2} />
-                      <stop offset="95%" stopColor="#9ca3af" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" opacity={0.7} />
-                  <XAxis
-                    dataKey="month"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fontSize: 12, fill: '#9ca3af' }}
-                  />
-                  <YAxis
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fontSize: 12, fill: '#9ca3af' }}
-                  />
-                  <Tooltip
-                    contentStyle={{
+              <Line
+                data={{
+                  labels: monthlyData.map(item => item.month),
+                  datasets: [
+                    {
+                      label: 'Clients',
+                      data: monthlyData.map(item => item.clients),
+                      borderColor: '#1f2937',
+                      backgroundColor: 'rgba(31, 41, 55, 0.1)',
+                      borderWidth: 4,
+                      pointBackgroundColor: '#1f2937',
+                      pointBorderColor: 'white',
+                      pointBorderWidth: 3,
+                      pointRadius: 5,
+                      tension: 0.4
+                    },
+                    {
+                      label: 'Projects',
+                      data: monthlyData.map(item => item.projects),
+                      borderColor: '#9ca3af',
+                      backgroundColor: 'rgba(156, 163, 175, 0.1)',
+                      borderWidth: 3,
+                      borderDash: [10, 5],
+                      pointBackgroundColor: '#9ca3af',
+                      pointBorderColor: 'white',
+                      pointBorderWidth: 2,
+                      pointRadius: 4,
+                      tension: 0.4
+                    }
+                  ]
+                }}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: { display: false },
+                    tooltip: {
                       backgroundColor: '#1f2937',
-                      border: 'none',
-                      borderRadius: '12px',
-                      color: 'white',
-                      boxShadow: '0 10px 25px rgba(0,0,0,0.1)'
-                    }}
-                    formatter={(value: unknown) => [value as string, '']}
-                    labelStyle={{ color: '#e5e7eb' }}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="currentWeek"
-                    stroke="#1f2937"
-                    strokeWidth={4}
-                    fill="url(#currentWeekGradient)"
-                    dot={{ fill: '#1f2937', strokeWidth: 3, stroke: 'white', r: 5 }}
-                    activeDot={{
-                      r: 8,
-                      stroke: '#1f2937',
-                      strokeWidth: 3,
-                      fill: 'white'
-                    }}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="previousWeek"
-                    stroke="#9ca3af"
-                    strokeWidth={3}
-                    strokeDasharray="10 5"
-                    fill="url(#previousWeekGradient)"
-                    dot={{ fill: '#9ca3af', strokeWidth: 2, stroke: 'white', r: 4 }}
-                    activeDot={{
-                      r: 6,
-                      stroke: '#9ca3af',
-                      strokeWidth: 2,
-                      fill: 'white'
-                    }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+                      titleColor: '#e5e7eb',
+                      bodyColor: 'white',
+                      borderWidth: 0,
+                      cornerRadius: 12
+                    }
+                  },
+                  scales: {
+                    x: {
+                      grid: { color: '#f3f4f6' },
+                      border: { display: false },
+                      ticks: { color: '#9ca3af', font: { size: 12 } }
+                    },
+                    y: {
+                      grid: { color: '#f3f4f6' },
+                      border: { display: false },
+                      ticks: { color: '#9ca3af', font: { size: 12 } }
+                    }
+                  }
+                }}
+              />
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+          <div className="bg-[#F7F9FB] p-6 rounded-3xl shadow-sm border border-gray-100">
             <h3 className="text-gray-900 font-semibold mb-6">Clients from</h3>
             <div className="space-y-5">
               {clientSourcesData.map((source, index) => (
@@ -294,86 +263,76 @@ export default function Home() {
         <div className="grid grid-cols-4 gap-6">
 
 
-          <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+          <div className="bg-[#F7F9FB] p-6 rounded-3xl shadow-sm border border-gray-100">
             <h3 className="text-gray-900 font-semibold mb-6">Payment Methods</h3>
             <div className="h-48">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={paymentMethodsData.map(item => ({
-                  name: item.method.replace('_', ' '),
-                  value: item.count,
-                  color: ['#8b5cf6', '#10b981', '#f59e0b', '#3b82f6', '#ef4444', '#06b6d4'][paymentMethodsData.indexOf(item) % 6]
-                }))} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                  <defs>
-                    <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.9} />
-                      <stop offset="95%" stopColor="#6366f1" stopOpacity={0.7} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" opacity={0.6} />
-                  <XAxis
-                    dataKey="name"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fontSize: 11, fill: '#9ca3af' }}
-                  />
-                  <YAxis
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fontSize: 12, fill: '#9ca3af' }}
-                  />
-                  <Tooltip
-                    contentStyle={{
+              <Bar
+                data={{
+                  labels: paymentMethodsData.map(item => item.method.replace('_', ' ')),
+                  datasets: [{
+                    data: paymentMethodsData.map(item => item.count),
+                    backgroundColor: ['#8b5cf6', '#10b981', '#f59e0b', '#3b82f6', '#ef4444', '#06b6d4'],
+                    borderRadius: 6,
+                    borderSkipped: false
+                  }]
+                }}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: { display: false },
+                    tooltip: {
                       backgroundColor: '#1f2937',
-                      border: 'none',
-                      borderRadius: '12px',
-                      color: 'white',
-                      boxShadow: '0 10px 25px rgba(0,0,0,0.15)'
-                    }}
-                    cursor={{ fill: 'rgba(139, 92, 246, 0.1)' }}
-                  />
-                  <Bar
-                    dataKey="value"
-                    fill="url(#barGradient)"
-                    radius={[6, 6, 0, 0]}
-                  >
-                    {paymentMethodsData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={['#8b5cf6', '#10b981', '#f59e0b', '#3b82f6', '#ef4444', '#06b6d4'][index % 6]} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
+                      titleColor: '#e5e7eb',
+                      bodyColor: 'white',
+                      borderWidth: 0,
+                      cornerRadius: 12
+                    }
+                  },
+                  scales: {
+                    x: {
+                      grid: { display: false },
+                      ticks: { color: '#9ca3af', font: { size: 11 } }
+                    },
+                    y: {
+                      grid: { color: '#f3f4f6' },
+                      border: { display: false },
+                      ticks: { color: '#9ca3af', font: { size: 12 } }
+                    }
+                  }
+                }}
+              />
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+          <div className="bg-[#F7F9FB] p-6 rounded-3xl shadow-sm border border-gray-100">
             <h3 className="text-gray-900 font-semibold mb-6">Project Status</h3>
             <div className="h-48 mb-4">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={projectStatusData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={40}
-                    outerRadius={80}
-                    paddingAngle={2}
-                    dataKey="value"
-                  >
-                    {projectStatusData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    contentStyle={{
+              <Doughnut
+                data={{
+                  labels: projectStatusData.map(item => item.name),
+                  datasets: [{
+                    data: projectStatusData.map(item => item.value),
+                    backgroundColor: projectStatusData.map(item => item.color),
+                    borderWidth: 0
+                  }]
+                }}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  cutout: '60%',
+                  plugins: {
+                    legend: { display: false },
+                    tooltip: {
                       backgroundColor: '#1f2937',
-                      border: 'none',
-                      borderRadius: '8px',
-                      color: 'white'
-                    }}
-                    formatter={(value: unknown) => [value as string, '']}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
+                      titleColor: '#e5e7eb',
+                      bodyColor: 'white',
+                      borderWidth: 0,
+                      cornerRadius: 8
+                    }
+                  }
+                }}
+              />
             </div>
 
             <div className="space-y-3">
@@ -392,61 +351,54 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
-            <h3 className="text-gray-900 font-semibold mb-6">Payment Methods</h3>
+          <div className="bg-[#F7F9FB] p-6 rounded-3xl shadow-sm border border-gray-100">
+            <h3 className="text-gray-900 font-semibold mb-6">Payment Percentages</h3>
             <div className="h-48">
-              {loading ? (
-                <div className="flex items-center justify-center h-full">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900"></div>
-                </div>
-              ) : (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={paymentMethodsData.map(item => ({
-                  name: item.method.replace('_', ' '),
-                  value: parseFloat(item.percentage)
-                }))} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                  <defs>
-                    <linearGradient id="marketingGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.9} />
-                      <stop offset="95%" stopColor="#059669" stopOpacity={0.7} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" opacity={0.6} />
-                  <XAxis
-                    dataKey="name"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fontSize: 11, fill: '#9ca3af' }}
-                  />
-                  <YAxis
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fontSize: 12, fill: '#9ca3af' }}
-                  />
-                  <Tooltip
-                    contentStyle={{
+              <Bar
+                data={{
+                  labels: paymentMethodsData.map(item => item.method.replace('_', ' ')),
+                  datasets: [{
+                    data: paymentMethodsData.map(item => parseFloat(item.percentage)),
+                    backgroundColor: '#10b981',
+                    borderRadius: 6,
+                    borderSkipped: false
+                  }]
+                }}
+                options={{
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: { display: false },
+                    tooltip: {
                       backgroundColor: '#1f2937',
-                      border: 'none',
-                      borderRadius: '12px',
-                      color: 'white',
-                      boxShadow: '0 10px 25px rgba(0,0,0,0.15)'
-                    }}
-                    cursor={{ fill: 'rgba(16, 185, 129, 0.1)' }}
-                  />
-                  <Bar
-                    dataKey="value"
-                    fill="url(#marketingGradient)"
-                    radius={[6, 6, 0, 0]}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-              )}
+                      titleColor: '#e5e7eb',
+                      bodyColor: 'white',
+                      borderWidth: 0,
+                      cornerRadius: 12,
+                      callbacks: {
+                        label: (context) => `${context.parsed.y}%`
+                      }
+                    }
+                  },
+                  scales: {
+                    x: {
+                      grid: { display: false },
+                      ticks: { color: '#9ca3af', font: { size: 11 } }
+                    },
+                    y: {
+                      grid: { color: '#f3f4f6' },
+                      border: { display: false },
+                      ticks: { color: '#9ca3af', font: { size: 12 } }
+                    }
+                  }
+                }}
+              />
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+          <div className="bg-[#F7F9FB] p-6 rounded-3xl shadow-sm border border-gray-100">
             <h3 className="text-gray-900 font-semibold mb-6">Recent Activity</h3>
-            <div className="space-y-4 max-h-48 overflow-y-auto">
+            <div className="space-y-4 max-h-64 overflow-y-auto">
               {recentActivity.map((activity, index) => (
                 <div key={index} className="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50">
                   <div className={`w-2 h-2 rounded-full mt-2 ${

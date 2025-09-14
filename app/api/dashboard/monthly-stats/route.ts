@@ -18,28 +18,28 @@ export async function GET() {
     const now = new Date();
     
     for (let i = 6; i >= 0; i--) {
-      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const startDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const endDate = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
       
       const [clientCount, projectCount] = await Promise.all([
         prisma.client.count({
           where: {
             clerkId: userId,
-            createdAt: { lte: endDate },
+            createdAt: { gte: startDate, lte: endDate },
             status: 'ACTIVE'
           }
         }),
         prisma.project.count({
           where: {
             clerkId: userId,
-            createdAt: { lte: endDate },
+            createdAt: { gte: startDate, lte: endDate },
             status: { in: ['IN_PROGRESS', 'COMPLETED'] }
           }
         })
       ]);
 
       months.push({
-        month: date.toLocaleDateString('en-US', { month: 'short' }),
+        month: startDate.toLocaleDateString('en-US', { month: 'short' }),
         clients: clientCount,
         projects: projectCount
       });
