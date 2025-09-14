@@ -132,17 +132,17 @@ export default function Home() {
       </div>
     );
   }
-
+  const fmt = Intl.NumberFormat('en', { notation: 'compact' });
   return (
     <div className="flex h-full w-full flex-1 flex-col gap-2 rounded-tl-2xl border border-neutral-200 bg-gray-50 p-2 md:p-6 dark:border-neutral-700 dark:bg-neutral-900">
       <div className="space-y-6">
         {/* Top Stats Cards */}
         <div className="grid grid-cols-4 gap-6">
           {[
-            { title: "Total Revenue", value: `₹${revenue}`, change: revenueChange, bg: "bg-[#E3F5FF]", border: "border-blue-100/50" },
+            { title: "Total Revenue", value: `₹${revenue === '-' ? revenue : fmt.format(Number(revenue))}`, change: revenueChange, bg: "bg-[#E3F5FF]", border: "border-blue-100/50" },
             { title: "Active Projects", value: projectCount, change: projectChange, bg: "bg-[#E5ECF6]", border: "border-purple-100/50" },
             { title: "Active Clients", value: clientCount, change: clientChange, bg: "bg-[#E3F5FF]", border: "border-blue-100/50" },
-            { title: "Pending Payments", value: `₹${pendingAmount}`, change: pendingChange, bg: "bg-[#E5ECF6]", border: "border-purple-100/50" }
+            { title: "Pending Payments", value: `₹${typeof pendingAmount === 'string' && pendingAmount !== '-' ? fmt.format(Number(pendingAmount)) : pendingAmount}`, change: pendingChange, bg: "bg-[#E5ECF6]", border: "border-purple-100/50" }
           ].map((card, index) => (
             <div key={index} className={`${card.bg} p-6 rounded-xl border ${card.border}`}>
               <h3 className="text-gray-600 font-semibold text-sm mb-3">{card.title}</h3>
