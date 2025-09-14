@@ -850,15 +850,15 @@ async function main() {
     
     // Create 3-6 payments per project
     const paymentCount = Math.floor(Math.random() * 4) + 3;
-    const paymentAmount = projectBudget / paymentCount;
+    const paymentAmount = Number(projectBudget) / paymentCount;
     
     for (let j = 0; j < paymentCount; j++) {
       const paymentMethods = [PaymentMethod.BANK_TRANSFER, PaymentMethod.STRIPE, PaymentMethod.PAYPAL, PaymentMethod.CHEQUE, PaymentMethod.CASH];
       const paymentTypes = [PaymentType.ADVANCE, PaymentType.MILESTONE, PaymentType.FINAL, PaymentType.FULL_PAYMENT];
       
       // Create payment dates spread across the project timeline
-      const startDate = new Date(project.startDate);
-      const endDate = new Date(project.endDate);
+      const startDate = new Date(project.startDate || new Date());
+      const endDate = new Date(project.endDate || new Date());
       const timeDiff = endDate.getTime() - startDate.getTime();
       const paymentDate = new Date(startDate.getTime() + (timeDiff * j / paymentCount));
       
@@ -954,7 +954,7 @@ async function main() {
         if (m === currentMonthIdx) {
           status = Math.random() > 0.5 ? PaymentStatus.PENDING : PaymentStatus.COMPLETED;
         } else if (Math.random() > 0.98) {
-          status = PaymentStatus.OVERDUE;
+          status = PaymentStatus.FAILED;
         }
         
         const payment = await prisma.payment.create({
@@ -962,8 +962,8 @@ async function main() {
             amount: randomAmount,
             date: new Date(`${year}-${month}-${day}`),
             description: `Monthly service payment - ${month}/${year}`,
-            type: [PaymentType.RETAINER, PaymentType.MILESTONE, PaymentType.ADVANCE][Math.floor(Math.random() * 3)],
-            method: [PaymentMethod.BANK_TRANSFER, PaymentMethod.STRIPE, PaymentMethod.PAYPAL, PaymentMethod.CHECK][Math.floor(Math.random() * 4)],
+            type: [PaymentType.ADVANCE, PaymentType.MILESTONE, PaymentType.PARTIAL][Math.floor(Math.random() * 3)],
+            method: [PaymentMethod.BANK_TRANSFER, PaymentMethod.STRIPE, PaymentMethod.PAYPAL, PaymentMethod.CHEQUE][Math.floor(Math.random() * 4)],
             status,
             projectId: randomProject.id,
             clientId: randomClient.id,
