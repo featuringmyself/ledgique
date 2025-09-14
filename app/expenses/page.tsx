@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { IconPlus, IconFilter, IconSortDescending, IconSearch, IconCalendar, IconDots, IconCurrencyDollar, IconReceipt } from '@tabler/icons-react';
+import Link from 'next/link';
 
 interface Expense {
   id: string;
@@ -16,8 +17,8 @@ interface Expense {
 }
 
 export default function ExpensesPage() {
-  const router = useRouter();
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchExpenses();
@@ -32,61 +33,113 @@ export default function ExpensesPage() {
       }
     } catch (error) {
       console.error('Failed to fetch expenses:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-
+  if (loading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Expenses</h1>
-        <Button onClick={() => router.push('/expenses/add')}>
-          Add Expense
-        </Button>
+    <div className="p-6 bg-white w-full min-h-screen">
+      {/* Top Actions */}
+      <div className="flex items-center gap-4 mb-6">
+        <Link href="/expenses/add">
+          <button className="p-2 hover:bg-gray-100 rounded">
+            <IconPlus size={20} />
+          </button>
+        </Link>
+        <button className="p-2 hover:bg-gray-100 rounded">
+          <IconFilter size={20} />
+        </button>
+        <button className="p-2 hover:bg-gray-100 rounded">
+          <IconSortDescending size={20} />
+        </button>
+        <div className="ml-auto relative">
+          <IconSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input
+            placeholder="Search expenses"
+            className="pl-10 w-64 border-gray-300"
+          />
+        </div>
       </div>
 
-
-
-      <div className="bg-white rounded-lg shadow">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Title</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Receipt</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {expenses.map((expense) => (
-                <tr key={expense.id}>
-                  <td className="px-6 py-4">
+      {/* Table */}
+      <div className="overflow-hidden">
+        <table className="w-full">
+          <thead>
+            <tr className="text-left text-sm text-gray-500">
+              <th className="pb-3 font-normal">Expense</th>
+              <th className="pb-3 font-normal">Amount</th>
+              <th className="pb-3 font-normal">Category</th>
+              <th className="pb-3 font-normal">Project</th>
+              <th className="pb-3 font-normal">Date</th>
+              <th className="pb-3 font-normal">Receipt</th>
+              <th className="pb-3 font-normal"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {expenses.map((expense) => (
+              <tr key={expense.id} className="border-t border-gray-100 hover:bg-gray-50">
+                <td className="py-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-gradient-to-br from-orange-400 to-red-500 rounded-full flex items-center justify-center">
+                      <IconCurrencyDollar size={16} className="text-white" />
+                    </div>
                     <div>
-                      <div className="font-medium">{expense.title}</div>
+                      <span className="text-sm font-medium text-gray-900">{expense.title}</span>
                       {expense.description && (
-                        <div className="text-sm text-gray-500">{expense.description}</div>
+                        <p className="text-xs text-gray-500 truncate max-w-xs">{expense.description}</p>
                       )}
                     </div>
-                  </td>
-                  <td className="px-6 py-4">${expense.amount}</td>
-                  <td className="px-6 py-4">{expense.category.replace('_', ' ')}</td>
-                  <td className="px-6 py-4">{new Date(expense.date).toLocaleDateString()}</td>
-                  <td className="px-6 py-4">
-                    {expense.receiptUrl && (
-                      <a href={expense.receiptUrl} target="_blank" rel="noopener noreferrer" 
-                         className="text-blue-600 hover:underline">
-                        View
-                      </a>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                  </div>
+                </td>
+                <td className="py-4">
+                  <div className="flex items-center gap-1 text-sm font-medium text-gray-900">
+                    <IconCurrencyDollar size={16} className="text-gray-400" />
+                    {expense.amount.toLocaleString()}
+                  </div>
+                </td>
+                <td className="py-4">
+                  <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full bg-gray-100 text-gray-700">
+                    {expense.category.replace('_', ' ')}
+                  </span>
+                </td>
+                <td className="py-4 text-sm text-gray-600">
+                  {expense.project?.name || '-'}
+                </td>
+                <td className="py-4">
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <IconCalendar size={16} className="text-gray-400" />
+                    {new Date(expense.date).toLocaleDateString()}
+                  </div>
+                </td>
+                <td className="py-4">
+                  {expense.receiptUrl ? (
+                    <a href={expense.receiptUrl} target="_blank" rel="noopener noreferrer" 
+                       className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 text-sm">
+                      <IconReceipt size={16} />
+                      View
+                    </a>
+                  ) : (
+                    <span className="text-sm text-gray-400">-</span>
+                  )}
+                </td>
+                <td className="py-4">
+                  <button className="p-1 hover:bg-gray-100 rounded">
+                    <IconDots size={16} className="text-gray-400" />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
