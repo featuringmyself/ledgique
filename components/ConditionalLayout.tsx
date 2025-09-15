@@ -3,6 +3,7 @@
 import { useAuth, SignInButton } from "@clerk/nextjs";
 import { Sidebar } from "./Sidebar";
 import { SidebarStateProvider } from "./providers/SidebarProvider";
+import { AiChatWidget } from "./AiChatWidget";
 
 export function ConditionalLayout({ children }: { children: React.ReactNode }) {
   const { isSignedIn, isLoaded } = useAuth();
@@ -43,6 +44,7 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
   return (
     <SidebarStateProvider>
       <Sidebar>{children}</Sidebar>
+      <AiChatWidget />
     </SidebarStateProvider>
   );
 }
