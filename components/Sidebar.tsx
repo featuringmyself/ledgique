@@ -5,10 +5,8 @@ import { useSidebarState } from "./providers/SidebarProvider";
 import {
     IconArrowLeft,
     IconBrandTabler,
-    IconBook,
     IconFileInvoice,
     IconUsers,
-    IconUsersGroup,
     IconCreditCardPay,
     IconBriefcase,
     IconWallet,
