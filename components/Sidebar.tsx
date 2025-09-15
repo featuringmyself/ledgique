@@ -137,41 +137,6 @@ export function Sidebar({ children }: { children?: React.ReactNode }) {
                 },
             ],
         },
-
-        {
-            label: "Reports",
-            href: "/reports",
-            icon: <IconBook className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />,
-            children: [
-                {
-                    label: "Financial Reports",
-                    href: "/reports",
-                    icon: <IconBook className="h-4 w-4 shrink-0 text-neutral-600 dark:text-neutral-400" />,
-                },
-                {
-                    label: "Analytics",
-                    href: "/reports/analytics",
-                    icon: <IconBook className="h-4 w-4 shrink-0 text-neutral-600 dark:text-neutral-400" />,
-                },
-            ],
-        },
-        {
-            label: "Team",
-            href: "/team",
-            icon: <IconUsersGroup className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />,
-            children: [
-                {
-                    label: "Team Members",
-                    href: "/team",
-                    icon: <IconUsersGroup className="h-4 w-4 shrink-0 text-neutral-600 dark:text-neutral-400" />,
-                },
-                {
-                    label: "Invite Members",
-                    href: "/team/invite",
-                    icon: <IconUsersGroup className="h-4 w-4 shrink-0 text-neutral-600 dark:text-neutral-400" />,
-                },
-            ],
-        },
     ];
 
     return (
