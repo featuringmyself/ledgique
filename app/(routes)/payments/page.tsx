@@ -102,6 +102,8 @@ export default function PaymentsPage() {
     );
   }
 
+
+  const fmt = Intl.NumberFormat('en', { notation: 'compact' });
   return (
     <div className="flex w-full flex-1 flex-col gap-2 rounded-tl-2xl border border-neutral-200 bg-gray-50 p-2 md:p-6 dark:border-neutral-700 dark:bg-neutral-900">
       <div className="space-y-6">
@@ -129,7 +131,7 @@ export default function PaymentsPage() {
             </h3>
             <div className="flex items-end justify-between">
               <p className="text-4xl font-bold text-gray-900">
-                ₹{totalRevenue}
+                ₹{fmt.format(Number(totalRevenue))}
               </p>
               <div className="flex items-center text-green-600 text-sm font-medium">
                 <span>+12.5%</span>
@@ -144,7 +146,7 @@ export default function PaymentsPage() {
             </h3>
             <div className="flex items-end justify-between">
               <p className="text-4xl font-bold text-gray-900">
-                ₹{pendingAmount}
+                ₹{fmt.format(Number(pendingAmount))}
               </p>
               <div className="flex items-center text-red-500 text-sm font-medium">
                 <span>-2.1%</span>
@@ -159,7 +161,7 @@ export default function PaymentsPage() {
             </h3>
             <div className="flex items-end justify-between">
               <p className="text-4xl font-bold text-gray-900">
-                ₹{monthlyRevenue}
+                ₹{fmt.format(Number(monthlyRevenue))}
               </p>
               <div className="flex items-center text-green-600 text-sm font-medium">
                 <span>+8.2%</span>
@@ -172,7 +174,7 @@ export default function PaymentsPage() {
             <h3 className="text-gray-600 text-sm font-medium mb-3">Overdue</h3>
             <div className="flex items-end justify-between">
               <p className="text-4xl font-bold text-gray-900">
-                ₹{overDueAmount}
+                ₹{fmt.format(Number(overDueAmount))}
               </p>
               <div className="flex items-center text-red-500 text-sm font-medium">
                 <span>+15.3%</span>
