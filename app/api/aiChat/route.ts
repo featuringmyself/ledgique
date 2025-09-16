@@ -296,6 +296,49 @@ const functionDeclarations = [
       type: Type.OBJECT,
       properties: {}
     }
+  },
+  {
+    name: "listClients",
+    description: "List all clients with their IDs and names for reference",
+    parameters: {
+      type: Type.OBJECT,
+      properties: {
+        search: { type: Type.STRING, description: "Optional search term to filter clients" }
+      }
+    }
+  },
+  {
+    name: "listProjects",
+    description: "List all projects with their IDs and names for reference",
+    parameters: {
+      type: Type.OBJECT,
+      properties: {
+        clientId: { type: Type.STRING, description: "Optional client ID to filter projects" },
+        search: { type: Type.STRING, description: "Optional search term to filter projects" }
+      }
+    }
+  },
+  {
+    name: "searchClients",
+    description: "Search for clients by name or email to find their IDs",
+    parameters: {
+      type: Type.OBJECT,
+      properties: {
+        query: { type: Type.STRING, description: "Search query (name or email)" }
+      },
+      required: ["query"]
+    }
+  },
+  {
+    name: "searchProjects",
+    description: "Search for projects by name to find their IDs",
+    parameters: {
+      type: Type.OBJECT,
+      properties: {
+        query: { type: Type.STRING, description: "Search query (project name)" }
+      },
+      required: ["query"]
+    }
   }
 ];
 
@@ -1055,6 +1098,118 @@ async function showUnpaidInvoices(userId: string): Promise<FunctionResult> {
   }
 }
 
+async function listClients(params: { search?: string }, userId: string): Promise<FunctionResult> {
+  try {
+    const clients = await prisma.client.findMany({
+      where: {
+        clerkId: userId,
+        ...(params.search && {
+          name: { contains: params.search, mode: 'insensitive' }
+        })
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true
+      },
+      orderBy: { name: 'asc' }
+    });
+    
+    return {
+      success: true,
+      message: `Found ${clients.length} clients`,
+      data: { clients }
+    };
+  } catch (error) {
+    return { success: false, error: 'Failed to fetch clients' };
+  }
+}
+
+async function listProjects(params: { clientId?: string; search?: string }, userId: string): Promise<FunctionResult> {
+  try {
+    const projects = await prisma.project.findMany({
+      where: {
+        clerkId: userId,
+        ...(params.clientId && { clientId: params.clientId }),
+        ...(params.search && {
+          name: { contains: params.search, mode: 'insensitive' }
+        })
+      },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        client: { select: { name: true } }
+      },
+      orderBy: { name: 'asc' }
+    });
+    
+    return {
+      success: true,
+      message: `Found ${projects.length} projects`,
+      data: { projects }
+    };
+  } catch (error) {
+    return { success: false, error: 'Failed to fetch projects' };
+  }
+}
+
+async function searchClients(params: { query: string }, userId: string): Promise<FunctionResult> {
+  try {
+    const clients = await prisma.client.findMany({
+      where: {
+        clerkId: userId,
+        OR: [
+          { name: { contains: params.query, mode: 'insensitive' } },
+          { email: { hasSome: [params.query] } }
+        ]
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true
+      },
+      take: 10
+    });
+    
+    return {
+      success: true,
+      message: `Found ${clients.length} clients matching "${params.query}"`,
+      data: { clients, query: params.query }
+    };
+  } catch (error) {
+    return { success: false, error: 'Failed to search clients' };
+  }
+}
+
+async function searchProjects(params: { query: string }, userId: string): Promise<FunctionResult> {
+  try {
+    const projects = await prisma.project.findMany({
+      where: {
+        clerkId: userId,
+        name: { contains: params.query, mode: 'insensitive' }
+      },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        client: { select: { name: true } }
+      },
+      take: 10
+    });
+    
+    return {
+      success: true,
+      message: `Found ${projects.length} projects matching "${params.query}"`,
+      data: { projects, query: params.query }
+    };
+  } catch (error) {
+    return { success: false, error: 'Failed to search projects' };
+  }
+}
+
 const tools = functionDeclarations;
 
 export async function POST(req: NextRequest) {
@@ -1079,6 +1234,8 @@ When interacting, follow these principles:
 - Be user-friendly: use clear, simple language. Avoid accounting jargon unless the user prefers it.  
 - Be proactive: suggest helpful shortcuts or tips (e.g. "Do you want this expense to recur?").  
 - Validate inputs: check if dates are valid, amounts are numeric, required fields are present.  
+- SEARCH FIRST: When users mention client names, project names, or other entities, ALWAYS search for them first using searchClients, searchProjects, listClients, or listProjects functions before asking for IDs. Only ask for clarification if no matches are found.
+- Auto-complete: If a user says "create invoice for John" - search for clients named John first, then proceed with the invoice creation.
 - Clarify when needed: if any detail is missing or ambiguous (client, project, amount, date, etc.), ask follow-up questions before performing an action.  
 - Confirm actions: once you act, tell the user what you did and summarize the outcome.  
 - Error-aware: if something can't be done because of missing data, permissions, invalid input, etc., explain clearly what's wrong and how to resolve it.  
@@ -1186,6 +1343,18 @@ Formatting Guidelines:
             break;
           case "showUnpaidInvoices":
             functionResult = await showUnpaidInvoices(userId);
+            break;
+          case "listClients":
+            functionResult = await listClients(functionArgs as unknown as { search?: string }, userId);
+            break;
+          case "listProjects":
+            functionResult = await listProjects(functionArgs as unknown as { clientId?: string; search?: string }, userId);
+            break;
+          case "searchClients":
+            functionResult = await searchClients(functionArgs as unknown as { query: string }, userId);
+            break;
+          case "searchProjects":
+            functionResult = await searchProjects(functionArgs as unknown as { query: string }, userId);
             break;
           default:
             functionResult = { error: "Unknown function", success: false };
