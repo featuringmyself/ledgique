@@ -106,7 +106,7 @@ export function AiChatWidget() {
       )}
 
       {/* Chat Window */}
-      <div className={`fixed bottom-20 right-6 z-40 w-96 h-[32rem] bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl flex flex-col transition-all duration-300 transform-gpu ${
+      <div className={`fixed bottom-20 right-6 z-40 w-96 h-[32rem] bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl flex flex-col transition-all duration-300  ${
         isOpen 
           ? 'translate-y-0 opacity-100 scale-100' 
           : 'translate-y-8 opacity-0 scale-95 pointer-events-none'
