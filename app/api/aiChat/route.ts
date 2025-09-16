@@ -1222,9 +1222,9 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { message, chatHistory = [] } = body;
     
-    console.log('Received chatHistory length:', chatHistory.length);
-    console.log('Chat history:', JSON.stringify(chatHistory, null, 2));
-    console.log('Current message:', message);
+    // console.log('Received chatHistory length:', chatHistory.length);
+    // console.log('Chat history:', JSON.stringify(chatHistory, null, 2));
+    // console.log('Current message:', message);
 
     const systemPrompt = `You are Ledgique AI — the assistant for Ledgique Accounting Software. You are designed to make accounting effortless. Your goal is to simplify workflows, reduce friction, and anticipate user needs so that users can accomplish tasks with minimal effort.
 
