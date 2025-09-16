@@ -13,24 +13,25 @@ export async function GET() {
       );
     }
 
-    const overdueAmount = await prisma.payment.aggregate({
+    // Get overdue invoices (past due date and not paid)
+    const overdueInvoices = await prisma.invoice.aggregate({
       where: {
         dueDate: { lt: new Date() },
-        status: { in: ["PENDING", "PARTIALLY_PAID"] },
-        project: {
+        status: { in: ["SENT", "VIEWED", "OVERDUE"] },
+        client: {
           clerkId: userId,
         },
       },
       _sum: {
-        amount: true,
+        totalAmount: true,
       },
     });
 
-    return NextResponse.json(overdueAmount._sum.amount || 0);
+    return NextResponse.json(overdueInvoices._sum.totalAmount || 0);
   } catch (error) {
-    console.error("Error fetching pending payments:", error);
+    console.error("Error fetching overdue amount:", error);
     return NextResponse.json(
-      { error: "Failed to fetch pending payments" },
+      { error: "Failed to fetch overdue amount" },
       { status: 500 }
     );
   }

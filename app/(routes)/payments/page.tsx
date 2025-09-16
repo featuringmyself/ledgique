@@ -6,8 +6,20 @@ import {
   IconTrendingUp,
   IconTrendingDown,
   IconCreditCard,
+  IconPlus,
+  IconFilter,
+  IconSortDescending,
+  IconSearch,
+  IconCalendar,
+  IconDots,
+  IconCurrencyDollar,
+  IconCheck,
+  IconClock,
+  IconX
 } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import Link from "next/link";
 
 interface Payment {
   id: string;
@@ -41,6 +53,9 @@ export default function PaymentsPage() {
   const [monthlyRevenue, setMonthlyRevenue] = useState("-");
   const [recentPayments, setRecentPayments] = useState<Payment[]>([]);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [allPayments, setAllPayments] = useState<Payment[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -53,6 +68,7 @@ export default function PaymentsPage() {
           monthlyRevenue,
           recentPayments,
           methodsRes,
+          allPaymentsRes
         ] = await Promise.all([
           axios.get("/api/payments/revenue"),
           axios.get("/api/payments/pending/count"),
@@ -60,6 +76,7 @@ export default function PaymentsPage() {
           axios.get("/api/payments/monthlyRevenue"),
           axios.get("/api/payments/list", { params: { take: 5 } }),
           axios.get("/api/payments/methods"),
+          axios.get("/api/payments")
         ]);
 
         setTotalRevenue(revenueRes.data);
@@ -68,6 +85,7 @@ export default function PaymentsPage() {
         setMonthlyRevenue(monthlyRevenue.data);
         setRecentPayments(recentPayments.data);
         setPaymentMethods(methodsRes.data);
+        setAllPayments(allPaymentsRes.data);
       } catch (error) {
         console.error("Error fetching payment data:", error);
       } finally {
@@ -93,6 +111,30 @@ export default function PaymentsPage() {
         return `${baseClasses} bg-gray-100 text-gray-800`;
     }
   };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'COMPLETED': return <IconCheck size={16} />;
+      case 'PENDING': return <IconClock size={16} />;
+      case 'FAILED': return <IconX size={16} />;
+      default: return <IconClock size={16} />;
+    }
+  };
+
+  const getMethodIcon = (method: string) => {
+    switch (method) {
+      case 'CREDIT_CARD':
+      case 'DEBIT_CARD': return <IconCreditCard size={16} />;
+      default: return <IconCurrencyDollar size={16} />;
+    }
+  };
+
+  const filteredPayments = allPayments.filter(payment => {
+    const matchesSearch = payment.client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         payment.project.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === "ALL" || payment.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   if (loading) {
     return (
@@ -186,16 +228,42 @@ export default function PaymentsPage() {
 
      
 
-        {/* Recent Payments Table */}
+        {/* Search and Filter Controls */}
+        <div className="flex items-center gap-4 mb-6">
+          <select 
+            className="px-3 py-2 border border-gray-300 rounded-lg"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <option value="ALL">All Status</option>
+            <option value="COMPLETED">Completed</option>
+            <option value="PENDING">Pending</option>
+            <option value="FAILED">Failed</option>
+          </select>
+          <button className="p-2 hover:bg-gray-100 rounded-lg border">
+            <IconFilter size={20} />
+          </button>
+          <button className="p-2 hover:bg-gray-100 rounded-lg border">
+            <IconSortDescending size={20} />
+          </button>
+          <div className="ml-auto relative">
+            <IconSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Search payments..."
+              className="pl-10 w-64 border-gray-300"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        </div>
+
+        {/* All Payments Table */}
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-xl font-semibold text-gray-900">
-              Recent Payments
+              All Payments ({filteredPayments.length})
             </h3>
             <div className="flex space-x-2">
-              <Button variant="outline" size="sm">
-                Filter
-              </Button>
               <Button variant="outline" size="sm">
                 Export
               </Button>
@@ -230,42 +298,70 @@ export default function PaymentsPage() {
                 </tr>
               </thead>
               <tbody>
-                {recentPayments.map((payment, index) => (
+                {filteredPayments.map((payment, index) => (
                   <tr
-                    key={index}
+                    key={payment.id}
                     className="border-b border-gray-50 hover:bg-gray-50"
                   >
                     <td className="py-4 px-2">
-                      <div className="font-medium text-gray-900">
-                        {payment.client.name}
-                      </div>
-                      <div className="text-sm text-gray-500">
-                        {payment.client.email[0]}
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center">
+                          <IconCurrencyDollar size={20} className="text-white" />
+                        </div>
+                        <div>
+                          <div className="font-medium text-gray-900">
+                            {payment.client.name}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            {payment.client.email[0]}
+                          </div>
+                        </div>
                       </div>
                     </td>
                     <td className="py-4 px-2 text-gray-900">
                       {payment.project.name}
                     </td>
                     <td className="py-4 px-2 font-semibold text-gray-900">
-                      ₹{payment.amount}
-                    </td>
-                    <td className="py-4 px-2 text-gray-600">
-                      {capitalize.words(payment.method.replace("_", " "))}
+                      ₹{payment.amount.toLocaleString()}
                     </td>
                     <td className="py-4 px-2">
-                      <span className={getStatusBadge(payment.status)}>
+                      <div className="flex items-center gap-2 text-gray-600">
+                        {getMethodIcon(payment.method)}
+                        {capitalize.words(payment.method.replace("_", " "))}
+                      </div>
+                    </td>
+                    <td className="py-4 px-2">
+                      <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full ${
+                        payment.status === 'COMPLETED' ? 'text-green-700 bg-green-100' :
+                        payment.status === 'PENDING' ? 'text-yellow-700 bg-yellow-100' :
+                        payment.status === 'FAILED' ? 'text-red-700 bg-red-100' :
+                        'text-gray-700 bg-gray-100'
+                      }`}>
+                        {getStatusIcon(payment.status)}
                         {payment.status}
                       </span>
                     </td>
-                    <td className="py-4 px-2 text-gray-600">{new Date(payment.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</td>                    <td className="py-4 px-2">
-                      <Button variant="ghost" size="sm">
-                        View
-                      </Button>
+                    <td className="py-4 px-2">
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <IconCalendar size={16} className="text-gray-400" />
+                        {new Date(payment.date).toLocaleDateString()}
+                      </div>
+                    </td>
+                    <td className="py-4 px-2">
+                      <button className="p-1 hover:bg-gray-100 rounded">
+                        <IconDots size={16} className="text-gray-400" />
+                      </button>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
+            
+            {filteredPayments.length === 0 && (
+              <div className="text-center py-12">
+                <p className="text-gray-500">No payments found</p>
+              </div>
+            )}
           </div>
         </div>
 

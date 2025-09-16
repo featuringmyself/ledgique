@@ -9,21 +9,21 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const retainers = await prisma.retainer.findMany({
+    const payments = await prisma.payment.findMany({
       where: { 
-        client: { clerkId: userId }
+        project: { clerkId: userId }
       },
       include: {
         client: { select: { name: true, company: true } },
         project: { select: { name: true } }
       },
-      orderBy: { startDate: 'desc' }
+      orderBy: { date: 'desc' }
     });
 
-    return NextResponse.json(retainers);
+    return NextResponse.json(payments);
   } catch (error) {
-    console.error('Error fetching retainers:', error);
-    return NextResponse.json({ error: 'Failed to fetch retainers' }, { status: 500 });
+    console.error('Error fetching payments:', error);
+    return NextResponse.json({ error: 'Failed to fetch payments' }, { status: 500 });
   }
 }
 
@@ -35,27 +35,28 @@ export async function POST(request: NextRequest) {
     }
 
     const { 
-      title,
-      description,
-      totalAmount,
-      hourlyRate,
-      clientId,
-      projectId,
-      startDate,
-      endDate
+      amount, 
+      description, 
+      type, 
+      method, 
+      status, 
+      date, 
+      dueDate, 
+      projectId, 
+      clientId 
     } = await request.json();
 
-    const retainer = await prisma.retainer.create({
+    const payment = await prisma.payment.create({
       data: {
-        title,
+        amount,
         description,
-        totalAmount,
-        remainingAmount: totalAmount,
-        hourlyRate,
-        clientId,
+        type,
+        method,
+        status,
+        date: new Date(date),
+        dueDate: dueDate ? new Date(dueDate) : null,
         projectId,
-        startDate: new Date(startDate),
-        endDate: endDate ? new Date(endDate) : null
+        clientId
       },
       include: {
         client: { select: { name: true, company: true } },
@@ -63,9 +64,9 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    return NextResponse.json(retainer);
+    return NextResponse.json(payment);
   } catch (error) {
-    console.error('Error creating retainer:', error);
-    return NextResponse.json({ error: 'Failed to create retainer' }, { status: 500 });
+    console.error('Error creating payment:', error);
+    return NextResponse.json({ error: 'Failed to create payment' }, { status: 500 });
   }
 }

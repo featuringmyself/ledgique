@@ -2,23 +2,30 @@
 import axios from "axios";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
-import { IconPlus, IconFilter, IconSortDescending, IconSearch, IconCalendar, IconDots } from "@tabler/icons-react";
+import { IconPlus, IconFilter, IconSortDescending, IconSearch, IconCalendar, IconDots, IconMail, IconPhone, IconBuilding } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 
 interface Client {
   id: string;
   name: string;
-  address: string;
+  email: string[];
+  phone: string[];
+  company?: string;
+  address?: string;
   clientSource: { name: string } | null;
   status: string;
-  updatedAt: Date;
+  createdAt: string;
   projects: { name: string }[];
+  _count: {
+    projects: number;
+    payments: number;
+  };
 }
 
 export default function ClientPage() {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
-
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     const fetchClients = async () => {
@@ -26,9 +33,8 @@ export default function ClientPage() {
         setLoading(true);
         const response = await axios.get('/api/clients');
         setClients(response.data);
-        console.log(response.data)
       } catch (error) {
-        console.log(error)
+        console.error('Error fetching clients:', error);
       } finally {
         setLoading(false);
       }
@@ -36,6 +42,12 @@ export default function ClientPage() {
 
     fetchClients();
   }, []);
+
+  const filteredClients = clients.filter(client => 
+    client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    client.company?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    client.email.some(email => email.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
 
   if (loading) {
     return (
@@ -47,82 +59,140 @@ export default function ClientPage() {
 
   return (
     <div className="p-6 bg-white w-full min-h-screen">
+      {/* Header */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">Clients</h1>
+        <p className="text-gray-600">Manage your client relationships and information</p>
+      </div>
+
       {/* Top Actions */}
       <div className="flex items-center gap-4 mb-6">
         <Link href="/client/add">
-          <button className="p-2 hover:bg-gray-100 rounded">
+          <button className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
             <IconPlus size={20} />
+            Add Client
           </button>
         </Link>
-        <button className="p-2 hover:bg-gray-100 rounded">
+        <button className="p-2 hover:bg-gray-100 rounded-lg border">
           <IconFilter size={20} />
         </button>
-        <button className="p-2 hover:bg-gray-100 rounded">
+        <button className="p-2 hover:bg-gray-100 rounded-lg border">
           <IconSortDescending size={20} />
         </button>
         <div className="ml-auto relative">
           <IconSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
-            placeholder="Search"
+            placeholder="Search clients..."
             className="pl-10 w-64 border-gray-300"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
       </div>
 
-      {/* Table */}
-      <div className="overflow-hidden">
-        <table className="w-full">
-          <thead>
-            <tr className="text-left text-sm text-gray-500">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-4 gap-4 mb-6">
+        <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
+          <h3 className="text-sm font-medium text-blue-600 mb-1">Total Clients</h3>
+          <p className="text-2xl font-bold text-blue-900">{clients.length}</p>
+        </div>
+        <div className="bg-green-50 p-4 rounded-lg border border-green-100">
+          <h3 className="text-sm font-medium text-green-600 mb-1">Active Clients</h3>
+          <p className="text-2xl font-bold text-green-900">{clients.filter(c => c.status === 'ACTIVE').length}</p>
+        </div>
+        <div className="bg-purple-50 p-4 rounded-lg border border-purple-100">
+          <h3 className="text-sm font-medium text-purple-600 mb-1">Total Projects</h3>
+          <p className="text-2xl font-bold text-purple-900">{clients.reduce((sum, c) => sum + c._count.projects, 0)}</p>
+        </div>
+        <div className="bg-orange-50 p-4 rounded-lg border border-orange-100">
+          <h3 className="text-sm font-medium text-orange-600 mb-1">Total Payments</h3>
+          <p className="text-2xl font-bold text-orange-900">{clients.reduce((sum, c) => sum + c._count.payments, 0)}</p>
+        </div>
+      </div>
 
-              <th className="pb-3 font-normal">User</th>
-              <th className="pb-3 font-normal">Project</th>
-              <th className="pb-3 font-normal">Address</th>
-              <th className="pb-3 font-normal">Client From</th>
-              <th className="pb-3 font-normal">Date</th>
-              <th className="pb-3 font-normal">Status</th>
-              <th className="pb-3 font-normal"></th>
+      {/* Table */}
+      <div className="bg-white rounded-lg border overflow-hidden">
+        <table className="w-full">
+          <thead className="bg-gray-50">
+            <tr className="text-left text-sm text-gray-500">
+              <th className="p-4 font-medium">Client</th>
+              <th className="p-4 font-medium">Contact</th>
+              <th className="p-4 font-medium">Projects</th>
+              <th className="p-4 font-medium">Source</th>
+              <th className="p-4 font-medium">Status</th>
+              <th className="p-4 font-medium">Created</th>
+              <th className="p-4 font-medium"></th>
             </tr>
           </thead>
           <tbody>
-            {clients.map((clients) => (
-              <tr key={clients.id} className="border-t border-gray-100 hover:bg-gray-50">
-                <td className="py-4">
+            {filteredClients.map((client) => (
+              <tr key={client.id} className="border-t border-gray-100 hover:bg-gray-50">
+                <td className="p-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center">
-                      <span className="text-xs font-medium text-white">
-                        {clients.name.split(' ').map(n => n[0]).join('')}
+                    <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center">
+                      <span className="text-sm font-medium text-white">
+                        {client.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
                       </span>
                     </div>
-                    <span className="text-sm text-gray-900">{clients.name}</span>
+                    <div>
+                      <div className="font-medium text-gray-900">{client.name}</div>
+                      {client.company && (
+                        <div className="flex items-center gap-1 text-sm text-gray-500">
+                          <IconBuilding size={14} />
+                          {client.company}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </td>
-                <td className="py-4 text-sm text-gray-900">{clients.projects[0]?.name}</td>
-                <td className="py-4 text-sm text-gray-600">{clients.address}</td>
-                <td className="py-4 text-sm text-gray-600">{clients.clientSource?.name || 'Unknown'}</td>
-                <td className="py-4">
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <IconCalendar size={16} className="text-gray-400" />
-                    {clients.updatedAt?.toISOString().split('T')[0]}
+                <td className="p-4">
+                  <div className="space-y-1">
+                    {client.email[0] && (
+                      <div className="flex items-center gap-1 text-sm text-gray-600">
+                        <IconMail size={14} />
+                        {client.email[0]}
+                      </div>
+                    )}
+                    {client.phone[0] && (
+                      <div className="flex items-center gap-1 text-sm text-gray-600">
+                        <IconPhone size={14} />
+                        {client.phone[0]}
+                      </div>
+                    )}
                   </div>
                 </td>
-                <td className="py-4">
-                  <span className={`inline-flex items-center gap-1 text-xs font-medium ${clients.status === 'Complete' ? 'text-green-600' :
-                    clients.status === 'In Progress' ? 'text-blue-600' :
-                      clients.status === 'Approved' ? 'text-yellow-600' :
-                        clients.status === 'Pending' ? 'text-blue-400' :
-                          'text-gray-500'
-                    }`}>
-                    <div className={`w-2 h-2 rounded-full ${clients.status === 'Complete' ? 'bg-green-500' :
-                      clients.status === 'In Progress' ? 'bg-blue-500' :
-                        clients.status === 'Approved' ? 'bg-yellow-500' :
-                          clients.status === 'Pending' ? 'bg-blue-400' :
-                            'bg-gray-400'
-                      }`}></div>
-                    {clients.status}
+                <td className="p-4">
+                  <div className="text-sm">
+                    <div className="font-medium text-gray-900">{client._count.projects} projects</div>
+                    {client.projects[0] && (
+                      <div className="text-gray-500">Latest: {client.projects[0].name}</div>
+                    )}
+                  </div>
+                </td>
+                <td className="p-4 text-sm text-gray-600">
+                  {client.clientSource?.name || 'Direct'}
+                </td>
+                <td className="p-4">
+                  <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full ${
+                    client.status === 'ACTIVE' ? 'text-green-700 bg-green-100' :
+                    client.status === 'INACTIVE' ? 'text-gray-700 bg-gray-100' :
+                    'text-red-700 bg-red-100'
+                  }`}>
+                    <div className={`w-1.5 h-1.5 rounded-full ${
+                      client.status === 'ACTIVE' ? 'bg-green-500' :
+                      client.status === 'INACTIVE' ? 'bg-gray-500' :
+                      'bg-red-500'
+                    }`}></div>
+                    {client.status}
                   </span>
                 </td>
-                <td className="py-4">
+                <td className="p-4">
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <IconCalendar size={16} className="text-gray-400" />
+                    {new Date(client.createdAt).toLocaleDateString()}
+                  </div>
+                </td>
+                <td className="p-4">
                   <button className="p-1 hover:bg-gray-100 rounded">
                     <IconDots size={16} className="text-gray-400" />
                   </button>
@@ -131,9 +201,13 @@ export default function ClientPage() {
             ))}
           </tbody>
         </table>
+        
+        {filteredClients.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-gray-500">No clients found</p>
+          </div>
+        )}
       </div>
-
-   
     </div>
   );
 }

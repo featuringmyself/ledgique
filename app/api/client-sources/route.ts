@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import prisma from "@/lib/prisma";
+import prisma from '@/lib/prisma';
 
 export async function GET() {
   try {
@@ -9,33 +9,42 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const sources = await prisma.clientSource.findMany({
+    const clientSources = await prisma.clientSource.findMany({
       where: { clerkId: userId },
+      include: {
+        _count: {
+          select: { clients: true }
+        }
+      },
       orderBy: { name: 'asc' }
     });
 
-    return NextResponse.json(sources);
-  } catch {
+    return NextResponse.json(clientSources);
+  } catch (error) {
+    console.error('Error fetching client sources:', error);
     return NextResponse.json({ error: 'Failed to fetch client sources' }, { status: 500 });
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const { userId } = await auth();
-    
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const { name } = await request.json();
 
-    const source = await prisma.clientSource.create({
-      data: { name, clerkId: userId }
+    const clientSource = await prisma.clientSource.create({
+      data: {
+        name,
+        clerkId: userId
+      }
     });
 
-    return NextResponse.json(source);
-  } catch {
+    return NextResponse.json(clientSource);
+  } catch (error) {
+    console.error('Error creating client source:', error);
     return NextResponse.json({ error: 'Failed to create client source' }, { status: 500 });
   }
 }
