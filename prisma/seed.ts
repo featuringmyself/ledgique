@@ -5,13 +5,13 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Starting database seeding...');
 
-  // Clear existing data
-  await prisma.payment.deleteMany();
-  await prisma.project.deleteMany();
-  await prisma.client.deleteMany();
-  await prisma.clientSource.deleteMany();
+  // // Clear existing data
+  // await prisma.payment.deleteMany();
+  // await prisma.project.deleteMany();
+  // await prisma.client.deleteMany();
+  // await prisma.clientSource.deleteMany();
 
-  console.log('🧹 Cleared existing data');
+  // console.log('🧹 Cleared existing data');
 
   // Sample clerk user IDs
   const clerkUserIds = [
