@@ -492,7 +492,7 @@ async function addExpense(params: AddExpenseParams, userId: string): Promise<Fun
       }
     });
     return { success: true, message: `Added expense: ${params.description} for $${params.amount}`, data: expense };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: 'Failed to add expense' };
   }
 }
@@ -508,7 +508,7 @@ async function createClient(params: CreateClientParams, userId: string): Promise
       }
     });
     return { success: true, message: `Created client: ${params.name}`, data: client };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: 'Failed to create client' };
   }
 }
@@ -535,7 +535,7 @@ async function updateClient(params: UpdateClientParams, userId: string): Promise
     });
     
     return { success: true, message: `Updated client information`, data: client };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: 'Failed to update client' };
   }
 }
@@ -556,12 +556,12 @@ async function showRevenue(params: ShowRevenueParams, userId: string): Promise<F
     
     const total = Number(payments._sum.amount || 0);
     return { success: true, data: { total, period: params.period || 'monthly', startDate, endDate } };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: 'Failed to fetch revenue' };
   }
 }
 
-async function addIncome(params: AddIncomeParams, userId: string): Promise<FunctionResult> {
+async function addIncome(params: AddIncomeParams, _userId: string): Promise<FunctionResult> {
   try {
     const payment = await prisma.payment.create({
       data: {
@@ -573,12 +573,12 @@ async function addIncome(params: AddIncomeParams, userId: string): Promise<Funct
         project: {
           create: {
             name: `Income - ${params.source}`,
-            clerkId: userId,
+            clerkId: _userId,
             client: {
               connect: params.clientId ? { id: params.clientId } : undefined,
               create: params.clientId ? undefined : {
                 name: params.source,
-                clerkId: userId
+                clerkId: _userId
               }
             }
           }
@@ -587,13 +587,13 @@ async function addIncome(params: AddIncomeParams, userId: string): Promise<Funct
           connect: params.clientId ? { id: params.clientId } : undefined,
           create: params.clientId ? undefined : {
             name: params.source,
-            clerkId: userId
+            clerkId: _userId
           }
         }
       }
     });
     return { success: true, message: `Added income: $${params.amount} from ${params.source}`, data: payment };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: 'Failed to add income' };
   }
 }
@@ -613,7 +613,7 @@ async function createProject(params: CreateProjectParams, userId: string): Promi
       }
     });
     return { success: true, message: `Created project: ${params.name}`, data: project };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: 'Failed to create project' };
   }
 }
@@ -649,7 +649,7 @@ async function createInvoice(params: CreateInvoiceParams, userId: string): Promi
       }
     });
     return { success: true, message: `Created invoice: ${invoiceNumber}`, data: invoice };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: 'Failed to create invoice' };
   }
 }
@@ -669,28 +669,28 @@ async function addPayment(params: AddPaymentParams, userId: string): Promise<Fun
       }
     });
     return { success: true, message: `Added payment: $${params.amount}`, data: payment };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: 'Failed to add payment' };
   }
 }
 
-async function showPendingPayments(userId: string): Promise<FunctionResult> {
+async function showPendingPayments(_userId: string): Promise<FunctionResult> {
   try {
     const pendingPayments = await prisma.payment.aggregate({
       where: {
         status: { in: ["PENDING", "PARTIALLY_PAID"] },
-        project: { clerkId: userId }
+        project: { clerkId: _userId }
       },
       _sum: { amount: true }
     });
     const amount = pendingPayments._sum.amount || 0;
     return { success: true, message: `Total pending payment amount: ₹${amount.toLocaleString()}`, data: { amount } };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: 'Failed to fetch pending payments' };
   }
 }
 
-async function showOverdueAmount(userId: string): Promise<FunctionResult> {
+async function showOverdueAmount(_userId: string): Promise<FunctionResult> {
   try {
     // Check both invoices and payments for overdue amounts
     const [overdueInvoices, overduePayments, allInvoices] = await Promise.all([
@@ -698,7 +698,7 @@ async function showOverdueAmount(userId: string): Promise<FunctionResult> {
         where: {
           dueDate: { lt: new Date() },
           status: { in: ["SENT", "VIEWED", "OVERDUE"] },
-          client: { clerkId: userId }
+          client: { clerkId: _userId }
         },
         _sum: { totalAmount: true }
       }),
@@ -706,12 +706,12 @@ async function showOverdueAmount(userId: string): Promise<FunctionResult> {
         where: {
           dueDate: { lt: new Date() },
           status: { in: ["PENDING", "PARTIALLY_PAID"] },
-          project: { clerkId: userId }
+          project: { clerkId: _userId }
         },
         _sum: { amount: true }
       }),
       prisma.invoice.count({
-        where: { client: { clerkId: userId } }
+        where: { client: { clerkId: _userId } }
       })
     ]);
     
@@ -724,7 +724,7 @@ async function showOverdueAmount(userId: string): Promise<FunctionResult> {
       message: `Total overdue amount: ₹${totalAmount.toLocaleString()} (${invoiceAmount} from invoices, ${paymentAmount} from payments). You have ${allInvoices} total invoices.`, 
       data: { amount: totalAmount, invoiceAmount, paymentAmount, totalInvoices: allInvoices } 
     };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: 'Failed to fetch overdue amount' };
   }
 }
@@ -763,7 +763,7 @@ async function showClientSources(params: ClientAnalysisParams, userId: string): 
       message: `In ${year}, you received ${totalClientsThisYear} new clients. Top source: ${topSource?.name || 'None'} (${topSource?.clientsThisYear || 0} clients)`,
       data: { year, totalClientsThisYear, sources: sourceStats }
     };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: 'Failed to fetch client sources' };
   }
 }
@@ -797,12 +797,12 @@ async function showClientStats(params: ClientAnalysisParams, userId: string): Pr
       message: `Client Stats for ${year}: Total clients: ${totalClients}, New clients this year: ${clientsThisYear}`,
       data: { year, totalClients, clientsThisYear, clientsBySource }
     };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: 'Failed to fetch client stats' };
   }
 }
 
-async function showDashboardStats(userId: string): Promise<FunctionResult> {
+async function showDashboardStats(_userId: string): Promise<FunctionResult> {
   try {
     const currentYear = new Date().getFullYear();
     const startOfYear = new Date(currentYear, 0, 1);
@@ -811,7 +811,7 @@ async function showDashboardStats(userId: string): Promise<FunctionResult> {
     const [revenue, clients, projects, payments, expenses, clientSources] = await Promise.all([
       prisma.payment.aggregate({
         where: {
-          project: { clerkId: userId },
+          project: { clerkId: _userId },
           status: 'COMPLETED',
           date: { gte: startOfYear, lte: endOfYear }
         },
@@ -819,31 +819,31 @@ async function showDashboardStats(userId: string): Promise<FunctionResult> {
       }),
       prisma.client.count({
         where: {
-          clerkId: userId,
+          clerkId: _userId,
           createdAt: { gte: startOfYear, lte: endOfYear }
         }
       }),
       prisma.project.count({
         where: {
-          clerkId: userId,
+          clerkId: _userId,
           createdAt: { gte: startOfYear, lte: endOfYear }
         }
       }),
       prisma.payment.count({
         where: {
-          project: { clerkId: userId },
+          project: { clerkId: _userId },
           date: { gte: startOfYear, lte: endOfYear }
         }
       }),
       prisma.expense.aggregate({
         where: {
-          clerkId: userId,
+          clerkId: _userId,
           date: { gte: startOfYear, lte: endOfYear }
         },
         _sum: { amount: true }
       }),
       prisma.clientSource.findMany({
-        where: { clerkId: userId },
+        where: { clerkId: _userId },
         include: {
           clients: {
             where: { createdAt: { gte: startOfYear, lte: endOfYear } }
@@ -869,19 +869,19 @@ async function showDashboardStats(userId: string): Promise<FunctionResult> {
         topClientSource
       }
     };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: 'Failed to fetch dashboard stats' };
   }
 }
 
-async function showThisYearStats(userId: string): Promise<FunctionResult> {
+async function showThisYearStats(_userId: string): Promise<FunctionResult> {
   try {
     const currentYear = new Date().getFullYear();
     const startOfYear = new Date(currentYear, 0, 1);
     const endOfYear = new Date(currentYear, 11, 31);
 
     const clientSources = await prisma.clientSource.findMany({
-      where: { clerkId: userId },
+      where: { clerkId: _userId },
       include: {
         clients: {
           where: { createdAt: { gte: startOfYear, lte: endOfYear } }
@@ -907,7 +907,7 @@ async function showThisYearStats(userId: string): Promise<FunctionResult> {
         allSources: sourceStats
       }
     };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: 'Failed to fetch this year stats' };
   }
 }
@@ -926,7 +926,7 @@ async function createRetainer(params: CreateRetainerParams, userId: string): Pro
       }
     });
     return { success: true, message: `Created retainer: ${params.title}`, data: retainer };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: 'Failed to create retainer' };
   }
 }
@@ -951,7 +951,7 @@ async function addClientSource(params: AddClientSourceParams, userId: string): P
     });
     
     return { success: true, message: `Added ${params.sourceName} as source for client`, data: client };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: 'Failed to add client source' };
   }
 }
@@ -965,7 +965,7 @@ async function createClientSource(params: CreateClientSourceParams, userId: stri
       }
     });
     return { success: true, message: `Created client source: ${params.name}`, data: clientSource };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: 'Failed to create client source' };
   }
 }
@@ -985,7 +985,7 @@ async function updateProject(params: UpdateProjectParams, userId: string): Promi
       data: updateData
     });
     return { success: true, message: `Updated project`, data: project };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: 'Failed to update project' };
   }
 }
@@ -1006,7 +1006,7 @@ async function updateExpense(params: UpdateExpenseParams, userId: string): Promi
       data: updateData
     });
     return { success: true, message: `Updated expense`, data: expense };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: 'Failed to update expense' };
   }
 }
@@ -1026,7 +1026,7 @@ async function updatePayment(params: UpdatePaymentParams, userId: string): Promi
       data: updateData
     });
     return { success: true, message: `Updated payment`, data: payment };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: 'Failed to update payment' };
   }
 }
@@ -1068,16 +1068,16 @@ async function showExpenses(params: ShowExpensesParams, userId: string): Promise
       message: `Total expenses for ${monthName} ${year}: ₹${totalAmount.toLocaleString()} (${expenses.length} expenses)`,
       data: { totalAmount, expenses, count: expenses.length, period: `${monthName} ${year}` }
     };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: 'Failed to fetch expenses' };
   }
 }
 
-async function showUnpaidInvoices(userId: string): Promise<FunctionResult> {
+async function showUnpaidInvoices(_userId: string): Promise<FunctionResult> {
   try {
     const unpaidInvoices = await prisma.invoice.findMany({
       where: {
-        client: { clerkId: userId },
+        client: { clerkId: _userId },
         status: { in: ["SENT", "VIEWED", "OVERDUE"] }
       },
       include: {
@@ -1093,7 +1093,7 @@ async function showUnpaidInvoices(userId: string): Promise<FunctionResult> {
       message: `You have ${unpaidInvoices.length} unpaid invoices totaling ₹${totalAmount.toLocaleString()}`,
       data: { count: unpaidInvoices.length, totalAmount, invoices: unpaidInvoices }
     };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: 'Failed to fetch unpaid invoices' };
   }
 }
@@ -1121,7 +1121,7 @@ async function listClients(params: { search?: string }, userId: string): Promise
       message: `Found ${clients.length} clients`,
       data: { clients }
     };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: 'Failed to fetch clients' };
   }
 }
@@ -1150,7 +1150,7 @@ async function listProjects(params: { clientId?: string; search?: string }, user
       message: `Found ${projects.length} projects`,
       data: { projects }
     };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: 'Failed to fetch projects' };
   }
 }
@@ -1179,7 +1179,7 @@ async function searchClients(params: { query: string }, userId: string): Promise
       message: `Found ${clients.length} clients matching "${params.query}"`,
       data: { clients, query: params.query }
     };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: 'Failed to search clients' };
   }
 }
@@ -1205,7 +1205,7 @@ async function searchProjects(params: { query: string }, userId: string): Promis
       message: `Found ${projects.length} projects matching "${params.query}"`,
       data: { projects, query: params.query }
     };
-  } catch (error) {
+  } catch (_error) {
     return { success: false, error: 'Failed to search projects' };
   }
 }
@@ -1407,8 +1407,8 @@ Formatting Guidelines:
       });
     }
 
-  } catch (error) {
-    console.error("Error:", error);
+  } catch (_error) {
+    console.error("Error:", _error);
     return NextResponse.json(
       { error: "Failed to process request" },
       { status: 500 }

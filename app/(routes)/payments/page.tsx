@@ -6,7 +6,6 @@ import {
   IconTrendingUp,
   IconTrendingDown,
   IconCreditCard,
-  IconPlus,
   IconFilter,
   IconSortDescending,
   IconSearch,
@@ -19,7 +18,7 @@ import {
 } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import Link from "next/link";
+
 
 interface Payment {
   id: string;
@@ -51,7 +50,7 @@ export default function PaymentsPage() {
   const [pendingAmount, setPendingAmount] = useState("-");
   const [overDueAmount, setOverDueAmount] = useState("-");
   const [monthlyRevenue, setMonthlyRevenue] = useState("-");
-  const [recentPayments, setRecentPayments] = useState<Payment[]>([]);
+  const [, setRecentPayments] = useState<Payment[]>([]);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
@@ -98,19 +97,7 @@ export default function PaymentsPage() {
 
 
 
-  const getStatusBadge = (status: string) => {
-    const baseClasses = "px-3 py-1 rounded-full text-xs font-medium";
-    switch (status) {
-      case "COMPLETED":
-        return `${baseClasses} bg-green-100 text-green-800`;
-      case "PENDING":
-        return `${baseClasses} bg-yellow-100 text-yellow-800`;
-      case "FAILED":
-        return `${baseClasses} bg-red-100 text-red-800`;
-      default:
-        return `${baseClasses} bg-gray-100 text-gray-800`;
-    }
-  };
+
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -298,7 +285,7 @@ export default function PaymentsPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredPayments.map((payment, index) => (
+                {filteredPayments.map((payment) => (
                   <tr
                     key={payment.id}
                     className="border-b border-gray-50 hover:bg-gray-50"

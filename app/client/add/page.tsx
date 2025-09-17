@@ -47,7 +47,7 @@ export default function AddClientPage() {
       try {
         const response = await axios.get('/api/client-sources');
         setClientSources(response.data);
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Error fetching client sources:', error);
       }
     };
@@ -62,7 +62,7 @@ export default function AddClientPage() {
       setFormData({ ...formData, clientSourceId: response.data.id });
       setNewSourceName("");
       setShowNewSource(false);
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error creating source:', error);
     }
   };
@@ -89,7 +89,7 @@ export default function AddClientPage() {
       }
 
       router.push("/client");
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Error creating client:", error);
     } finally {
       setLoading(false);

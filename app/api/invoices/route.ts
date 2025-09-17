@@ -23,7 +23,7 @@ export async function GET() {
     });
 
     return NextResponse.json(invoices);
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error fetching invoices:', error);
     return NextResponse.json({ error: 'Failed to fetch invoices' }, { status: 500 });
   }
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     } = await request.json();
 
     // Calculate totals
-    const subtotal = items.reduce((sum: number, item: any) => sum + (item.quantity * item.unitPrice), 0);
+    const subtotal = items.reduce((sum: number, item: { quantity: number; unitPrice: number }) => sum + (item.quantity * item.unitPrice), 0);
     const taxAmount = subtotal * (taxRate || 0) / 100;
     const totalAmount = subtotal + taxAmount - (discountAmount || 0);
 
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
         notes,
         terms,
         items: {
-          create: items.map((item: any) => ({
+          create: items.map((item: { description: string; quantity: number; unitPrice: number }) => ({
             description: item.description,
             quantity: item.quantity,
             unitPrice: item.unitPrice,
@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json(invoice);
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error creating invoice:', error);
     return NextResponse.json({ error: 'Failed to create invoice' }, { status: 500 });
   }
