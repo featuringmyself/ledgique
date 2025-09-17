@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
-import { IconPlus, IconFilter, IconSortDescending, IconSearch, IconCalendar, IconDots, IconFileInvoice, IconEye, IconDownload, IconSend } from '@tabler/icons-react';
+import { IconPlus, IconFilter, IconSortDescending, IconSearch, IconCalendar, IconDots, IconFileInvoice, IconEye, IconDownload, IconSend, IconCheck } from '@tabler/icons-react';
 import Link from 'next/link';
 
 interface Invoice {
@@ -38,6 +38,29 @@ export default function InvoicePage() {
       console.error('Failed to fetch invoices:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const markAsPaid = async (invoiceId: string, amount: number) => {
+    try {
+      const response = await fetch(`/api/invoices/${invoiceId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: 'PAID',
+          paymentData: {
+            amount,
+            method: 'BANK_TRANSFER',
+            date: new Date().toISOString()
+          }
+        })
+      });
+      
+      if (response.ok) {
+        fetchInvoices(); // Refresh the list
+      }
+    } catch (error) {
+      console.error('Failed to mark invoice as paid:', error);
     }
   };
 
@@ -212,6 +235,15 @@ export default function InvoicePage() {
                     <button className="p-1 hover:bg-gray-100 rounded" title="Send">
                       <IconSend size={16} className="text-gray-400" />
                     </button>
+                    {invoice.status !== 'PAID' && (
+                      <button 
+                        className="p-1 hover:bg-green-100 rounded text-green-600" 
+                        title="Mark as Paid"
+                        onClick={() => markAsPaid(invoice.id, invoice.totalAmount)}
+                      >
+                        <IconCheck size={16} />
+                      </button>
+                    )}
                     <button className="p-1 hover:bg-gray-100 rounded">
                       <IconDots size={16} className="text-gray-400" />
                     </button>

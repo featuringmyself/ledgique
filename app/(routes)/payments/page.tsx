@@ -18,6 +18,7 @@ import {
 } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import Link from "next/link";
 
 
 interface Payment {
@@ -146,10 +147,12 @@ export default function PaymentsPage() {
               Track and manage all payment transactions
             </p>
           </div>
-          <Button className="bg-gray-900 hover:bg-gray-800 text-white">
-            <IconCreditCard className="h-4 w-4 mr-2" />
-            Add Payment
-          </Button>
+          <Link href="/payments/add">
+            <Button className="bg-gray-900 hover:bg-gray-800 text-white">
+              <IconCreditCard className="h-4 w-4 mr-2" />
+              Add Payment
+            </Button>
+          </Link>
         </div>
 
         {/* Stats Cards */}
@@ -297,10 +300,10 @@ export default function PaymentsPage() {
                         </div>
                         <div>
                           <div className="font-medium text-gray-900">
-                            {payment.client.name}
+                            {payment?.client.name}
                           </div>
                           <div className="text-sm text-gray-500">
-                            {payment.client.email[0]}
+                            {payment?.client?.email}
                           </div>
                         </div>
                       </div>
