@@ -40,7 +40,7 @@ export default function CreateInvoicePage() {
     dueDate: "",
     notes: "",
     terms: "Net 30 payment terms. Late payments subject to 1.5% monthly service charge.",
-    taxRate: 9,
+    taxRate: 0,
     discountAmount: 0,
   });
 
@@ -237,7 +237,7 @@ export default function CreateInvoicePage() {
                 <div className="col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">Total</label>
                   <div className="px-3 py-2 bg-gray-100 rounded-md text-sm font-medium">
-                    ${item.totalPrice.toFixed(2)}
+                    {item.totalPrice.toFixed(2)}
                   </div>
                 </div>
                 <div className="col-span-1">
@@ -270,7 +270,7 @@ export default function CreateInvoicePage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Discount Amount ($)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Discount Amount</label>
               <Input
                 type="number"
                 min="0"
@@ -285,21 +285,21 @@ export default function CreateInvoicePage() {
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span>Subtotal:</span>
-                <span>${subtotal.toFixed(2)}</span>
+                <span>{subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span>Tax ({formData.taxRate}%):</span>
-                <span>${taxAmount.toFixed(2)}</span>
+                <span>{taxAmount.toFixed(2)}</span>
               </div>
               {formData.discountAmount > 0 && (
                 <div className="flex justify-between text-sm text-green-600">
                   <span>Discount:</span>
-                  <span>-${formData.discountAmount.toFixed(2)}</span>
+                  <span>-{formData.discountAmount.toFixed(2)}</span>
                 </div>
               )}
               <div className="border-t pt-2 flex justify-between font-medium">
                 <span>Total:</span>
-                <span>${total.toFixed(2)}</span>
+                <span>{total.toFixed(2)}</span>
               </div>
             </div>
           </div>

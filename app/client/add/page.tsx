@@ -308,7 +308,7 @@ export default function AddClientPage() {
                         )}
                         <div className="flex items-center gap-4 text-xs text-gray-500 mt-1">
                           <span>Priority: {project.priority}</span>
-                          {project.budget && <span>Budget: ${project.budget}</span>}
+                          {project.budget && <span>Budget: {project.budget}</span>}
                         </div>
                       </div>
                     </div>
