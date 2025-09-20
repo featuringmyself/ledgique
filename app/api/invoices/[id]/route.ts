@@ -4,7 +4,7 @@ import prisma from '@/lib/prisma';
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId } = await auth();
@@ -13,7 +13,7 @@ export async function PATCH(
     }
 
     const { status, paymentData } = await request.json();
-    const invoiceId = params.id;
+    const { id: invoiceId } = await params;
 
     const updatedInvoice = await prisma.invoice.update({
       where: { id: invoiceId },
