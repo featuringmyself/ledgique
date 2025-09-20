@@ -2,8 +2,13 @@
 import axios from "axios";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
-import { IconPlus, IconFilter, IconSortDescending, IconSearch, IconCalendar, IconDots, IconMail, IconPhone, IconBuilding } from "@tabler/icons-react";
+import { IconPlus, IconFilter, IconSortDescending, IconSearch, IconCalendar, IconDots, IconMail, IconPhone, IconBuilding, IconEdit, IconTrash, IconEye } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
+
+interface Project {
+  id?: string;
+  name: string;
+}
 
 interface Client {
   id: string;
@@ -15,7 +20,7 @@ interface Client {
   clientSource: { name: string } | null;
   status: string;
   createdAt: string;
-  projects: { name: string }[];
+  projects: Project[];
   _count: {
     projects: number;
     payments: number;
@@ -26,13 +31,27 @@ export default function ClientPage() {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [viewClient, setViewClient] = useState<Client | null>(null);
+  const [showProjects, setShowProjects] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<string>("");
+  const [sortBy, setSortBy] = useState<string>("name");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
   useEffect(() => {
     const fetchClients = async () => {
       try {
         setLoading(true);
         const response = await axios.get('/api/clients');
-        setClients(response.data);
+        // Ensure projects have id for navigation
+        const clientsWithProjectIds = response.data.map((client: Client) => ({
+          ...client,
+          projects: client.projects.map((project, index: number) => ({
+            id: (project as { id?: string; name: string }).id || `temp-${client.id}-${index}`,
+            name: project.name
+          }))
+        }));
+        setClients(clientsWithProjectIds);
       } catch (error) {
         console.error('Error fetching clients:', error);
       } finally {
@@ -43,11 +62,59 @@ export default function ClientPage() {
     fetchClients();
   }, []);
 
-  const filteredClients = clients.filter(client => 
-    client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    client.company?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    client.email.some(email => email.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as Element;
+      if (!target.closest('.dropdown-container')) {
+        setOpenDropdown(null);
+      }
+    };
+    if (openDropdown) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [openDropdown]);
+
+  const handleDelete = async (clientId: string) => {
+    if (!confirm('Are you sure you want to delete this client?')) return;
+    
+    try {
+      await axios.delete(`/api/clients/${clientId}`);
+      setClients(clients.filter(c => c.id !== clientId));
+    } catch (error) {
+      console.error('Error deleting client:', error);
+      alert('Failed to delete client');
+    }
+    setOpenDropdown(null);
+  };
+
+  const handleView = (client: Client) => {
+    setViewClient(client);
+    setOpenDropdown(null);
+  };
+
+  const filteredAndSortedClients = clients
+    .filter(client => {
+      const matchesSearch = client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        client.company?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        client.email.some(email => email.toLowerCase().includes(searchTerm.toLowerCase()));
+      const matchesStatus = !statusFilter || client.status === statusFilter;
+      return matchesSearch && matchesStatus;
+    })
+    .sort((a, b) => {
+      let aVal, bVal;
+      switch (sortBy) {
+        case "name": aVal = a.name; bVal = b.name; break;
+        case "company": aVal = a.company || ""; bVal = b.company || ""; break;
+        case "created": aVal = a.createdAt; bVal = b.createdAt; break;
+        case "projects": aVal = a._count.projects; bVal = b._count.projects; break;
+        default: aVal = a.name; bVal = b.name;
+      }
+      if (typeof aVal === "string" && typeof bVal === "string") {
+        return sortOrder === "asc" ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+      }
+      return sortOrder === "asc" ? (aVal as number) - (bVal as number) : (bVal as number) - (aVal as number);
+    });
 
   if (loading) {
     return (
@@ -73,12 +140,76 @@ export default function ClientPage() {
             Add Client
           </button>
         </Link>
-        <button className="p-2 hover:bg-gray-100 rounded-lg border">
-          <IconFilter size={20} />
-        </button>
-        <button className="p-2 hover:bg-gray-100 rounded-lg border">
-          <IconSortDescending size={20} />
-        </button>
+        <div className="relative dropdown-container">
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              setOpenDropdown(openDropdown === 'filter' ? null : 'filter');
+            }}
+            className="p-2 hover:bg-gray-100 rounded-lg border"
+          >
+            <IconFilter size={20} />
+          </button>
+          {openDropdown === 'filter' && (
+            <div 
+              onClick={(e) => e.stopPropagation()}
+              className="absolute top-12 left-0 w-48 bg-white border rounded-lg shadow-lg z-10 p-3"
+            >
+              <label className="block text-sm font-medium mb-2">Filter by Status</label>
+              <select 
+                value={statusFilter} 
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="w-full p-2 border rounded"
+              >
+                <option value="">All Statuses</option>
+                <option value="ACTIVE">Active</option>
+                <option value="INACTIVE">Inactive</option>
+              </select>
+            </div>
+          )}
+        </div>
+        <div className="relative dropdown-container">
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              setOpenDropdown(openDropdown === 'sort' ? null : 'sort');
+            }}
+            className="p-2 hover:bg-gray-100 rounded-lg border"
+          >
+            <IconSortDescending size={20} />
+          </button>
+          {openDropdown === 'sort' && (
+            <div 
+              onClick={(e) => e.stopPropagation()}
+              className="absolute top-12 left-0 w-48 bg-white border rounded-lg shadow-lg z-10 p-3 space-y-3"
+            >
+              <div>
+                <label className="block text-sm font-medium mb-2">Sort by</label>
+                <select 
+                  value={sortBy} 
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="w-full p-2 border rounded"
+                >
+                  <option value="name">Name</option>
+                  <option value="company">Company</option>
+                  <option value="created">Created Date</option>
+                  <option value="projects">Project Count</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Order</label>
+                <select 
+                  value={sortOrder} 
+                  onChange={(e) => setSortOrder(e.target.value as "asc" | "desc")}
+                  className="w-full p-2 border rounded"
+                >
+                  <option value="asc">Ascending</option>
+                  <option value="desc">Descending</option>
+                </select>
+              </div>
+            </div>
+          )}
+        </div>
         <div className="ml-auto relative">
           <IconSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
@@ -125,7 +256,7 @@ export default function ClientPage() {
             </tr>
           </thead>
           <tbody>
-            {filteredClients.map((client) => (
+            {filteredAndSortedClients.map((client) => (
               <tr key={client.id} className="border-t border-gray-100 hover:bg-gray-50">
                 <td className="p-4">
                   <div className="flex items-center gap-3">
@@ -193,21 +324,123 @@ export default function ClientPage() {
                   </div>
                 </td>
                 <td className="p-4">
-                  <button className="p-1 hover:bg-gray-100 rounded">
-                    <IconDots size={16} className="text-gray-400" />
-                  </button>
+                  <div className="relative dropdown-container">
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setOpenDropdown(openDropdown === client.id ? null : client.id);
+                      }}
+                      className="p-1 hover:bg-gray-100 rounded"
+                    >
+                      <IconDots size={16} className="text-gray-400" />
+                    </button>
+                    {openDropdown === client.id && (
+                      <div 
+                        onClick={(e) => e.stopPropagation()}
+                        className="absolute right-0 mt-1 w-32 bg-white border rounded-lg shadow-lg z-10"
+                      >
+                        <button 
+                          onClick={() => handleView(client)}
+                          className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
+                        >
+                          <IconEye size={14} /> View
+                        </button>
+                        <Link href={`/client/edit/${client.id}`}>
+                          <button className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2">
+                            <IconEdit size={14} /> Edit
+                          </button>
+                        </Link>
+                        <button 
+                          onClick={() => handleDelete(client.id)}
+                          className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2 text-red-600"
+                        >
+                          <IconTrash size={14} /> Delete
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
         
-        {filteredClients.length === 0 && (
+        {filteredAndSortedClients.length === 0 && (
           <div className="text-center py-12">
             <p className="text-gray-500">No clients found</p>
           </div>
         )}
       </div>
+
+      {/* View Modal */}
+      {viewClient && (
+        <div className="fixed inset-0 backdrop-blur-sm border-2 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-96 max-h-[80vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">Client Details</h2>
+              <button onClick={() => setViewClient(null)} className="text-gray-500 hover:text-gray-700">
+                ×
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-gray-500">Name</label>
+                <p className="text-gray-900">{viewClient.name}</p>
+              </div>
+              {viewClient.company && (
+                <div>
+                  <label className="text-sm font-medium text-gray-500">Company</label>
+                  <p className="text-gray-900">{viewClient.company}</p>
+                </div>
+              )}
+              <div>
+                <label className="text-sm font-medium text-gray-500">Email</label>
+                <p className="text-gray-900">{viewClient.email.join(', ')}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">Phone</label>
+                <p className="text-gray-900">{viewClient.phone.join(', ')}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">Status</label>
+                <p className="text-gray-900">{viewClient.status}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">Projects ({viewClient._count.projects})</label>
+                {viewClient._count.projects === 0 ? (
+                  <p className="text-gray-900">No projects</p>
+                ) : (
+                  <div className="space-y-2 mt-1">
+                    {viewClient.projects.map((project, index) => (
+                      <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
+                        <span className="text-gray-900 text-sm">{project.name}</span>
+                        <div className="flex gap-1">
+                          <button 
+                            onClick={() => window.open(`/project/${project.id}`, '_blank')}
+                            className="text-blue-600 hover:bg-blue-50 p-1 rounded text-xs"
+                          >
+                            View
+                          </button>
+                          <button 
+                            onClick={() => window.open(`/project/edit/${project.id}`, '_blank')}
+                            className="text-green-600 hover:bg-green-50 p-1 rounded text-xs"
+                          >
+                            Edit
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">Created</label>
+                <p className="text-gray-900">{new Date(viewClient.createdAt).toLocaleDateString()}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

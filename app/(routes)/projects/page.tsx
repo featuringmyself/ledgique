@@ -2,7 +2,7 @@
 import axios from "axios";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
-import { IconPlus, IconFilter, IconSortDescending, IconSearch, IconCalendar, IconDots, IconCurrencyDollar } from "@tabler/icons-react";
+import { IconPlus, IconFilter, IconSortDescending, IconSearch, IconCalendar, IconDots, IconCurrencyDollar, IconEye, IconEdit, IconTrash } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 
 interface Project {
@@ -27,6 +27,7 @@ export default function ProjectsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [priorityFilter, setPriorityFilter] = useState("ALL");
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -57,6 +58,19 @@ export default function ProjectsPage() {
   const activeProjects = projects.filter(p => p.status === 'IN_PROGRESS').length;
   const completedProjects = projects.filter(p => p.status === 'COMPLETED').length;
   const totalBudget = projects.reduce((sum, p) => sum + (p.budget || 0), 0);
+
+  const handleDelete = async (projectId: string) => {
+    if (!confirm('Are you sure you want to delete this project?')) return;
+    
+    try {
+      await axios.delete(`/api/projects/${projectId}`);
+      setProjects(projects.filter(p => p.id !== projectId));
+    } catch (error) {
+      console.error('Error deleting project:', error);
+      alert('Failed to delete project');
+    }
+    setOpenDropdown(null);
+  };
 
   if (loading) {
     return (
@@ -237,9 +251,34 @@ export default function ProjectsPage() {
                   )}
                 </td>
                 <td className="p-4">
-                  <button className="p-1 hover:bg-gray-100 rounded">
-                    <IconDots size={16} className="text-gray-400" />
-                  </button>
+                  <div className="relative">
+                    <button 
+                      onClick={() => setOpenDropdown(openDropdown === project.id ? null : project.id)}
+                      className="p-1 hover:bg-gray-100 rounded"
+                    >
+                      <IconDots size={16} className="text-gray-400" />
+                    </button>
+                    {openDropdown === project.id && (
+                      <div className="absolute right-0 mt-1 w-32 bg-white border rounded-lg shadow-lg z-10">
+                        <Link href={`/project/${project.id}`}>
+                          <button className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2">
+                            <IconEye size={14} /> View
+                          </button>
+                        </Link>
+                        <Link href={`/project/edit/${project.id}`}>
+                          <button className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2">
+                            <IconEdit size={14} /> Edit
+                          </button>
+                        </Link>
+                        <button 
+                          onClick={() => handleDelete(project.id)}
+                          className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2 text-red-600"
+                        >
+                          <IconTrash size={14} /> Delete
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
