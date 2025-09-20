@@ -14,7 +14,13 @@ import {
   IconCurrencyDollar,
   IconCheck,
   IconClock,
-  IconX
+  IconX,
+  IconEye,
+  IconEdit,
+  IconTrash,
+  IconDownload,
+  IconMail,
+  IconCopy
 } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,6 +62,13 @@ export default function PaymentsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [allPayments, setAllPayments] = useState<Payment[]>([]);
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -123,6 +136,105 @@ export default function PaymentsPage() {
     const matchesStatus = statusFilter === "ALL" || payment.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
+  const handleViewPayment = (payment: Payment) => {
+    setSelectedPayment(payment);
+    setShowViewModal(true);
+    setActiveDropdown(null);
+  };
+
+  const handleEditPayment = (payment: Payment) => {
+    setSelectedPayment(payment);
+    setShowEditModal(true);
+    setActiveDropdown(null);
+  };
+
+  const handleDeletePayment = (payment: Payment) => {
+    setSelectedPayment(payment);
+    setShowDeleteModal(true);
+    setActiveDropdown(null);
+  };
+
+  const confirmDelete = async () => {
+    if (!selectedPayment) return;
+    
+    setIsDeleting(true);
+    try {
+      await axios.delete(`/api/payments/${selectedPayment.id}`);
+      setAllPayments(prev => prev.filter(p => p.id !== selectedPayment.id));
+      setShowDeleteModal(false);
+      setSelectedPayment(null);
+    } catch (error) {
+      console.error('Error deleting payment:', error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleStatusUpdate = async (paymentId: string, newStatus: string) => {
+    setIsUpdating(true);
+    try {
+      await axios.patch(`/api/payments/${paymentId}`, { status: newStatus });
+      setAllPayments(prev => prev.map(p => 
+        p.id === paymentId ? { ...p, status: newStatus } : p
+      ));
+    } catch (error) {
+      console.error('Error updating payment status:', error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleDownloadReceipt = async (payment: Payment) => {
+    try {
+      const response = await axios.get(`/api/payments/${payment.id}/receipt`, {
+        responseType: 'blob'
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `receipt-${payment.id}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      console.error('Error downloading receipt:', error);
+    }
+    setActiveDropdown(null);
+  };
+
+  const handleSendEmail = async (payment: Payment) => {
+    try {
+      await axios.post(`/api/payments/${payment.id}/send-email`);
+      alert('Email sent successfully!');
+    } catch (error) {
+      console.error('Error sending email:', error);
+      alert('Failed to send email');
+    }
+    setActiveDropdown(null);
+  };
+
+  const handleCopyPaymentId = (paymentId: string) => {
+    navigator.clipboard.writeText(paymentId);
+    alert('Payment ID copied to clipboard!');
+    setActiveDropdown(null);
+  };
+
+  const closeModals = () => {
+    setShowViewModal(false);
+    setShowEditModal(false);
+    setShowDeleteModal(false);
+    setSelectedPayment(null);
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => setActiveDropdown(null);
+    if (activeDropdown) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [activeDropdown]);
 
   if (loading) {
     return (
@@ -338,9 +450,85 @@ export default function PaymentsPage() {
                       </div>
                     </td>
                     <td className="py-4 px-2">
-                      <button className="p-1 hover:bg-gray-100 rounded">
-                        <IconDots size={16} className="text-gray-400" />
-                      </button>
+                      <div className="relative">
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveDropdown(activeDropdown === payment.id ? null : payment.id);
+                          }}
+                          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                        >
+                          <IconDots size={16} className="text-gray-400" />
+                        </button>
+                        {activeDropdown === payment.id && (
+                          <div className="absolute right-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-xl z-50 py-1">
+                            <button 
+                              onClick={() => handleViewPayment(payment)}
+                              className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
+                            >
+                              <IconEye size={16} className="text-gray-500" />
+                              View Details
+                            </button>
+                            <button 
+                              onClick={() => handleEditPayment(payment)}
+                              className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
+                            >
+                              <IconEdit size={16} className="text-gray-500" />
+                              Edit Payment
+                            </button>
+                            <div className="border-t border-gray-100 my-1"></div>
+                            <button 
+                              onClick={() => handleDownloadReceipt(payment)}
+                              className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
+                            >
+                              <IconDownload size={16} className="text-gray-500" />
+                              Download Receipt
+                            </button>
+                            <button 
+                              onClick={() => handleSendEmail(payment)}
+                              className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
+                            >
+                              <IconMail size={16} className="text-gray-500" />
+                              Send Email
+                            </button>
+                            <button 
+                              onClick={() => handleCopyPaymentId(payment.id)}
+                              className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
+                            >
+                              <IconCopy size={16} className="text-gray-500" />
+                              Copy Payment ID
+                            </button>
+                            <div className="border-t border-gray-100 my-1"></div>
+                            {payment.status === 'PENDING' && (
+                              <button 
+                                onClick={() => handleStatusUpdate(payment.id, 'COMPLETED')}
+                                disabled={isUpdating}
+                                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2 text-green-600"
+                              >
+                                <IconCheck size={16} />
+                                Mark as Completed
+                              </button>
+                            )}
+                            {payment.status === 'COMPLETED' && (
+                              <button 
+                                onClick={() => handleStatusUpdate(payment.id, 'PENDING')}
+                                disabled={isUpdating}
+                                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2 text-yellow-600"
+                              >
+                                <IconClock size={16} />
+                                Mark as Pending
+                              </button>
+                            )}
+                            <button 
+                              onClick={() => handleDeletePayment(payment)}
+                              className="w-full px-4 py-2 text-left text-sm hover:bg-red-50 flex items-center gap-2 text-red-600"
+                            >
+                              <IconTrash size={16} />
+                              Delete Payment
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -453,6 +641,248 @@ export default function PaymentsPage() {
           </div>
         </div> */}
       </div>
+
+      {/* View Payment Modal */}
+      {showViewModal && selectedPayment && (
+        <div className="fixed inset-0 backdrop-blur-lg flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-gray-900">Payment Details</h2>
+              <button 
+                onClick={closeModals}
+                className="p-2 hover:bg-gray-100 rounded-lg"
+              >
+                <IconX size={20} />
+              </button>
+            </div>
+            
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Payment ID</label>
+                  <p className="text-gray-900 font-mono text-sm bg-gray-50 p-2 rounded">{selectedPayment.id}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Amount</label>
+                  <p className="text-2xl font-bold text-gray-900">₹{selectedPayment.amount.toLocaleString()}</p>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Client</label>
+                  <p className="text-gray-900">{selectedPayment.client.name}</p>
+                  <p className="text-sm text-gray-500">{selectedPayment.client.email}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Project</label>
+                  <p className="text-gray-900">{selectedPayment.project.name}</p>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-3 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                  <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full ${
+                    selectedPayment.status === 'COMPLETED' ? 'text-green-700 bg-green-100' :
+                    selectedPayment.status === 'PENDING' ? 'text-yellow-700 bg-yellow-100' :
+                    selectedPayment.status === 'FAILED' ? 'text-red-700 bg-red-100' :
+                    'text-gray-700 bg-gray-100'
+                  }`}>
+                    {getStatusIcon(selectedPayment.status)}
+                    {selectedPayment.status}
+                  </span>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Method</label>
+                  <div className="flex items-center gap-2">
+                    {getMethodIcon(selectedPayment.method)}
+                    <span>{capitalize.words(selectedPayment.method.replace("_", " "))}</span>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Date</label>
+                  <p className="text-gray-900">{new Date(selectedPayment.date).toLocaleDateString()}</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex gap-3 mt-8">
+              <Button 
+                onClick={() => handleDownloadReceipt(selectedPayment)}
+                variant="outline" 
+                className="flex-1"
+              >
+                <IconDownload size={16} className="mr-2" />
+                Download Receipt
+              </Button>
+              <Button 
+                onClick={() => handleSendEmail(selectedPayment)}
+                variant="outline" 
+                className="flex-1"
+              >
+                <IconMail size={16} className="mr-2" />
+                Send Email
+              </Button>
+              <Button 
+                onClick={() => {
+                  closeModals();
+                  handleEditPayment(selectedPayment);
+                }}
+                className="flex-1 bg-gray-900 hover:bg-gray-800"
+              >
+                <IconEdit size={16} className="mr-2" />
+                Edit Payment
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Payment Modal */}
+      {showEditModal && selectedPayment && (
+        <div className="fixed inset-0 backdrop-blur-md flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-gray-900">Edit Payment</h2>
+              <button 
+                onClick={closeModals}
+                className="p-2 hover:bg-gray-100 rounded-lg"
+              >
+                <IconX size={20} />
+              </button>
+            </div>
+            
+            <form className="space-y-6">
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Amount</label>
+                  <Input 
+                    type="number" 
+                    defaultValue={selectedPayment.amount}
+                    className="w-full"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                  <select 
+                    defaultValue={selectedPayment.status}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  >
+                    <option value="PENDING">Pending</option>
+                    <option value="COMPLETED">Completed</option>
+                    <option value="FAILED">Failed</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Payment Method</label>
+                  <select 
+                    defaultValue={selectedPayment.method}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  >
+                    <option value="BANK_TRANSFER">Bank Transfer</option>
+                    <option value="CREDIT_CARD">Credit Card</option>
+                    <option value="DEBIT_CARD">Debit Card</option>
+                    <option value="UPI">UPI</option>
+                    <option value="CASH">Cash</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Date</label>
+                  <Input 
+                    type="date" 
+                    defaultValue={new Date(selectedPayment.date).toISOString().split('T')[0]}
+                    className="w-full"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Notes</label>
+                <textarea 
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  rows={3}
+                  placeholder="Add any notes about this payment..."
+                />
+              </div>
+            </form>
+            
+            <div className="flex gap-3 mt-8">
+              <Button 
+                onClick={closeModals}
+                variant="outline" 
+                className="flex-1"
+              >
+                Cancel
+              </Button>
+              <Button 
+                disabled={isUpdating}
+                className="flex-1 bg-gray-900 hover:bg-gray-800"
+              >
+                {isUpdating ? 'Updating...' : 'Update Payment'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && selectedPayment && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-gray-900">Delete Payment</h2>
+              <button 
+                onClick={closeModals}
+                className="p-2 hover:bg-gray-100 rounded-lg"
+              >
+                <IconX size={20} />
+              </button>
+            </div>
+            
+            <div className="mb-6">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <IconTrash size={24} className="text-red-600" />
+              </div>
+              <p className="text-gray-600 text-center">
+                Are you sure you want to delete this payment? This action cannot be undone.
+              </p>
+              <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                <p className="text-sm text-gray-700">
+                  <strong>Payment ID:</strong> {selectedPayment.id}
+                </p>
+                <p className="text-sm text-gray-700">
+                  <strong>Amount:</strong> ₹{selectedPayment.amount.toLocaleString()}
+                </p>
+                <p className="text-sm text-gray-700">
+                  <strong>Client:</strong> {selectedPayment.client.name}
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex gap-3">
+              <Button 
+                onClick={closeModals}
+                variant="outline" 
+                className="flex-1"
+                disabled={isDeleting}
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={confirmDelete}
+                disabled={isDeleting}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white"
+              >
+                {isDeleting ? 'Deleting...' : 'Delete Payment'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

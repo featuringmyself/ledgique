@@ -1,0 +1,34 @@
+import { NextRequest, NextResponse } from "next/server";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const payment = await prisma.payment.findUnique({
+      where: { id: params.id },
+      include: {
+        client: true,
+        project: true,
+      },
+    });
+
+    if (!payment) {
+      return NextResponse.json({ error: "Payment not found" }, { status: 404 });
+    }
+
+    const receiptContent = `PAYMENT RECEIPT\n===============\n\nReceipt ID: ${payment.id}\nDate: ${new Date(payment.date).toLocaleDateString()}\n\nClient: ${payment.client.name}\nProject: ${payment.project.name}\nAmount: ₹${payment.amount.toLocaleString()}\nMethod: ${payment.method.replace('_', ' ')}\nStatus: ${payment.status}\n\nThank you for your payment!`;
+
+    return new NextResponse(receiptContent, {
+      headers: {
+        'Content-Type': 'text/plain',
+        'Content-Disposition': `attachment; filename="receipt-${payment.id}.txt"`,
+      },
+    });
+  } catch (error) {
+    return NextResponse.json({ error: "Failed to generate receipt" }, { status: 500 });
+  }
+}
