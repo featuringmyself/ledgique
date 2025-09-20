@@ -57,7 +57,7 @@ export default function ProjectsPage() {
   const totalProjects = projects.length;
   const activeProjects = projects.filter(p => p.status === 'IN_PROGRESS').length;
   const completedProjects = projects.filter(p => p.status === 'COMPLETED').length;
-  const totalBudget = projects.reduce((sum, p) => sum + (p.budget || 0), 0);
+  const totalBudget = projects.reduce((sum, p) => sum + (Number(p.budget) || 0), 0);
 
   const handleDelete = async (projectId: string) => {
     if (!confirm('Are you sure you want to delete this project?')) return;
