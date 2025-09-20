@@ -159,7 +159,7 @@ export function Sidebar({ children }: { children?: React.ReactNode }) {
                                 href: "/profile",
                                 icon: (
                                     <Image
-                                        src={user?.imageUrl || "https://assets.aceternity.com/manu.png"}
+                                        src={user?.imageUrl || "https://cdn-icons-png.flaticon.com/128/1326/1326377.png"}
                                         className="h-7 w-7 shrink-0 rounded-full"
                                         width={50}
                                         height={50}
