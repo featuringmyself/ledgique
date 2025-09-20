@@ -22,21 +22,21 @@ async function main() {
 
   // Create Client Sources
   const clientSources = await Promise.all([
-    prisma.clientSource.create({ data: { name: 'Google Ads', clerkId: clerkUserIds[0] } }),
-    prisma.clientSource.create({ data: { name: 'LinkedIn', clerkId: clerkUserIds[0] } }),
-    prisma.clientSource.create({ data: { name: 'Referral', clerkId: clerkUserIds[0] } }),
-    prisma.clientSource.create({ data: { name: 'Website', clerkId: clerkUserIds[0] } }),
-    prisma.clientSource.create({ data: { name: 'Social Media', clerkId: clerkUserIds[0] } }),
-    prisma.clientSource.create({ data: { name: 'Cold Email', clerkId: clerkUserIds[0] } }),
-    prisma.clientSource.create({ data: { name: 'Networking Events', clerkId: clerkUserIds[0] } }),
-    prisma.clientSource.create({ data: { name: 'Facebook Ads', clerkId: clerkUserIds[0] } }),
-    prisma.clientSource.create({ data: { name: 'Twitter', clerkId: clerkUserIds[0] } }),
-    prisma.clientSource.create({ data: { name: 'YouTube', clerkId: clerkUserIds[0] } }),
-    prisma.clientSource.create({ data: { name: 'Instagram', clerkId: clerkUserIds[0] } }),
-    prisma.clientSource.create({ data: { name: 'TikTok', clerkId: clerkUserIds[0] } }),
-    prisma.clientSource.create({ data: { name: 'Upwork', clerkId: clerkUserIds[0] } }),
-    prisma.clientSource.create({ data: { name: 'Fiverr', clerkId: clerkUserIds[0] } }),
-    prisma.clientSource.create({ data: { name: 'Freelancer', clerkId: clerkUserIds[0] } }),
+    prisma.clientSource.upsert({ where: { name_clerkId: { name: 'Google Ads', clerkId: clerkUserIds[0] } }, update: {}, create: { name: 'Google Ads', clerkId: clerkUserIds[0] } }),
+    prisma.clientSource.upsert({ where: { name_clerkId: { name: 'LinkedIn', clerkId: clerkUserIds[0] } }, update: {}, create: { name: 'LinkedIn', clerkId: clerkUserIds[0] } }),
+    prisma.clientSource.upsert({ where: { name_clerkId: { name: 'Referral', clerkId: clerkUserIds[0] } }, update: {}, create: { name: 'Referral', clerkId: clerkUserIds[0] } }),
+    prisma.clientSource.upsert({ where: { name_clerkId: { name: 'Website', clerkId: clerkUserIds[0] } }, update: {}, create: { name: 'Website', clerkId: clerkUserIds[0] } }),
+    prisma.clientSource.upsert({ where: { name_clerkId: { name: 'Social Media', clerkId: clerkUserIds[0] } }, update: {}, create: { name: 'Social Media', clerkId: clerkUserIds[0] } }),
+    prisma.clientSource.upsert({ where: { name_clerkId: { name: 'Cold Email', clerkId: clerkUserIds[0] } }, update: {}, create: { name: 'Cold Email', clerkId: clerkUserIds[0] } }),
+    prisma.clientSource.upsert({ where: { name_clerkId: { name: 'Networking Events', clerkId: clerkUserIds[0] } }, update: {}, create: { name: 'Networking Events', clerkId: clerkUserIds[0] } }),
+    prisma.clientSource.upsert({ where: { name_clerkId: { name: 'Facebook Ads', clerkId: clerkUserIds[0] } }, update: {}, create: { name: 'Facebook Ads', clerkId: clerkUserIds[0] } }),
+    prisma.clientSource.upsert({ where: { name_clerkId: { name: 'Twitter', clerkId: clerkUserIds[0] } }, update: {}, create: { name: 'Twitter', clerkId: clerkUserIds[0] } }),
+    prisma.clientSource.upsert({ where: { name_clerkId: { name: 'YouTube', clerkId: clerkUserIds[0] } }, update: {}, create: { name: 'YouTube', clerkId: clerkUserIds[0] } }),
+    prisma.clientSource.upsert({ where: { name_clerkId: { name: 'Instagram', clerkId: clerkUserIds[0] } }, update: {}, create: { name: 'Instagram', clerkId: clerkUserIds[0] } }),
+    prisma.clientSource.upsert({ where: { name_clerkId: { name: 'TikTok', clerkId: clerkUserIds[0] } }, update: {}, create: { name: 'TikTok', clerkId: clerkUserIds[0] } }),
+    prisma.clientSource.upsert({ where: { name_clerkId: { name: 'Upwork', clerkId: clerkUserIds[0] } }, update: {}, create: { name: 'Upwork', clerkId: clerkUserIds[0] } }),
+    prisma.clientSource.upsert({ where: { name_clerkId: { name: 'Fiverr', clerkId: clerkUserIds[0] } }, update: {}, create: { name: 'Fiverr', clerkId: clerkUserIds[0] } }),
+    prisma.clientSource.upsert({ where: { name_clerkId: { name: 'Freelancer', clerkId: clerkUserIds[0] } }, update: {}, create: { name: 'Freelancer', clerkId: clerkUserIds[0] } }),
   ]);
 
   console.log('📊 Created client sources');
