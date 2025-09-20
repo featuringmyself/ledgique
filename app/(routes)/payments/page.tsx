@@ -69,6 +69,13 @@ export default function PaymentsPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [editForm, setEditForm] = useState({
+    amount: 0,
+    status: '',
+    method: '',
+    date: '',
+    notes: ''
+  });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -145,6 +152,13 @@ export default function PaymentsPage() {
 
   const handleEditPayment = (payment: Payment) => {
     setSelectedPayment(payment);
+    setEditForm({
+      amount: payment.amount,
+      status: payment.status,
+      method: payment.method,
+      date: new Date(payment.date).toISOString().split('T')[0],
+      notes: ''
+    });
     setShowEditModal(true);
     setActiveDropdown(null);
   };
@@ -180,6 +194,30 @@ export default function PaymentsPage() {
       ));
     } catch (error) {
       console.error('Error updating payment status:', error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleUpdatePayment = async () => {
+    if (!selectedPayment) return;
+    
+    setIsUpdating(true);
+    try {
+      await axios.patch(`/api/payments/${selectedPayment.id}`, editForm);
+      setAllPayments(prev => prev.map(p => 
+        p.id === selectedPayment.id ? { 
+          ...p, 
+          amount: editForm.amount,
+          status: editForm.status,
+          method: editForm.method,
+          date: editForm.date
+        } : p
+      ));
+      closeModals();
+    } catch (error) {
+      console.error('Error updating payment:', error);
+      alert('Failed to update payment');
     } finally {
       setIsUpdating(false);
     }
@@ -759,14 +797,16 @@ export default function PaymentsPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Amount</label>
                   <Input 
                     type="number" 
-                    defaultValue={selectedPayment.amount}
+                    value={editForm.amount}
+                    onChange={(e) => setEditForm(prev => ({ ...prev, amount: Number(e.target.value) }))}
                     className="w-full"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
                   <select 
-                    defaultValue={selectedPayment.status}
+                    value={editForm.status}
+                    onChange={(e) => setEditForm(prev => ({ ...prev, status: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                   >
                     <option value="PENDING">Pending</option>
@@ -780,7 +820,8 @@ export default function PaymentsPage() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Payment Method</label>
                   <select 
-                    defaultValue={selectedPayment.method}
+                    value={editForm.method}
+                    onChange={(e) => setEditForm(prev => ({ ...prev, method: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                   >
                     <option value="BANK_TRANSFER">Bank Transfer</option>
@@ -794,7 +835,8 @@ export default function PaymentsPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">Date</label>
                   <Input 
                     type="date" 
-                    defaultValue={new Date(selectedPayment.date).toISOString().split('T')[0]}
+                    value={editForm.date}
+                    onChange={(e) => setEditForm(prev => ({ ...prev, date: e.target.value }))}
                     className="w-full"
                   />
                 </div>
@@ -803,6 +845,8 @@ export default function PaymentsPage() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Notes</label>
                 <textarea 
+                  value={editForm.notes}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, notes: e.target.value }))}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                   rows={3}
                   placeholder="Add any notes about this payment..."
@@ -819,6 +863,7 @@ export default function PaymentsPage() {
                 Cancel
               </Button>
               <Button 
+                onClick={handleUpdatePayment}
                 disabled={isUpdating}
                 className="flex-1 bg-gray-900 hover:bg-gray-800"
               >
