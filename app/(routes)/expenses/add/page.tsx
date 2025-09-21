@@ -78,7 +78,7 @@ export default function AddExpensePage() {
   };
 
   return (
-    <div className="p-6 bg-white w-full min-h-screen">
+    <div className="p-6 bg-white w-full min-h-screen flex items-center flex-col justify-center">
       {/* Header */}
       <div className="flex items-center gap-4 mb-8">
         <Link href="/expenses">
