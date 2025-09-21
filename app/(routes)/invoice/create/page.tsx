@@ -122,7 +122,7 @@ export default function CreateInvoicePage() {
   const { subtotal, taxAmount, total } = calculateTotals();
 
   return (
-    <div className="p-6 bg-white w-full min-h-screen">
+    <div className="p-6 bg-white w-full min-h-screen flex items-center mx-auto flex-col">
       <div className="flex items-center gap-4 mb-6">
         <Link href="/invoice">
           <button className="p-2 hover:bg-gray-100 rounded">

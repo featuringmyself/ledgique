@@ -15,12 +15,18 @@ interface Client {
 interface Project {
   id: string;
   name: string;
+  clientId: string;
+  client: {
+    name: string;
+    company: string;
+  };
 }
 
 export default function AddPaymentPage() {
   const router = useRouter();
   const [clients, setClients] = useState<Client[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(false);
   
   const [formData, setFormData] = useState({
@@ -38,6 +44,14 @@ export default function AddPaymentPage() {
     fetchClients();
     fetchProjects();
   }, []);
+
+  useEffect(() => {
+    if (formData.clientId) {
+      setFilteredProjects(projects.filter(project => project.clientId === formData.clientId));
+    } else {
+      setFilteredProjects(projects);
+    }
+  }, [formData.clientId, projects]);
 
   const fetchClients = async () => {
     try {
@@ -120,7 +134,7 @@ export default function AddPaymentPage() {
               <label className="block text-sm font-medium text-gray-700 mb-2">Client *</label>
               <select
                 value={formData.clientId}
-                onChange={(e) => setFormData({ ...formData, clientId: e.target.value })}
+                onChange={(e) => setFormData({ ...formData, clientId: e.target.value, projectId: "" })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
               >
@@ -136,12 +150,19 @@ export default function AddPaymentPage() {
               <label className="block text-sm font-medium text-gray-700 mb-2">Project *</label>
               <select
                 value={formData.projectId}
-                onChange={(e) => setFormData({ ...formData, projectId: e.target.value })}
+                onChange={(e) => {
+                  const selectedProject = projects.find(p => p.id === e.target.value);
+                  setFormData({ 
+                    ...formData, 
+                    projectId: e.target.value,
+                    clientId: selectedProject ? selectedProject.clientId : formData.clientId
+                  });
+                }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
               >
                 <option value="">Select a project</option>
-                {projects.map((project) => (
+                {filteredProjects.map((project) => (
                   <option key={project.id} value={project.id}>
                     {project.name}
                   </option>
