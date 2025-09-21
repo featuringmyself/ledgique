@@ -8,14 +8,15 @@ const ai = new GoogleGenAI({});
 const functionDeclarations = [
   {
     name: "addExpense",
-    description: "Add a new expense to the ledger",
+    description: "Add a new expense to the ledger, optionally associated with a client",
     parameters: {
       type: Type.OBJECT,
       properties: {
         amount: { type: Type.NUMBER, description: "Expense amount" },
         description: { type: Type.STRING, description: "Expense description" },
         category: { type: Type.STRING, description: "Expense category" },
-        date: { type: Type.STRING, description: "Date in YYYY-MM-DD format" }
+        date: { type: Type.STRING, description: "Date in YYYY-MM-DD format" },
+        clientId: { type: Type.STRING, description: "Client ID to associate expense with (optional)" }
       },
       required: ["amount", "description"]
     }
@@ -339,6 +340,43 @@ const functionDeclarations = [
       },
       required: ["query"]
     }
+  },
+  {
+    name: "findClientByName",
+    description: "Find a client ID by client name - useful for parallel operations",
+    parameters: {
+      type: Type.OBJECT,
+      properties: {
+        name: { type: Type.STRING, description: "Client name to search for" }
+      },
+      required: ["name"]
+    }
+  },
+  {
+    name: "findProjectByName",
+    description: "Find a project ID by project name - useful for parallel operations",
+    parameters: {
+      type: Type.OBJECT,
+      properties: {
+        name: { type: Type.STRING, description: "Project name to search for" }
+      },
+      required: ["name"]
+    }
+  },
+  {
+    name: "addExpenseToClient",
+    description: "Add an expense to a specific client's account by client name",
+    parameters: {
+      type: Type.OBJECT,
+      properties: {
+        amount: { type: Type.NUMBER, description: "Expense amount" },
+        description: { type: Type.STRING, description: "Expense description" },
+        clientName: { type: Type.STRING, description: "Client name to add expense to" },
+        category: { type: Type.STRING, description: "Expense category" },
+        date: { type: Type.STRING, description: "Date in YYYY-MM-DD format" }
+      },
+      required: ["amount", "description", "clientName"]
+    }
   }
 ];
 
@@ -348,6 +386,7 @@ interface AddExpenseParams {
   description: string;
   category?: string;
   date?: string;
+  clientId?: string;
 }
 
 interface CreateClientParams {
@@ -469,6 +508,14 @@ interface ClientAnalysisParams {
   year?: number;
 }
 
+interface AddExpenseToClientParams {
+  amount: number;
+  description: string;
+  clientName: string;
+  category?: string;
+  date?: string;
+}
+
 interface FunctionResult {
   success: boolean;
   message?: string;
@@ -488,10 +535,12 @@ async function addExpense(params: AddExpenseParams, userId: string): Promise<Fun
         amount: params.amount,
         category: 'OTHER',
         date: params.date ? new Date(params.date) : new Date(),
-        clerkId: userId
+        clerkId: userId,
+        ...(params.clientId && { client: { connect: { id: params.clientId } } })
       }
     });
-    return { success: true, message: `Added expense: ${params.description} for $${params.amount}`, data: expense };
+    const clientMsg = params.clientId ? ' for client' : '';
+    return { success: true, message: `Added expense: ${params.description} for ₹${params.amount}${clientMsg}`, data: expense };
   } catch (_error) {
     return { success: false, error: 'Failed to add expense' };
   }
@@ -1209,6 +1258,142 @@ async function searchProjects(params: { query: string }, userId: string): Promis
   }
 }
 
+// Helper function to find client ID by name
+async function findClientByName(name: string, userId: string): Promise<string | null> {
+  const client = await prisma.client.findFirst({
+    where: {
+      clerkId: userId,
+      name: { contains: name, mode: 'insensitive' }
+    },
+    select: { id: true }
+  });
+  return client?.id || null;
+}
+
+// Helper function to find project ID by name
+async function findProjectByName(name: string, userId: string): Promise<string | null> {
+  const project = await prisma.project.findFirst({
+    where: {
+      clerkId: userId,
+      name: { contains: name, mode: 'insensitive' }
+    },
+    select: { id: true }
+  });
+  return project?.id || null;
+}
+
+// Add expense to client by name
+async function addExpenseToClient(params: AddExpenseToClientParams, userId: string): Promise<FunctionResult> {
+  try {
+    // Find client by name
+    const client = await prisma.client.findFirst({
+      where: {
+        clerkId: userId,
+        name: { contains: params.clientName, mode: 'insensitive' }
+      }
+    });
+    
+    if (!client) {
+      return { success: false, error: `Client '${params.clientName}' not found` };
+    }
+    
+    // Create expense with client association
+    const expense = await prisma.expense.create({
+      data: {
+        title: params.description,
+        description: params.description,
+        amount: params.amount,
+        category: 'OTHER',
+        date: params.date ? new Date(params.date) : new Date(),
+        clerkId: userId,
+        clientId: client.id
+      }
+    });
+    
+    return { 
+      success: true, 
+      message: `Added expense: ${params.description} for ₹${params.amount} to ${client.name}'s account`, 
+      data: expense 
+    };
+  } catch (_error) {
+    return { success: false, error: 'Failed to add expense to client account' };
+  }
+}
+
+// Parallel function execution helper
+async function executeParallelFunctions(functionCalls: Array<{ name: string; args: unknown }>, userId: string): Promise<FunctionResult[]> {
+  const promises = functionCalls.map(async (functionCall) => {
+    const { name: functionName, args: functionArgs } = functionCall;
+    
+    switch (functionName) {
+      case "addExpense":
+        return addExpense(functionArgs as AddExpenseParams, userId);
+      case "createClient":
+        return createClient(functionArgs as CreateClientParams, userId);
+      case "updateClient":
+        return updateClient(functionArgs as UpdateClientParams, userId);
+      case "showRevenue":
+        return showRevenue(functionArgs as ShowRevenueParams, userId);
+      case "addIncome":
+        return addIncome(functionArgs as AddIncomeParams, userId);
+      case "createProject":
+        return createProject(functionArgs as CreateProjectParams, userId);
+      case "createInvoice":
+        return createInvoice(functionArgs as CreateInvoiceParams, userId);
+      case "addPayment":
+        return addPayment(functionArgs as AddPaymentParams, userId);
+      case "showPendingPayments":
+        return showPendingPayments(userId);
+      case "showOverdueAmount":
+        return showOverdueAmount(userId);
+      case "showClientSources":
+        return showClientSources(functionArgs as ClientAnalysisParams, userId);
+      case "showClientStats":
+        return showClientStats(functionArgs as ClientAnalysisParams, userId);
+      case "showDashboardStats":
+        return showDashboardStats(userId);
+      case "showThisYearStats":
+        return showThisYearStats(userId);
+      case "createRetainer":
+        return createRetainer(functionArgs as CreateRetainerParams, userId);
+      case "addClientSource":
+        return addClientSource(functionArgs as AddClientSourceParams, userId);
+      case "createClientSource":
+        return createClientSource(functionArgs as CreateClientSourceParams, userId);
+      case "updateProject":
+        return updateProject(functionArgs as UpdateProjectParams, userId);
+      case "updateExpense":
+        return updateExpense(functionArgs as UpdateExpenseParams, userId);
+      case "updatePayment":
+        return updatePayment(functionArgs as UpdatePaymentParams, userId);
+      case "showExpenses":
+        return showExpenses(functionArgs as ShowExpensesParams, userId);
+      case "showUnpaidInvoices":
+        return showUnpaidInvoices(userId);
+      case "listClients":
+        return listClients(functionArgs as { search?: string }, userId);
+      case "listProjects":
+        return listProjects(functionArgs as { clientId?: string; search?: string }, userId);
+      case "searchClients":
+        return searchClients(functionArgs as { query: string }, userId);
+      case "searchProjects":
+        return searchProjects(functionArgs as { query: string }, userId);
+      case "findClientByName":
+        const clientId = await findClientByName((functionArgs as { name: string }).name, userId);
+        return { success: true, data: { clientId }, message: clientId ? 'Client found' : 'Client not found' };
+      case "findProjectByName":
+        const projectId = await findProjectByName((functionArgs as { name: string }).name, userId);
+        return { success: true, data: { projectId }, message: projectId ? 'Project found' : 'Project not found' };
+      case "addExpenseToClient":
+        return addExpenseToClient(functionArgs as AddExpenseToClientParams, userId);
+      default:
+        return { error: "Unknown function", success: false };
+    }
+  });
+  
+  return Promise.all(promises);
+}
+
 const tools = functionDeclarations;
 
 export async function POST(req: NextRequest) {
@@ -1269,108 +1454,30 @@ Formatting Guidelines:
 
     // Check if AI wants to call functions
     if (response.functionCalls && response.functionCalls.length > 0) {
-      for (const functionCall of response.functionCalls) {
-        const functionName = functionCall.name;
-        const functionArgs = functionCall.args;
-
-        let functionResult;
-
-        // Execute the appropriate function
-        switch (functionName) {
-          case "addExpense":
-            functionResult = await addExpense(functionArgs as unknown as AddExpenseParams, userId);
-            break;
-          case "createClient":
-            functionResult = await createClient(functionArgs as unknown as CreateClientParams, userId);
-            break;
-          case "updateClient":
-            functionResult = await updateClient(functionArgs as unknown as UpdateClientParams, userId);
-            break;
-          case "showRevenue":
-            functionResult = await showRevenue(functionArgs as unknown as ShowRevenueParams, userId);
-            break;
-          case "addIncome":
-            functionResult = await addIncome(functionArgs as unknown as AddIncomeParams, userId);
-            break;
-          case "createProject":
-            functionResult = await createProject(functionArgs as unknown as CreateProjectParams, userId);
-            break;
-          case "createInvoice":
-            functionResult = await createInvoice(functionArgs as unknown as CreateInvoiceParams, userId);
-            break;
-          case "addPayment":
-            functionResult = await addPayment(functionArgs as unknown as AddPaymentParams, userId);
-            break;
-          case "showPendingPayments":
-            functionResult = await showPendingPayments(userId);
-            break;
-          case "showOverdueAmount":
-            functionResult = await showOverdueAmount(userId);
-            break;
-          case "showClientSources":
-            functionResult = await showClientSources(functionArgs as unknown as ClientAnalysisParams, userId);
-            break;
-          case "showClientStats":
-            functionResult = await showClientStats(functionArgs as unknown as ClientAnalysisParams, userId);
-            break;
-          case "showDashboardStats":
-            functionResult = await showDashboardStats(userId);
-            break;
-          case "showThisYearStats":
-            functionResult = await showThisYearStats(userId);
-            break;
-          case "createRetainer":
-            functionResult = await createRetainer(functionArgs as unknown as CreateRetainerParams, userId);
-            break;
-          case "addClientSource":
-            functionResult = await addClientSource(functionArgs as unknown as AddClientSourceParams, userId);
-            break;
-          case "createClientSource":
-            functionResult = await createClientSource(functionArgs as unknown as CreateClientSourceParams, userId);
-            break;
-          case "updateProject":
-            functionResult = await updateProject(functionArgs as unknown as UpdateProjectParams, userId);
-            break;
-          case "updateExpense":
-            functionResult = await updateExpense(functionArgs as unknown as UpdateExpenseParams, userId);
-            break;
-          case "updatePayment":
-            functionResult = await updatePayment(functionArgs as unknown as UpdatePaymentParams, userId);
-            break;
-          case "showExpenses":
-            functionResult = await showExpenses(functionArgs as unknown as ShowExpensesParams, userId);
-            break;
-          case "showUnpaidInvoices":
-            functionResult = await showUnpaidInvoices(userId);
-            break;
-          case "listClients":
-            functionResult = await listClients(functionArgs as unknown as { search?: string }, userId);
-            break;
-          case "listProjects":
-            functionResult = await listProjects(functionArgs as unknown as { clientId?: string; search?: string }, userId);
-            break;
-          case "searchClients":
-            functionResult = await searchClients(functionArgs as unknown as { query: string }, userId);
-            break;
-          case "searchProjects":
-            functionResult = await searchProjects(functionArgs as unknown as { query: string }, userId);
-            break;
-          default:
-            functionResult = { error: "Unknown function", success: false };
-        }
-
-        // Add function call and response to conversation
-        contents.push({
-          role: "model",
-          parts: [{ text: response.text || 'Function call executed' }]
-        });
+      // Execute all functions in parallel
+      const functionCallsData = response.functionCalls.map(fc => ({
+        name: fc.name || '',
+        args: fc.args || {}
+      }));
+      
+      const functionResults = await executeParallelFunctions(functionCallsData, userId);
+      
+      // Add function calls and responses to conversation
+      contents.push({
+        role: "model",
+        parts: [{ text: response.text || 'Function calls executed' }]
+      });
+      
+      // Add all function results
+      functionResults.forEach((result, index) => {
+        const functionName = functionCallsData[index].name;
         contents.push({
           role: "user",
           parts: [{
-            text: `Function ${functionName} result: ${JSON.stringify(functionResult)}`
+            text: `Function ${functionName} result: ${JSON.stringify(result)}`
           }]
         });
-      }
+      });
 
       // Get final response with function results
       const finalResponse = await ai.models.generateContent({
@@ -1391,7 +1498,8 @@ Formatting Guidelines:
       return NextResponse.json({
         message: finalResponse.text,
         chatHistory: updatedHistory,
-        functionsExecuted: response.functionCalls.map((fc) => ({ name: fc.name || '', args: fc.args }))
+        functionsExecuted: functionCallsData,
+        functionResults
       });
     } else {
       const updatedHistory = [

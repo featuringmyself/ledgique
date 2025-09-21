@@ -69,6 +69,7 @@ model Client {
   payments Payment[]
   invoices Invoice[]
   retainers Retainer[]
+  expenses Expense[]
 
   @@map("clients")
 }
@@ -316,6 +317,8 @@ model Expense {
   // Relations
   projectId   String?
   project     Project?        @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  clientId    String?
+  client      Client?         @relation(fields: [clientId], references: [id], onDelete: SetNull)
   
   // Timestamps
   createdAt   DateTime        @default(now())

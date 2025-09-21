@@ -48,14 +48,14 @@ export default function ExpensesPage() {
     return matchesSearch && matchesCategory;
   });
 
-  const totalExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+  const totalExpenses = expenses.reduce((sum, exp) => sum + Number(exp.amount), 0);
   const thisMonthExpenses = expenses.filter(exp => {
     const expenseDate = new Date(exp.date);
     const now = new Date();
     return expenseDate.getMonth() === now.getMonth() && expenseDate.getFullYear() === now.getFullYear();
-  }).reduce((sum, exp) => sum + exp.amount, 0);
+  }).reduce((sum, exp) => sum + Number(exp.amount), 0);
   const expensesByCategory = expenses.reduce((acc, exp) => {
-    acc[exp.category] = (acc[exp.category] || 0) + exp.amount;
+    acc[exp.category] = (acc[exp.category] || 0) + Number(exp.amount);
     return acc;
   }, {} as Record<string, number>);
   const topCategory = Object.entries(expensesByCategory).sort(([,a], [,b]) => b - a)[0];
