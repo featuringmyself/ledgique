@@ -919,7 +919,6 @@ async function createRetainer(params: CreateRetainerParams, userId: string): Pro
         title: params.title,
         clientId: params.clientId,
         totalAmount: params.totalAmount,
-        remainingAmount: params.totalAmount,
         hourlyRate: params.hourlyRate,
         startDate: params.startDate ? new Date(params.startDate) : new Date(),
         endDate: params.endDate ? new Date(params.endDate) : null
