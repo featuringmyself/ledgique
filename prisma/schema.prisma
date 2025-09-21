@@ -273,8 +273,6 @@ model Retainer {
   title         String
   description   String?
   totalAmount   Decimal        @db.Money
-  usedAmount    Decimal        @default(0) @db.Money
-  remainingAmount Decimal      @db.Money
   hourlyRate    Decimal?       @db.Money
   status        RetainerStatus @default(ACTIVE)
   startDate     DateTime       @default(now())

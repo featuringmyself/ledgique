@@ -45,15 +45,17 @@ export async function POST(request: NextRequest) {
       endDate
     } = await request.json();
 
+    const totalAmountDecimal = parseFloat(totalAmount);
+    const hourlyRateDecimal = hourlyRate ? parseFloat(hourlyRate) : null;
+
     const retainer = await prisma.retainer.create({
       data: {
         title,
         description,
-        totalAmount,
-        remainingAmount: totalAmount,
-        hourlyRate,
+        totalAmount: totalAmountDecimal,
+        hourlyRate: hourlyRateDecimal,
         clientId,
-        projectId,
+        projectId: projectId || null,
         startDate: new Date(startDate),
         endDate: endDate ? new Date(endDate) : null
       },

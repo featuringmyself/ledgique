@@ -29,6 +29,7 @@ export default function AddRetainerPage() {
     projectId: "",
     totalAmount: "",
     hourlyRate: "",
+    startDate: new Date().toISOString().split('T')[0],
     endDate: "",
   });
 
@@ -180,6 +181,20 @@ export default function AddRetainerPage() {
                 value={formData.hourlyRate}
                 onChange={handleChange}
                 placeholder="Enter hourly rate"
+                className="border-gray-300"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Start Date *
+              </label>
+              <Input
+                name="startDate"
+                type="date"
+                value={formData.startDate}
+                onChange={handleChange}
+                required
                 className="border-gray-300"
               />
             </div>
