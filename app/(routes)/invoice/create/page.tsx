@@ -30,6 +30,12 @@ export default function CreateInvoicePage() {
   const router = useRouter();
   const [clients, setClients] = useState<Client[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [filteredClients, setFilteredClients] = useState<Client[]>([]);
+  const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
+  const [clientSearch, setClientSearch] = useState("");
+  const [projectSearch, setProjectSearch] = useState("");
+  const [showClientDropdown, setShowClientDropdown] = useState(false);
+  const [showProjectDropdown, setShowProjectDropdown] = useState(false);
   const [loading, setLoading] = useState(false);
   
   const [formData, setFormData] = useState({
@@ -52,6 +58,23 @@ export default function CreateInvoicePage() {
     fetchClients();
     fetchProjects();
   }, []);
+
+  useEffect(() => {
+    setFilteredClients(
+      clients.filter(client => 
+        client.name.toLowerCase().includes(clientSearch.toLowerCase()) ||
+        (client.company && client.company.toLowerCase().includes(clientSearch.toLowerCase()))
+      )
+    );
+  }, [clientSearch, clients]);
+
+  useEffect(() => {
+    setFilteredProjects(
+      projects.filter(project => 
+        project.name.toLowerCase().includes(projectSearch.toLowerCase())
+      )
+    );
+  }, [projectSearch, projects]);
 
   const fetchClients = async () => {
     try {
@@ -122,7 +145,13 @@ export default function CreateInvoicePage() {
   const { subtotal, taxAmount, total } = calculateTotals();
 
   return (
-    <div className="p-6 bg-white w-full min-h-screen flex items-center mx-auto flex-col">
+    <div 
+      className="p-6 bg-white w-full min-h-screen flex items-center mx-auto flex-col"
+      onClick={() => {
+        setShowClientDropdown(false);
+        setShowProjectDropdown(false);
+      }}
+    >
       <div className="flex items-center gap-4 mb-6">
         <Link href="/invoice">
           <button className="p-2 hover:bg-gray-100 rounded">
@@ -161,36 +190,68 @@ export default function CreateInvoicePage() {
                 />
               </div>
             </div>
-            <div>
+            <div className="relative">
               <label className="block text-sm font-medium text-gray-700 mb-2">Client *</label>
-              <select
-                value={formData.clientId}
-                onChange={(e) => setFormData({ ...formData, clientId: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              >
-                <option value="">Select a client</option>
-                {clients.map((client) => (
-                  <option key={client.id} value={client.id}>
-                    {client.name} {client.company && `(${client.company})`}
-                  </option>
-                ))}
-              </select>
+              <div onClick={(e) => e.stopPropagation()}>
+                <Input
+                  value={clientSearch}
+                  onChange={(e) => {
+                    setClientSearch(e.target.value);
+                    setShowClientDropdown(true);
+                  }}
+                  onFocus={() => setShowClientDropdown(true)}
+                  placeholder="Search client..."
+                  required={!formData.clientId}
+                />
+              </div>
+              {showClientDropdown && filteredClients.length > 0 && (
+                <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-md mt-1 max-h-40 overflow-y-auto">
+                  {filteredClients.map((client) => (
+                    <div
+                      key={client.id}
+                      className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                      onClick={() => {
+                        setFormData({ ...formData, clientId: client.id });
+                        setClientSearch(`${client.name}${client.company ? ` (${client.company})` : ''}`);
+                        setShowClientDropdown(false);
+                      }}
+                    >
+                      {client.name} {client.company && `(${client.company})`}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-            <div>
+            <div className="relative">
               <label className="block text-sm font-medium text-gray-700 mb-2">Project (Optional)</label>
-              <select
-                value={formData.projectId}
-                onChange={(e) => setFormData({ ...formData, projectId: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Select a project</option>
-                {projects.map((project) => (
-                  <option key={project.id} value={project.id}>
-                    {project.name}
-                  </option>
-                ))}
-              </select>
+              <div onClick={(e) => e.stopPropagation()}>
+                <Input
+                  value={projectSearch}
+                  onChange={(e) => {
+                    setProjectSearch(e.target.value);
+                    setShowProjectDropdown(true);
+                  }}
+                  onFocus={() => setShowProjectDropdown(true)}
+                  placeholder="Search project..."
+                />
+              </div>
+              {showProjectDropdown && filteredProjects.length > 0 && (
+                <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-md mt-1 max-h-40 overflow-y-auto">
+                  {filteredProjects.map((project) => (
+                    <div
+                      key={project.id}
+                      className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                      onClick={() => {
+                        setFormData({ ...formData, projectId: project.id });
+                        setProjectSearch(project.name);
+                        setShowProjectDropdown(false);
+                      }}
+                    >
+                      {project.name}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>

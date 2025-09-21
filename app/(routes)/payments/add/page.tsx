@@ -27,6 +27,11 @@ export default function AddPaymentPage() {
   const [clients, setClients] = useState<Client[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
+  const [filteredClients, setFilteredClients] = useState<Client[]>([]);
+  const [clientSearch, setClientSearch] = useState("");
+  const [projectSearch, setProjectSearch] = useState("");
+  const [showClientDropdown, setShowClientDropdown] = useState(false);
+  const [showProjectDropdown, setShowProjectDropdown] = useState(false);
   const [loading, setLoading] = useState(false);
   
   const [formData, setFormData] = useState({
@@ -52,6 +57,25 @@ export default function AddPaymentPage() {
       setFilteredProjects(projects);
     }
   }, [formData.clientId, projects]);
+
+  useEffect(() => {
+    setFilteredClients(
+      clients.filter(client => 
+        client.name.toLowerCase().includes(clientSearch.toLowerCase()) ||
+        (client.company && client.company.toLowerCase().includes(clientSearch.toLowerCase()))
+      )
+    );
+  }, [clientSearch, clients]);
+
+  useEffect(() => {
+    const filtered = (formData.clientId ? 
+      projects.filter(project => project.clientId === formData.clientId) : 
+      projects
+    ).filter(project => 
+      project.name.toLowerCase().includes(projectSearch.toLowerCase())
+    );
+    setFilteredProjects(filtered);
+  }, [projectSearch, projects, formData.clientId]);
 
   const fetchClients = async () => {
     try {
@@ -89,7 +113,13 @@ export default function AddPaymentPage() {
   };
 
   return (
-    <div className="p-6 bg-white w-full min-h-screen flex flex-col items-center justify-center">
+    <div 
+      className="p-6 bg-white w-full min-h-screen flex flex-col items-center justify-center"
+      onClick={() => {
+        setShowClientDropdown(false);
+        setShowProjectDropdown(false);
+      }}
+    >
       <div className="flex items-center gap-4 mb-6">
         <Link href="/payments">
           <button className="p-2 hover:bg-gray-100 rounded">
@@ -102,7 +132,7 @@ export default function AddPaymentPage() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="max-w-2xl">
+      <form onSubmit={handleSubmit} className="max-w-4xl min-w-2xl">
         <div className="bg-gray-50 p-6 rounded-lg mb-6">
           <h2 className="text-lg font-medium text-gray-900 mb-4">Payment Details</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -130,44 +160,78 @@ export default function AddPaymentPage() {
                 />
               </div>
             </div>
-            <div>
+            <div className="relative">
               <label className="block text-sm font-medium text-gray-700 mb-2">Client *</label>
-              <select
-                value={formData.clientId}
-                onChange={(e) => setFormData({ ...formData, clientId: e.target.value, projectId: "" })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              >
-                <option value="">Select a client</option>
-                {clients.map((client) => (
-                  <option key={client.id} value={client.id}>
-                    {client.name} {client.company && `(${client.company})`}
-                  </option>
-                ))}
-              </select>
+              <div onClick={(e) => e.stopPropagation()}>
+                <Input
+                  value={clientSearch}
+                  onChange={(e) => {
+                    setClientSearch(e.target.value);
+                    setShowClientDropdown(true);
+                  }}
+                  onFocus={() => setShowClientDropdown(true)}
+                  placeholder="Search client..."
+                  required={!formData.clientId}
+                />
+              </div>
+              {showClientDropdown && filteredClients.length > 0 && (
+                <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-md mt-1 max-h-40 overflow-y-auto">
+                  {filteredClients.map((client) => (
+                    <div
+                      key={client.id}
+                      className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                      onClick={() => {
+                        setFormData({ ...formData, clientId: client.id, projectId: "" });
+                        setClientSearch(`${client.name}${client.company ? ` (${client.company})` : ''}`);
+                        setShowClientDropdown(false);
+                        setProjectSearch("");
+                      }}
+                    >
+                      {client.name} {client.company && `(${client.company})`}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-            <div>
+            <div className="relative">
               <label className="block text-sm font-medium text-gray-700 mb-2">Project *</label>
-              <select
-                value={formData.projectId}
-                onChange={(e) => {
-                  const selectedProject = projects.find(p => p.id === e.target.value);
-                  setFormData({ 
-                    ...formData, 
-                    projectId: e.target.value,
-                    clientId: selectedProject ? selectedProject.clientId : formData.clientId
-                  });
-                }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              >
-                <option value="">Select a project</option>
-                {filteredProjects.map((project) => (
-                  <option key={project.id} value={project.id}>
-                    {project.name}
-                  </option>
-                ))}
-              </select>
+              <div onClick={(e) => e.stopPropagation()}>
+                <Input
+                  value={projectSearch}
+                  onChange={(e) => {
+                    setProjectSearch(e.target.value);
+                    setShowProjectDropdown(true);
+                  }}
+                  onFocus={() => setShowProjectDropdown(true)}
+                  placeholder="Search project..."
+                  required={!formData.projectId}
+                />
+              </div>
+              {showProjectDropdown && filteredProjects.length > 0 && (
+                <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-md mt-1 max-h-40 overflow-y-auto">
+                  {filteredProjects.map((project) => (
+                    <div
+                      key={project.id}
+                      className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                      onClick={() => {
+                        const selectedProject = projects.find(p => p.id === project.id);
+                        setFormData({ 
+                          ...formData, 
+                          projectId: project.id,
+                          clientId: selectedProject ? selectedProject.clientId : formData.clientId
+                        });
+                        setProjectSearch(project.name);
+                        setShowProjectDropdown(false);
+                        if (selectedProject) {
+                          setClientSearch(`${selectedProject.client.name}${selectedProject.client.company ? ` (${selectedProject.client.company})` : ''}`);
+                        }
+                      }}
+                    >
+                      {project.name}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Payment Method</label>

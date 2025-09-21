@@ -16,6 +16,9 @@ export default function AddProjectPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [clients, setClients] = useState<Client[]>([]);
+  const [filteredClients, setFilteredClients] = useState<Client[]>([]);
+  const [clientSearch, setClientSearch] = useState("");
+  const [showClientDropdown, setShowClientDropdown] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -51,6 +54,15 @@ export default function AddProjectPage() {
     window.addEventListener('focus', handleFocus);
     return () => window.removeEventListener('focus', handleFocus);
   }, []);
+
+  useEffect(() => {
+    setFilteredClients(
+      clients.filter(client => 
+        client.name.toLowerCase().includes(clientSearch.toLowerCase()) ||
+        (client.company && client.company.toLowerCase().includes(clientSearch.toLowerCase()))
+      )
+    );
+  }, [clientSearch, clients]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -108,7 +120,10 @@ export default function AddProjectPage() {
   };
 
   return (
-    <div className="p-6 bg-white w-full min-h-screen">
+    <div 
+      className="p-6 bg-white w-full min-h-screen"
+      onClick={() => setShowClientDropdown(false)}
+    >
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
@@ -138,25 +153,41 @@ export default function AddProjectPage() {
               />
             </div>
 
-            <div>
+            <div className="relative">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Client *
               </label>
               <div className="flex gap-2">
-                <select
-                  name="clientId"
-                  value={formData.clientId}
-                  onChange={handleChange}
-                  required
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">Select a client</option>
-                  {clients.map((client) => (
-                    <option key={client.id} value={client.id}>
-                      {client.name} {client.company && `(${client.company})`}
-                    </option>
-                  ))}
-                </select>
+                <div className="flex-1 relative" onClick={(e) => e.stopPropagation()}>
+                  <Input
+                    value={clientSearch}
+                    onChange={(e) => {
+                      setClientSearch(e.target.value);
+                      setShowClientDropdown(true);
+                    }}
+                    onFocus={() => setShowClientDropdown(true)}
+                    placeholder="Search client..."
+                    required={!formData.clientId}
+                    className="border-gray-300"
+                  />
+                  {showClientDropdown && filteredClients.length > 0 && (
+                    <div className="absolute z-10 w-full bg-white border border-gray-300 rounded-md mt-1 max-h-40 overflow-y-auto">
+                      {filteredClients.map((client) => (
+                        <div
+                          key={client.id}
+                          className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                          onClick={() => {
+                            setFormData({ ...formData, clientId: client.id });
+                            setClientSearch(`${client.name}${client.company ? ` (${client.company})` : ''}`);
+                            setShowClientDropdown(false);
+                          }}
+                        >
+                          {client.name} {client.company && `(${client.company})`}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
                 <Button
                   type="button"
                   onClick={() => router.push('/client/add')}
