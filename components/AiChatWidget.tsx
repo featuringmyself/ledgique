@@ -100,7 +100,7 @@ export function AiChatWidget() {
       {/* Backdrop */}
       {isOpen && (
         <div 
-          className="fixed inset-0 z-30 bg-black/20 backdrop-blur-sm animate-in fade-in duration-300"
+          className="fixed inset-0 z-30 bg-black/20 backdrop-blur-xs animate-in fade-in duration-300"
           onClick={() => setIsOpen(false)}
         />
       )}
