@@ -85,6 +85,7 @@ export default function Home() {
           axios.get('/api/dashboard/client-sources'),
           axios.get('/api/dashboard/recent-activity')
         ]);
+        console.log(monthlyRes)
         
         setProjectCount(projectsRes.data);
         setClientCount(clientsRes.data);
