@@ -13,11 +13,11 @@ export async function GET() {
       );
     }
 
-    // Get last 7 months of data
+    // Get last 12 months of data
     const months = [];
     const now = new Date();
     
-    for (let i = 6; i >= 0; i--) {
+    for (let i = 11; i >= 0; i--) {
       const startDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const endDate = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
       
