@@ -19,20 +19,20 @@ export async function GET() {
     
     for (let i = 11; i >= 0; i--) {
       const startDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const endDate = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
+      const endDate = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
       
       const [clientCount, projectCount] = await Promise.all([
         prisma.client.count({
           where: {
             clerkId: userId,
-            createdAt: { gte: startDate, lte: endDate },
+            createdAt: { gte: startDate, lt: endDate },
             status: 'ACTIVE'
           }
         }),
         prisma.project.count({
           where: {
             clerkId: userId,
-            createdAt: { gte: startDate, lte: endDate },
+            createdAt: { gte: startDate, lt: endDate },
             status: { in: ['IN_PROGRESS', 'COMPLETED'] }
           }
         })
