@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 import { auth } from '@clerk/nextjs/server';
-import prisma from '@/lib/prisma';
+import prisma from "@/lib/prisma";
 
 export async function GET() {
   try {
@@ -20,7 +20,7 @@ export async function GET() {
     const prevMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     const prevMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0);
     
-    const [currentRevenue, prevRevenue] = await Promise.all([
+    const [currentMonth, prevMonth] = await Promise.all([
       prisma.payment.aggregate({
         where: {
           date: { gte: currentMonthStart, lte: currentMonthEnd },
@@ -39,8 +39,8 @@ export async function GET() {
       })
     ]);
     
-    const current = Number(currentRevenue._sum.amount || 0);
-    const previous = Number(prevRevenue._sum.amount || 0);
+    const current = Number(currentMonth._sum.amount || 0);
+    const previous = Number(prevMonth._sum.amount || 0);
     
     if (previous === 0) {
       return NextResponse.json(current > 0 ? "+100%" : "0.00%");
@@ -51,7 +51,7 @@ export async function GET() {
     
     return NextResponse.json(`${sign}${change.toFixed(1)}%`);
   } catch (error) {
-    console.error('Error fetching revenue change:', error);
-    return NextResponse.json("0.00%", { status: 200 });
+    console.error('Error calculating monthly revenue change:', error);
+    return NextResponse.json("0.00%");
   }
 }

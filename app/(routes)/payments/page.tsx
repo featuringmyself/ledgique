@@ -57,6 +57,10 @@ export default function PaymentsPage() {
   const [pendingAmount, setPendingAmount] = useState("-");
   const [overDueAmount, setOverDueAmount] = useState("-");
   const [monthlyRevenue, setMonthlyRevenue] = useState("-");
+  const [revenueChange, setRevenueChange] = useState("+0.0%");
+  const [monthlyChange, setMonthlyChange] = useState("+0.0%");
+  const [pendingChange, setPendingChange] = useState("+0.0%");
+  const [overdueChange, setOverdueChange] = useState("+0.0%");
   const [, setRecentPayments] = useState<Payment[]>([]);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -88,7 +92,11 @@ export default function PaymentsPage() {
           monthlyRevenue,
           recentPayments,
           methodsRes,
-          allPaymentsRes
+          allPaymentsRes,
+          revenueChangeRes,
+          monthlyChangeRes,
+          pendingChangeRes,
+          overdueChangeRes
         ] = await Promise.all([
           axios.get("/api/payments/revenue"),
           axios.get("/api/payments/pending/count"),
@@ -96,7 +104,11 @@ export default function PaymentsPage() {
           axios.get("/api/payments/monthlyRevenue"),
           axios.get("/api/payments/list", { params: { take: 5 } }),
           axios.get("/api/payments/methods"),
-          axios.get("/api/payments")
+          axios.get("/api/payments"),
+          axios.get("/api/payments/revenue/change"),
+          axios.get("/api/payments/monthlyRevenue/change"),
+          axios.get("/api/payments/pending/change"),
+          axios.get("/api/payments/overdue/change")
         ]);
 
         setTotalRevenue(revenueRes.data);
@@ -106,6 +118,10 @@ export default function PaymentsPage() {
         setRecentPayments(recentPayments.data);
         setPaymentMethods(methodsRes.data);
         setAllPayments(allPaymentsRes.data);
+        setRevenueChange(revenueChangeRes.data);
+        setMonthlyChange(monthlyChangeRes.data);
+        setPendingChange(pendingChangeRes.data);
+        setOverdueChange(overdueChangeRes.data);
       } catch (error) {
         console.error("Error fetching payment data:", error);
       } finally {
@@ -315,9 +331,14 @@ export default function PaymentsPage() {
               <p className="text-4xl font-bold text-gray-900">
                 ₹{fmt.format(Number(totalRevenue))}
               </p>
-              <div className="flex items-center text-green-600 text-sm font-medium">
-                <span>+12.5%</span>
-                <IconTrendingUp size={16} className="ml-1" />
+              <div className={`flex items-center text-sm font-medium ${
+                revenueChange.startsWith('+') ? 'text-green-600' : 'text-red-500'
+              }`}>
+                <span>{revenueChange}</span>
+                {revenueChange.startsWith('+') ? 
+                  <IconTrendingUp size={16} className="ml-1" /> : 
+                  <IconTrendingDown size={16} className="ml-1" />
+                }
               </div>
             </div>
           </div>
@@ -330,9 +351,14 @@ export default function PaymentsPage() {
               <p className="text-4xl font-bold text-gray-900">
                 ₹{fmt.format(Number(pendingAmount))}
               </p>
-              <div className="flex items-center text-red-500 text-sm font-medium">
-                <span>-2.1%</span>
-                <IconTrendingDown size={16} className="ml-1" />
+              <div className={`flex items-center text-sm font-medium ${
+                pendingChange.startsWith('+') ? 'text-red-500' : 'text-green-600'
+              }`}>
+                <span>{pendingChange}</span>
+                {pendingChange.startsWith('+') ? 
+                  <IconTrendingUp size={16} className="ml-1" /> : 
+                  <IconTrendingDown size={16} className="ml-1" />
+                }
               </div>
             </div>
           </div>
@@ -345,9 +371,14 @@ export default function PaymentsPage() {
               <p className="text-4xl font-bold text-gray-900">
                 ₹{fmt.format(Number(monthlyRevenue))}
               </p>
-              <div className="flex items-center text-green-600 text-sm font-medium">
-                <span>+8.2%</span>
-                <IconTrendingUp size={16} className="ml-1" />
+              <div className={`flex items-center text-sm font-medium ${
+                monthlyChange.startsWith('+') ? 'text-green-600' : 'text-red-500'
+              }`}>
+                <span>{monthlyChange}</span>
+                {monthlyChange.startsWith('+') ? 
+                  <IconTrendingUp size={16} className="ml-1" /> : 
+                  <IconTrendingDown size={16} className="ml-1" />
+                }
               </div>
             </div>
           </div>
@@ -358,9 +389,14 @@ export default function PaymentsPage() {
               <p className="text-4xl font-bold text-gray-900">
                 ₹{fmt.format(Number(overDueAmount))}
               </p>
-              <div className="flex items-center text-red-500 text-sm font-medium">
-                <span>+15.3%</span>
-                <IconTrendingUp size={16} className="ml-1" />
+              <div className={`flex items-center text-sm font-medium ${
+                overdueChange.startsWith('+') ? 'text-red-500' : 'text-green-600'
+              }`}>
+                <span>{overdueChange}</span>
+                {overdueChange.startsWith('+') ? 
+                  <IconTrendingUp size={16} className="ml-1" /> : 
+                  <IconTrendingDown size={16} className="ml-1" />
+                }
               </div>
             </div>
           </div>
