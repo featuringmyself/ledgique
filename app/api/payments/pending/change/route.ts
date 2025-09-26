@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import prisma from '@/lib/prisma';
+import { Decimal } from '@prisma/client/runtime/library';
 
 export async function GET() {
   try {
@@ -47,10 +48,10 @@ export async function GET() {
       })
     ]);
     
-    const calculatePending = (projects: any[]) => {
+    const calculatePending = (projects: { budget: Decimal | null; payments: { amount: Decimal }[] }[]) => {
       return projects.reduce((total, project) => {
         const budget = Number(project.budget || 0);
-        const paid = project.payments.reduce((sum: number, p: any) => sum + Number(p.amount), 0);
+        const paid = project.payments.reduce((sum: number, p) => sum + Number(p.amount), 0);
         return total + Math.max(0, budget - paid);
       }, 0);
     };
