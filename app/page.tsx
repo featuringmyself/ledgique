@@ -143,7 +143,7 @@ export default function Home() {
             { title: "Total Revenue", value: `₹${revenue === '-' ? revenue : fmt.format(Number(revenue))}`, change: revenueChange, bg: "bg-[#E3F5FF]", border: "border-blue-100/50" },
             { title: "Active Projects", value: projectCount, change: projectChange, bg: "bg-[#E5ECF6]", border: "border-purple-100/50" },
             { title: "Active Clients", value: clientCount, change: clientChange, bg: "bg-[#E3F5FF]", border: "border-blue-100/50" },
-            { title: "Pending Payments", value: `₹${typeof pendingAmount === 'string' && pendingAmount !== '-' ? fmt.format(Number(pendingAmount)) : pendingAmount}`, change: pendingChange, bg: "bg-[#E5ECF6]", border: "border-purple-100/50" }
+            { title: "Pending Payments", value: `₹${typeof pendingAmount === 'string' && pendingAmount !== '-' ? fmt.format(Number(pendingAmount)) : fmt.format(Number(pendingAmount))}`, change: pendingChange, bg: "bg-[#E5ECF6]", border: "border-purple-100/50" }
           ].map((card, index) => (
             <div key={index} className={`${card.bg} p-6 rounded-xl border ${card.border}`}>
               <h3 className="text-gray-600 font-semibold text-sm mb-3">{card.title}</h3>
