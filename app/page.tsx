@@ -128,8 +128,89 @@ export default function Home() {
   }, []);
   if (loading) {
     return (
-      <div className="flex h-screen w-full items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+      <div className="flex h-full w-full flex-1 flex-col gap-2 rounded-tl-2xl border border-neutral-200 bg-gray-50 p-2 md:p-6 dark:border-neutral-700 dark:bg-neutral-900">
+        <div className="space-y-6">
+          {/* Top Stats Cards Skeleton */}
+          <div className="grid grid-cols-4 gap-6">
+            {[...Array(4)].map((_, index) => (
+              <div key={index} className="bg-[#E3F5FF] p-6 rounded-xl border border-blue-100/50 animate-pulse">
+                <div className="h-4 bg-gray-300 rounded w-24 mb-3"></div>
+                <div className="flex items-end justify-between">
+                  <div className="h-10 bg-gray-300 rounded w-20"></div>
+                  <div className="h-4 bg-gray-300 rounded w-16"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Middle Section Skeleton */}
+          <div className="grid grid-cols-3 gap-6">
+            <div className="col-span-2 bg-[#F7F9FB] p-8 rounded-xl shadow-sm border border-gray-100 animate-pulse">
+              <div className="flex items-center justify-between mb-8">
+                <div className="h-6 bg-gray-300 rounded w-32"></div>
+                <div className="flex items-center space-x-6">
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 bg-gray-300 rounded-full mr-2"></div>
+                    <div className="h-4 bg-gray-300 rounded w-16"></div>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 bg-gray-300 rounded-full mr-2"></div>
+                    <div className="h-4 bg-gray-300 rounded w-20"></div>
+                  </div>
+                </div>
+              </div>
+              <div className="h-80 bg-gray-200 rounded"></div>
+            </div>
+
+            <div className="bg-[#F7F9FB] p-6 rounded-3xl shadow-sm border border-gray-100 animate-pulse">
+              <div className="h-6 bg-gray-300 rounded w-24 mb-6"></div>
+              <div className="space-y-5">
+                {[...Array(4)].map((_, index) => (
+                  <div key={index} className="flex items-center justify-between">
+                    <div className="h-4 bg-gray-300 rounded w-20"></div>
+                    <div className="w-24 h-2 bg-gray-200 rounded-full"></div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom Section Skeleton */}
+          <div className="grid grid-cols-4 gap-6">
+            {[...Array(4)].map((_, index) => (
+              <div key={index} className="bg-[#F7F9FB] p-6 rounded-3xl shadow-sm border border-gray-100 animate-pulse">
+                <div className="h-6 bg-gray-300 rounded w-32 mb-6"></div>
+                <div className="h-48 bg-gray-200 rounded mb-4"></div>
+                {index === 1 && (
+                  <div className="space-y-3">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <div className="w-3 h-3 bg-gray-300 rounded-full mr-3"></div>
+                          <div className="h-4 bg-gray-300 rounded w-16"></div>
+                        </div>
+                        <div className="h-4 bg-gray-300 rounded w-8"></div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {index === 3 && (
+                  <div className="space-y-4">
+                    {[...Array(4)].map((_, i) => (
+                      <div key={i} className="flex items-start space-x-3 p-3 rounded-lg">
+                        <div className="w-2 h-2 bg-gray-300 rounded-full mt-2"></div>
+                        <div className="flex-1">
+                          <div className="h-4 bg-gray-300 rounded w-full mb-2"></div>
+                          <div className="h-3 bg-gray-300 rounded w-20"></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
