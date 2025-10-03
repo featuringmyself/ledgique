@@ -395,6 +395,19 @@ const functionDeclarations = [
       type: Type.OBJECT,
       properties: {}
     }
+  },
+  {
+    name: "addQuickExpense",
+    description: "Add an expense with smart defaults - automatically detects category and uses today's date",
+    parameters: {
+      type: Type.OBJECT,
+      properties: {
+        amount: { type: Type.NUMBER, description: "Expense amount" },
+        description: { type: Type.STRING, description: "Expense description" },
+        clientName: { type: Type.STRING, description: "Client name (optional)" }
+      },
+      required: ["amount", "description"]
+    }
   }
 ];
 
@@ -402,7 +415,7 @@ const functionDeclarations = [
 interface AddExpenseParams {
   amount: number;
   description: string;
-  category?: string;
+  category?: 'OFFICE_SUPPLIES' | 'TRAVEL' | 'MEALS' | 'SOFTWARE' | 'EQUIPMENT' | 'MARKETING' | 'UTILITIES' | 'RENT' | 'OTHER';
   date?: string;
   clientId?: string;
 }
@@ -542,6 +555,12 @@ interface GetBusinessContextParams {
   [key: string]: never;
 }
 
+interface AddQuickExpenseParams {
+  amount: number;
+  description: string;
+  clientName?: string;
+}
+
 interface FunctionResult {
   success: boolean;
   message?: string;
@@ -554,19 +573,37 @@ interface FunctionResult {
 // Function implementations
 async function addExpense(params: AddExpenseParams, userId: string): Promise<FunctionResult> {
   try {
+    // Smart category detection based on description
+    let category: 'OFFICE_SUPPLIES' | 'TRAVEL' | 'MEALS' | 'SOFTWARE' | 'EQUIPMENT' | 'MARKETING' | 'UTILITIES' | 'RENT' | 'OTHER' = 'OTHER';
+    const description = params.description.toLowerCase();
+    
+    if (description.includes('food') || description.includes('golgappe') || description.includes('lunch') || 
+        description.includes('dinner') || description.includes('breakfast') || description.includes('snack') ||
+        description.includes('restaurant') || description.includes('cafe') || description.includes('meal')) {
+      category = 'MEALS';
+    } else if (description.includes('travel') || description.includes('taxi') || description.includes('uber') || 
+               description.includes('fuel') || description.includes('petrol') || description.includes('diesel')) {
+      category = 'TRAVEL';
+    } else if (description.includes('office') || description.includes('stationery') || description.includes('supplies')) {
+      category = 'OFFICE_SUPPLIES';
+    } else if (description.includes('entertainment') || description.includes('movie') || description.includes('game')) {
+      category = 'OTHER';
+    }
+
     const expense = await prisma.expense.create({
       data: {
         title: params.description,
         description: params.description,
         amount: params.amount,
-        category: 'OTHER',
+        category: params.category || category,
         date: params.date ? new Date(params.date) : new Date(),
         clerkId: userId,
         ...(params.clientId && { client: { connect: { id: params.clientId } } })
       }
     });
     const clientMsg = params.clientId ? ' for client' : '';
-    return { success: true, message: `Added expense: ${params.description} for ₹${params.amount}${clientMsg}`, data: expense };
+    const categoryMsg = params.category ? ` (${params.category})` : ` (${category})`;
+    return { success: true, message: `Added expense: ${params.description} for ₹${params.amount}${categoryMsg}${clientMsg}`, data: expense };
   } catch {
     return { success: false, error: 'Failed to add expense' };
   }
@@ -1448,6 +1485,62 @@ async function getBusinessContext(_params: GetBusinessContextParams, _userId: st
   }
 }
 
+// Add quick expense with smart defaults
+async function addQuickExpense(params: AddQuickExpenseParams, userId: string): Promise<FunctionResult> {
+  try {
+    // Smart category detection based on description
+    let category: 'OFFICE_SUPPLIES' | 'TRAVEL' | 'MEALS' | 'SOFTWARE' | 'EQUIPMENT' | 'MARKETING' | 'UTILITIES' | 'RENT' | 'OTHER' = 'OTHER';
+    const description = params.description.toLowerCase();
+    
+    if (description.includes('food') || description.includes('golgappe') || description.includes('lunch') || 
+        description.includes('dinner') || description.includes('breakfast') || description.includes('snack') ||
+        description.includes('restaurant') || description.includes('cafe') || description.includes('meal')) {
+      category = 'MEALS';
+    } else if (description.includes('travel') || description.includes('taxi') || description.includes('uber') || 
+               description.includes('fuel') || description.includes('petrol') || description.includes('diesel')) {
+      category = 'TRAVEL';
+    } else if (description.includes('office') || description.includes('stationery') || description.includes('supplies')) {
+      category = 'OFFICE_SUPPLIES';
+    } else if (description.includes('entertainment') || description.includes('movie') || description.includes('game')) {
+      category = 'OTHER';
+    }
+
+    // Find client if specified
+    let clientId: string | undefined;
+    if (params.clientName) {
+      const client = await prisma.client.findFirst({
+        where: {
+          clerkId: userId,
+          name: { contains: params.clientName, mode: 'insensitive' }
+        },
+        select: { id: true }
+      });
+      clientId = client?.id;
+    }
+
+    const expense = await prisma.expense.create({
+      data: {
+        title: params.description,
+        description: params.description,
+        amount: params.amount,
+        category: category,
+        date: new Date(), // Always use today's date
+        clerkId: userId,
+        ...(clientId && { client: { connect: { id: clientId } } })
+      }
+    });
+    
+    const clientMsg = clientId ? ` for ${params.clientName}` : '';
+    return { 
+      success: true, 
+      message: `✅ Added expense: ${params.description} for ₹${params.amount} (${category})${clientMsg}`, 
+      data: expense 
+    };
+  } catch {
+    return { success: false, error: 'Failed to add expense' };
+  }
+}
+
 // Parallel function execution helper
 async function executeParallelFunctions(functionCalls: Array<{ name: string; args: unknown }>, userId: string): Promise<FunctionResult[]> {
   const promises = functionCalls.map(async (functionCall) => {
@@ -1518,6 +1611,8 @@ async function executeParallelFunctions(functionCalls: Array<{ name: string; arg
         return getCurrentDateTime(functionArgs as GetCurrentDateTimeParams, userId);
       case "getBusinessContext":
         return getBusinessContext(functionArgs as GetBusinessContextParams, userId);
+      case "addQuickExpense":
+        return addQuickExpense(functionArgs as AddQuickExpenseParams, userId);
       default:
         return { error: "Unknown function", success: false };
     }
@@ -1557,10 +1652,11 @@ When interacting, follow these principles:
 - Be user-friendly: use clear, simple language. Avoid accounting jargon unless the user prefers it.  
 - Be proactive: suggest helpful shortcuts or tips (e.g. "Do you want this expense to recur?").  
 - Be time-aware: consider current date/time context and business deadlines when making suggestions.
+- Be autonomous: Make reasonable assumptions and only ask for truly essential information. For expenses, default to "Food" category and today's date unless specified otherwise.
 - Validate inputs: check if dates are valid, amounts are numeric, required fields are present.  
 - SEARCH FIRST: When users mention client names, project names, or other entities, ALWAYS search for them first using searchClients, searchProjects, listClients, or listProjects functions before asking for IDs. Only ask for clarification if no matches are found.
 - Auto-complete: If a user says "create invoice for John" - search for clients named John first, then proceed with the invoice creation.
-- Clarify when needed: if any detail is missing or ambiguous (client, project, amount, date, etc.), ask follow-up questions before performing an action.  
+- Minimize questions: Only ask for information that is absolutely critical and cannot be reasonably assumed. Default to sensible values for optional fields.
 - Confirm actions: once you act, tell the user what you did and summarize the outcome.  
 - Error-aware: if something can't be done because of missing data, permissions, invalid input, etc., explain clearly what's wrong and how to resolve it.  
 - Respect permissions and security: do not assume you have rights for actions, avoid exposing private or sensitive data, follow Ledgique's security constraints.
