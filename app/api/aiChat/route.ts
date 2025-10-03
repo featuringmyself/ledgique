@@ -377,6 +377,24 @@ const functionDeclarations = [
       },
       required: ["amount", "description", "clientName"]
     }
+  },
+  {
+    name: "getCurrentDateTime",
+    description: "Get current date, time, and contextual information",
+    parameters: {
+      type: Type.OBJECT,
+      properties: {
+        timezone: { type: Type.STRING, description: "Timezone (optional, defaults to system timezone)" }
+      }
+    }
+  },
+  {
+    name: "getBusinessContext",
+    description: "Get current business context including current month, quarter, year, and financial period information",
+    parameters: {
+      type: Type.OBJECT,
+      properties: {}
+    }
   }
 ];
 
@@ -514,6 +532,14 @@ interface AddExpenseToClientParams {
   clientName: string;
   category?: string;
   date?: string;
+}
+
+interface GetCurrentDateTimeParams {
+  timezone?: string;
+}
+
+interface GetBusinessContextParams {
+  // No parameters needed
 }
 
 interface FunctionResult {
@@ -1320,6 +1346,108 @@ async function addExpenseToClient(params: AddExpenseToClientParams, userId: stri
   }
 }
 
+// Get current date and time with context
+async function getCurrentDateTime(params: GetCurrentDateTimeParams, _userId: string): Promise<FunctionResult> {
+  try {
+    const now = new Date();
+    const timezone = params.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+    
+    const dateInfo = {
+      currentDate: now.toISOString().split('T')[0], // YYYY-MM-DD format
+      currentTime: now.toLocaleTimeString('en-US', { 
+        timeZone: timezone,
+        hour12: true,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      }),
+      currentDateTime: now.toLocaleString('en-US', { 
+        timeZone: timezone,
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      }),
+      timezone: timezone,
+      dayOfWeek: now.toLocaleDateString('en-US', { 
+        timeZone: timezone,
+        weekday: 'long' 
+      }),
+      dayOfYear: Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24)),
+      weekOfYear: Math.ceil((now.getTime() - new Date(now.getFullYear(), 0, 1).getTime()) / (1000 * 60 * 60 * 24 * 7)),
+      isWeekend: now.getDay() === 0 || now.getDay() === 6,
+      isBusinessDay: now.getDay() >= 1 && now.getDay() <= 5
+    };
+    
+    return {
+      success: true,
+      message: `Current date and time: ${dateInfo.currentDateTime} (${timezone})`,
+      data: dateInfo
+    };
+  } catch (_error) {
+    return { success: false, error: 'Failed to get current date and time' };
+  }
+}
+
+// Get business context information
+async function getBusinessContext(_params: GetBusinessContextParams, _userId: string): Promise<FunctionResult> {
+  try {
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth() + 1; // 1-12
+    const currentQuarter = Math.ceil(currentMonth / 3);
+    const currentDay = now.getDate();
+    
+    // Financial year calculation (assuming April-March financial year)
+    const financialYear = now.getMonth() >= 3 ? currentYear : currentYear - 1;
+    const financialYearStart = new Date(financialYear, 3, 1); // April 1st
+    const financialYearEnd = new Date(financialYear + 1, 2, 31); // March 31st
+    
+    // Calculate days remaining in current month
+    const lastDayOfMonth = new Date(currentYear, currentMonth, 0).getDate();
+    const daysRemainingInMonth = lastDayOfMonth - currentDay;
+    
+    // Calculate days remaining in quarter
+    const quarterEndMonth = currentQuarter * 3;
+    const quarterEndDay = new Date(currentYear, quarterEndMonth, 0).getDate();
+    const quarterEndDate = new Date(currentYear, quarterEndMonth - 1, quarterEndDay);
+    const daysRemainingInQuarter = Math.ceil((quarterEndDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    
+    // Calculate days remaining in financial year
+    const daysRemainingInFinancialYear = Math.ceil((financialYearEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    
+    const businessContext = {
+      currentYear,
+      currentMonth,
+      currentMonthName: now.toLocaleDateString('en-US', { month: 'long' }),
+      currentQuarter,
+      currentDay,
+      financialYear: `${financialYear}-${financialYear + 1}`,
+      financialYearStart: financialYearStart.toISOString().split('T')[0],
+      financialYearEnd: financialYearEnd.toISOString().split('T')[0],
+      daysRemainingInMonth,
+      daysRemainingInQuarter,
+      daysRemainingInFinancialYear,
+      isEndOfMonth: daysRemainingInMonth <= 3,
+      isEndOfQuarter: daysRemainingInQuarter <= 7,
+      isEndOfFinancialYear: daysRemainingInFinancialYear <= 30,
+      monthProgress: Math.round((currentDay / lastDayOfMonth) * 100),
+      quarterProgress: Math.round(((currentMonth - (currentQuarter - 1) * 3) / 3) * 100),
+      yearProgress: Math.round((now.getTime() - new Date(currentYear, 0, 1).getTime()) / (new Date(currentYear + 1, 0, 1).getTime() - new Date(currentYear, 0, 1).getTime()) * 100)
+    };
+    
+    return {
+      success: true,
+      message: `Business context: ${businessContext.currentMonthName} ${currentYear}, Q${currentQuarter}, Financial Year ${businessContext.financialYear}`,
+      data: businessContext
+    };
+  } catch (_error) {
+    return { success: false, error: 'Failed to get business context' };
+  }
+}
+
 // Parallel function execution helper
 async function executeParallelFunctions(functionCalls: Array<{ name: string; args: unknown }>, userId: string): Promise<FunctionResult[]> {
   const promises = functionCalls.map(async (functionCall) => {
@@ -1386,6 +1514,10 @@ async function executeParallelFunctions(functionCalls: Array<{ name: string; arg
         return { success: true, data: { projectId }, message: projectId ? 'Project found' : 'Project not found' };
       case "addExpenseToClient":
         return addExpenseToClient(functionArgs as AddExpenseToClientParams, userId);
+      case "getCurrentDateTime":
+        return getCurrentDateTime(functionArgs as GetCurrentDateTimeParams, userId);
+      case "getBusinessContext":
+        return getBusinessContext(functionArgs as GetBusinessContextParams, userId);
       default:
         return { error: "Unknown function", success: false };
     }
@@ -1414,9 +1546,17 @@ export async function POST(req: NextRequest) {
 
 You have full access to all Ledgique features: creating, viewing, editing, deleting expenses; managing clients and projects; invoicing, payments, recurring items; generating reports; and other related tools.
 
+IMPORTANT: You have access to current date, time, and business context information. Use getCurrentDateTime() and getBusinessContext() functions to provide relevant time-aware assistance. Always consider:
+- Current date and time for date-sensitive operations
+- Business day vs weekend context
+- Month-end, quarter-end, and year-end deadlines
+- Financial year periods (April-March)
+- Progress through current periods (month, quarter, year)
+
 When interacting, follow these principles:
 - Be user-friendly: use clear, simple language. Avoid accounting jargon unless the user prefers it.  
 - Be proactive: suggest helpful shortcuts or tips (e.g. "Do you want this expense to recur?").  
+- Be time-aware: consider current date/time context and business deadlines when making suggestions.
 - Validate inputs: check if dates are valid, amounts are numeric, required fields are present.  
 - SEARCH FIRST: When users mention client names, project names, or other entities, ALWAYS search for them first using searchClients, searchProjects, listClients, or listProjects functions before asking for IDs. Only ask for clarification if no matches are found.
 - Auto-complete: If a user says "create invoice for John" - search for clients named John first, then proceed with the invoice creation.
@@ -1431,7 +1571,8 @@ Formatting Guidelines:
 - Use bullet points for lists and details
 - Format dates in a readable format (e.g., September 16, 2025)
 - Present data in organized, scannable format
-- Use emojis sparingly for visual appeal when appropriate`;
+- Use emojis sparingly for visual appeal when appropriate
+- Include relevant time context when helpful (e.g., "Today is Monday, September 16, 2025")`;
 
     const contents = [
       ...chatHistory,
