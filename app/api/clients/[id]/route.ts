@@ -19,7 +19,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     return NextResponse.json(client);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to fetch client' }, { status: 500 });
   }
 }
@@ -45,7 +45,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     });
 
     return NextResponse.json(client);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to update client' }, { status: 500 });
   }
 }
@@ -58,7 +58,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     });
 
     return NextResponse.json({ message: 'Client deleted successfully' });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Failed to delete client' }, { status: 500 });
   }
 }

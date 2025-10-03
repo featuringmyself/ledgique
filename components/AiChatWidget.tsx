@@ -65,7 +65,7 @@ export function AiChatWidget() {
         if (response.data.chatHistory) {
           setChatHistory(response.data.chatHistory);
         }
-      } catch (_error) {
+      } catch {
         const errorMessage: Message = {
           id: (Date.now() + 1).toString(),
           text: "Sorry, something went wrong. Please try again.",

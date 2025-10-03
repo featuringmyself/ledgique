@@ -12,7 +12,7 @@ export async function DELETE(
     });
 
     return NextResponse.json({ message: "Payment deleted successfully" });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Failed to delete payment" }, { status: 500 });
   }
 }
@@ -31,7 +31,7 @@ export async function PATCH(
     });
 
     return NextResponse.json(payment);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Failed to update payment" }, { status: 500 });
   }
 }

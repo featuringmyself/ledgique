@@ -33,7 +33,7 @@ export default function ClientPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [viewClient, setViewClient] = useState<Client | null>(null);
-  const [showProjects, setShowProjects] = useState(false);
+  const [_showProjects, _setShowProjects] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [sortBy, setSortBy] = useState<string>("name");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");

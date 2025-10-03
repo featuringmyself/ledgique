@@ -23,7 +23,7 @@ export async function POST(
     console.log(`Sending email to ${payment.client.email} for payment ${payment.id}`);
     
     return NextResponse.json({ message: "Email sent successfully" });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Failed to send email" }, { status: 500 });
   }
 }
