@@ -3,7 +3,9 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { auth } from '@clerk/nextjs/server';
 import prisma from '@/lib/prisma';
 
-const ai = new GoogleGenAI({});
+const ai = new GoogleGenAI({
+  apiKey: process.env.GEMINI_API_KEY || ''
+});
 
 const functionDeclarations = [
   {
@@ -1546,6 +1548,8 @@ async function executeParallelFunctions(functionCalls: Array<{ name: string; arg
   const promises = functionCalls.map(async (functionCall) => {
     const { name: functionName, args: functionArgs } = functionCall;
     
+    try {
+    
     switch (functionName) {
       case "addExpense":
         return addExpense(functionArgs as AddExpenseParams, userId);
@@ -1616,6 +1620,10 @@ async function executeParallelFunctions(functionCalls: Array<{ name: string; arg
       default:
         return { error: "Unknown function", success: false };
     }
+    } catch (error) {
+      console.error(`Error executing function ${functionName}:`, error);
+      return { success: false, error: `Failed to execute ${functionName}: ${error instanceof Error ? error.message : String(error)}` };
+    }
   });
   
   return Promise.all(promises);
@@ -1628,6 +1636,10 @@ export async function POST(req: NextRequest) {
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    if (!process.env.GEMINI_API_KEY) {
+      return NextResponse.json({ error: 'Gemini API key not configured' }, { status: 500 });
     }
 
     const body = await req.json();
@@ -1691,13 +1703,17 @@ Formatting Guidelines:
 
     // Check if AI wants to call functions
     if (response.functionCalls && response.functionCalls.length > 0) {
+      console.log('AI wants to call functions:', response.functionCalls);
+      
       // Execute all functions in parallel
       const functionCallsData = response.functionCalls.map(fc => ({
         name: fc.name || '',
         args: fc.args || {}
       }));
       
+      console.log('Function calls data:', functionCallsData);
       const functionResults = await executeParallelFunctions(functionCallsData, userId);
+      console.log('Function results:', functionResults);
       
       // Add function calls and responses to conversation
       contents.push({
@@ -1751,10 +1767,10 @@ Formatting Guidelines:
       });
     }
 
-  } catch {
-    console.error("Error processing request");
+  } catch (error) {
+    console.error("Error processing request:", error);
     return NextResponse.json(
-      { error: "Failed to process request" },
+      { error: "Failed to process request", details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }
