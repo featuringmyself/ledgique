@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import prisma from "@/lib/prisma";
 
-export async function GET(){
+export async function GET(request: NextRequest){
     try {
         const { userId } = await auth();
         
@@ -10,30 +10,56 @@ export async function GET(){
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const projects = await prisma.project.findMany({
-            where: {
-                clerkId: userId,
-            },
-            include: {
-                client: {
-                    select: {
-                        name: true,
-                        company: true,
-                    },
+        const { searchParams } = new URL(request.url);
+        const page = parseInt(searchParams.get('page') || '1');
+        const limit = parseInt(searchParams.get('limit') || '10');
+        const skip = (page - 1) * limit;
+
+        const [projects, totalCount] = await Promise.all([
+            prisma.project.findMany({
+                where: {
+                    clerkId: userId,
                 },
-                _count: {
-                    select: {
-                        tasks: true,
-                        payments: true
+                include: {
+                    client: {
+                        select: {
+                            name: true,
+                            company: true,
+                        },
+                    },
+                    _count: {
+                        select: {
+                            tasks: true,
+                            payments: true
+                        }
                     }
+                },
+                orderBy: {
+                    createdAt: 'desc'
+                },
+                skip,
+                take: limit,
+            }),
+            prisma.project.count({
+                where: {
+                    clerkId: userId,
                 }
-            },
-            orderBy: {
-                createdAt: 'desc'
+            })
+        ]);
+
+        const totalPages = Math.ceil(totalCount / limit);
+
+        return NextResponse.json({
+            projects,
+            pagination: {
+                currentPage: page,
+                totalPages,
+                totalCount,
+                limit,
+                hasNextPage: page < totalPages,
+                hasPrevPage: page > 1
             }
         });
-        
-        return NextResponse.json(projects);
     } catch (error) {
         console.error('Error fetching projects:', error);
         return NextResponse.json({ error: "Failed to fetch projects" }, { status: 500 });

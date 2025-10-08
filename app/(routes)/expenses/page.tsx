@@ -16,22 +16,40 @@ interface Expense {
   project?: { name: string };
 }
 
+interface PaginationInfo {
+  currentPage: number;
+  totalPages: number;
+  totalCount: number;
+  limit: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+}
+
 export default function ExpensesPage() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [pagination, setPagination] = useState<PaginationInfo>({
+    currentPage: 1,
+    totalPages: 1,
+    totalCount: 0,
+    limit: 10,
+    hasNextPage: false,
+    hasPrevPage: false
+  });
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("ALL");
 
   useEffect(() => {
     fetchExpenses();
-  }, []);
+  }, [pagination.currentPage, pagination.limit]);
 
   const fetchExpenses = async () => {
     try {
-      const response = await fetch('/api/expenses');
+      const response = await fetch(`/api/expenses?page=${pagination.currentPage}&limit=${pagination.limit}`);
       if (response.ok) {
         const data = await response.json();
-        setExpenses(data);
+        setExpenses(data.expenses);
+        setPagination(data.pagination);
       }
     } catch (error) {
       console.error('Failed to fetch expenses:', error);
@@ -40,13 +58,13 @@ export default function ExpensesPage() {
     }
   };
 
-  const filteredExpenses = expenses.filter(expense => {
-    const matchesSearch = expense.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         expense.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         expense.project?.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = categoryFilter === "ALL" || expense.category === categoryFilter;
-    return matchesSearch && matchesCategory;
-  });
+  const handlePageChange = (newPage: number) => {
+    setPagination(prev => ({ ...prev, currentPage: newPage }));
+  };
+
+  const handleLimitChange = (newLimit: number) => {
+    setPagination(prev => ({ ...prev, limit: newLimit, currentPage: 1 }));
+  };
 
   const totalExpenses = expenses.reduce((sum, exp) => sum + Number(exp.amount), 0);
   const thisMonthExpenses = expenses.filter(exp => {
@@ -153,7 +171,7 @@ export default function ExpensesPage() {
             </tr>
           </thead>
           <tbody>
-            {filteredExpenses.map((expense) => (
+            {expenses.map((expense) => (
               <tr key={expense.id} className="border-t border-gray-100 hover:bg-gray-50">
                 <td className="p-4">
                   <div className="flex items-center gap-3">
@@ -208,11 +226,81 @@ export default function ExpensesPage() {
           </tbody>
         </table>
         
-        {filteredExpenses.length === 0 && (
+        {expenses.length === 0 && (
           <div className="text-center py-12">
             <p className="text-gray-500">No expenses found</p>
           </div>
         )}
+      </div>
+
+      {/* Pagination Controls */}
+      <div className="flex items-center justify-between mt-6 pr-20">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-600">Show</span>
+            <select 
+              value={pagination.limit} 
+              onChange={(e) => handleLimitChange(parseInt(e.target.value))}
+              className="px-2 py-1 border rounded text-sm"
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={25}>25</option>
+              <option value={50}>50</option>
+            </select>
+            <span className="text-sm text-gray-600">per page</span>
+          </div>
+          <div className="text-sm text-gray-600">
+            Showing {((pagination.currentPage - 1) * pagination.limit) + 1} to {Math.min(pagination.currentPage * pagination.limit, pagination.totalCount)} of {pagination.totalCount} expenses
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => handlePageChange(pagination.currentPage - 1)}
+            disabled={!pagination.hasPrevPage}
+            className="px-3 py-1 text-sm border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Previous
+          </button>
+          
+          <div className="flex items-center gap-1">
+            {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+              let pageNum;
+              if (pagination.totalPages <= 5) {
+                pageNum = i + 1;
+              } else if (pagination.currentPage <= 3) {
+                pageNum = i + 1;
+              } else if (pagination.currentPage >= pagination.totalPages - 2) {
+                pageNum = pagination.totalPages - 4 + i;
+              } else {
+                pageNum = pagination.currentPage - 2 + i;
+              }
+              
+              return (
+                <button
+                  key={pageNum}
+                  onClick={() => handlePageChange(pageNum)}
+                  className={`px-3 py-1 text-sm border rounded ${
+                    pageNum === pagination.currentPage 
+                      ? 'bg-blue-600 text-white border-blue-600' 
+                      : 'hover:bg-gray-50'
+                  }`}
+                >
+                  {pageNum}
+                </button>
+              );
+            })}
+          </div>
+          
+          <button
+            onClick={() => handlePageChange(pagination.currentPage + 1)}
+            disabled={!pagination.hasNextPage}
+            className="px-3 py-1 text-sm border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Next
+          </button>
+        </div>
       </div>
     </div>
   );

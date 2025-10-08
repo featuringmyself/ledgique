@@ -17,22 +17,40 @@ interface Retainer {
   project?: { name: string };
 }
 
+interface PaginationInfo {
+  currentPage: number;
+  totalPages: number;
+  totalCount: number;
+  limit: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+}
+
 export default function RetainersPage() {
   const [retainers, setRetainers] = useState<Retainer[]>([]);
+  const [pagination, setPagination] = useState<PaginationInfo>({
+    currentPage: 1,
+    totalPages: 1,
+    totalCount: 0,
+    limit: 10,
+    hasNextPage: false,
+    hasPrevPage: false
+  });
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
 
   useEffect(() => {
     fetchRetainers();
-  }, []);
+  }, [pagination.currentPage, pagination.limit]);
 
   const fetchRetainers = async () => {
     try {
-      const response = await fetch('/api/retainers');
+      const response = await fetch(`/api/retainers?page=${pagination.currentPage}&limit=${pagination.limit}`);
       if (response.ok) {
         const data = await response.json();
-        setRetainers(data);
+        setRetainers(data.retainers);
+        setPagination(data.pagination);
       }
     } catch (error) {
       console.error('Failed to fetch retainers:', error);
@@ -41,13 +59,13 @@ export default function RetainersPage() {
     }
   };
 
-  const filteredRetainers = retainers.filter(retainer => {
-    const matchesSearch = retainer.client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         retainer.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         retainer.project?.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === "ALL" || retainer.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  const handlePageChange = (newPage: number) => {
+    setPagination(prev => ({ ...prev, currentPage: newPage }));
+  };
+
+  const handleLimitChange = (newLimit: number) => {
+    setPagination(prev => ({ ...prev, limit: newLimit, currentPage: 1 }));
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -151,7 +169,7 @@ export default function RetainersPage() {
             </tr>
           </thead>
           <tbody>
-            {filteredRetainers.map((retainer) => (
+            {retainers.map((retainer) => (
               <tr key={retainer.id} className="border-t border-gray-100 hover:bg-gray-50">
                 <td className="p-4">
                   <div className="flex items-center gap-3">
@@ -214,7 +232,7 @@ export default function RetainersPage() {
           </tbody>
         </table>
         
-        {filteredRetainers.length === 0 && (
+        {retainers.length === 0 && (
           <div className="text-center py-12">
             <IconWallet size={48} className="mx-auto text-gray-300 mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No retainers found</h3>
@@ -226,6 +244,76 @@ export default function RetainersPage() {
             </Link>
           </div>
         )}
+      </div>
+
+      {/* Pagination Controls */}
+      <div className="flex items-center justify-between mt-6 pr-20">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-600">Show</span>
+            <select 
+              value={pagination.limit} 
+              onChange={(e) => handleLimitChange(parseInt(e.target.value))}
+              className="px-2 py-1 border rounded text-sm"
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={25}>25</option>
+              <option value={50}>50</option>
+            </select>
+            <span className="text-sm text-gray-600">per page</span>
+          </div>
+          <div className="text-sm text-gray-600">
+            Showing {((pagination.currentPage - 1) * pagination.limit) + 1} to {Math.min(pagination.currentPage * pagination.limit, pagination.totalCount)} of {pagination.totalCount} retainers
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => handlePageChange(pagination.currentPage - 1)}
+            disabled={!pagination.hasPrevPage}
+            className="px-3 py-1 text-sm border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Previous
+          </button>
+          
+          <div className="flex items-center gap-1">
+            {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+              let pageNum;
+              if (pagination.totalPages <= 5) {
+                pageNum = i + 1;
+              } else if (pagination.currentPage <= 3) {
+                pageNum = i + 1;
+              } else if (pagination.currentPage >= pagination.totalPages - 2) {
+                pageNum = pagination.totalPages - 4 + i;
+              } else {
+                pageNum = pagination.currentPage - 2 + i;
+              }
+              
+              return (
+                <button
+                  key={pageNum}
+                  onClick={() => handlePageChange(pageNum)}
+                  className={`px-3 py-1 text-sm border rounded ${
+                    pageNum === pagination.currentPage 
+                      ? 'bg-blue-600 text-white border-blue-600' 
+                      : 'hover:bg-gray-50'
+                  }`}
+                >
+                  {pageNum}
+                </button>
+              );
+            })}
+          </div>
+          
+          <button
+            onClick={() => handlePageChange(pagination.currentPage + 1)}
+            disabled={!pagination.hasNextPage}
+            className="px-3 py-1 text-sm border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Next
+          </button>
+        </div>
       </div>
     </div>
   );

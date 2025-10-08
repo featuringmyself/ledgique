@@ -4,10 +4,19 @@ import { IconTrendingUp, IconTrendingDown } from "@tabler/icons-react";
 import dynamic from 'next/dynamic';
 import { useEffect, useState } from "react";
 
-// Chart.js imports
-const Line = dynamic(() => import('react-chartjs-2').then((mod) => mod.Line), { ssr: false });
-const Bar = dynamic(() => import('react-chartjs-2').then((mod) => mod.Bar), { ssr: false });
-const Doughnut = dynamic(() => import('react-chartjs-2').then((mod) => mod.Doughnut), { ssr: false });
+// Chart.js imports - lazy loaded
+const Line = dynamic(() => import('react-chartjs-2').then((mod) => mod.Line), { 
+  ssr: false,
+  loading: () => <div className="h-80 flex items-center justify-center"><div className="animate-pulse bg-gray-200 rounded w-full h-full"></div></div>
+});
+const Bar = dynamic(() => import('react-chartjs-2').then((mod) => mod.Bar), { 
+  ssr: false,
+  loading: () => <div className="h-48 flex items-center justify-center"><div className="animate-pulse bg-gray-200 rounded w-full h-full"></div></div>
+});
+const Doughnut = dynamic(() => import('react-chartjs-2').then((mod) => mod.Doughnut), { 
+  ssr: false,
+  loading: () => <div className="h-48 flex items-center justify-center"><div className="animate-pulse bg-gray-200 rounded w-full h-full"></div></div>
+});
 
 // Chart.js registration
 import {
@@ -36,7 +45,8 @@ ChartJS.register(
 );
 
 export default function Home() {
-  const [loading, setLoading] = useState(true)
+  // Critical data states
+  const [criticalDataLoading, setCriticalDataLoading] = useState(true)
   const [projectCount, setProjectCount] = useState("-")
   const [clientCount, setClientCount] = useState("-")
   const [pendingAmount, setPendingAmount] = useState("-")
@@ -45,6 +55,14 @@ export default function Home() {
   const [projectChange, setProjectChange] = useState("+0.00%")
   const [clientChange, setClientChange] = useState("+0.00%")
   const [pendingChange, setPendingChange] = useState("+0.00%")
+
+  // Secondary data states
+  const [chartsLoading, setChartsLoading] = useState(true)
+  const [monthlyData, setMonthlyData] = useState<{month: string; clients: number; projects: number}[]>([])
+  const [projectStatusData, setProjectStatusData] = useState<{name: string; value: number; color: string}[]>([])
+  const [paymentMethodsData, setPaymentMethodsData] = useState<{method: string; count: number; percentage: string}[]>([])
+  const [clientSourcesData, setClientSourcesData] = useState<{name: string; percentage: number}[]>([])
+  const [recentActivity, setRecentActivity] = useState<{type: string; title: string; date: string; amount?: string}[]>([])
 
   const getChangeStyle = (change: string) => {
     const isZero = change.includes('0.00%')
@@ -55,78 +73,74 @@ export default function Home() {
       isZero
     }
   }
-  const [monthlyData, setMonthlyData] = useState<{month: string; clients: number; projects: number}[]>([])
-  const [projectStatusData, setProjectStatusData] = useState<{name: string; value: number; color: string}[]>([])
-  const [paymentMethodsData, setPaymentMethodsData] = useState<{method: string; count: number; percentage: string}[]>([])
-  const [clientSourcesData, setClientSourcesData] = useState<{name: string; percentage: number}[]>([])
-  const [recentActivity, setRecentActivity] = useState<{type: string; title: string; date: string; amount?: string}[]>([])
+
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchCriticalData = async () => {
       try {
-        setLoading(true);
-        const [
-          projectsRes, 
-          clientsRes, 
-          revenueRes, 
-          pendingRes,
-          monthlyRes,
-          projectStatusRes,
-          paymentMethodsRes,
-          clientSourcesRes,
-          recentActivityRes
-        ] = await Promise.all([
+        // Load critical stats first (top 4 cards)
+        const criticalPromises = [
           axios.get('/api/projects/active/count'),
           axios.get('/api/clients/active/count'),
           axios.get('/api/payments/revenue'),
-          axios.get('/api/payments/pending/count'),
-          axios.get('/api/dashboard/monthly-stats'),
-          axios.get('/api/dashboard/project-status'),
-          axios.get('/api/payments/methods'),
-          axios.get('/api/dashboard/client-sources'),
-          axios.get('/api/dashboard/recent-activity')
-        ]);
-        console.log(monthlyRes)
+          axios.get('/api/payments/pending/count')
+        ];
+
+        const [projectsRes, clientsRes, revenueRes, pendingRes] = await Promise.all(criticalPromises);
         
         setProjectCount(projectsRes.data);
         setClientCount(clientsRes.data);
         setRevenue(revenueRes.data);
         setPendingAmount(pendingRes.data.totalPendingAmount);
+        
+        setCriticalDataLoading(false);
+
+        // Load percentage changes in background
+        Promise.allSettled([
+          axios.get('/api/payments/revenue/change').then(res => setRevenueChange(res.data)).catch(() => setRevenueChange('0.00%')),
+          axios.get('/api/projects/change').then(res => setProjectChange(res.data)).catch(() => setProjectChange('0.00%')),
+          axios.get('/api/clients/change').then(res => setClientChange(res.data)).catch(() => setClientChange('0.00%')),
+          axios.get('/api/payments/pending/change').then(res => setPendingChange(res.data)).catch(() => setPendingChange('0.00%'))
+        ]);
+
+      } catch (error) {
+        console.error('Error fetching critical data:', error);
+        setCriticalDataLoading(false);
+      }
+    };
+
+    const fetchChartsData = async () => {
+      try {
+        // Load chart data after critical data is loaded
+        const chartPromises = [
+          axios.get('/api/dashboard/monthly-stats'),
+          axios.get('/api/dashboard/project-status'),
+          axios.get('/api/payments/methods'),
+          axios.get('/api/dashboard/client-sources'),
+          axios.get('/api/dashboard/recent-activity')
+        ];
+
+        const [monthlyRes, projectStatusRes, paymentMethodsRes, clientSourcesRes, recentActivityRes] = await Promise.all(chartPromises);
+        
         setMonthlyData(monthlyRes.data);
         setProjectStatusData(projectStatusRes.data);
         setPaymentMethodsData(paymentMethodsRes.data);
         setClientSourcesData(clientSourcesRes.data);
         setRecentActivity(recentActivityRes.data);
         
-        // Fetch percentage changes with fallbacks
-        try {
-          const revenueChangeRes = await axios.get('/api/payments/revenue/change');
-          setRevenueChange(revenueChangeRes.data);
-        } catch { setRevenueChange('0.00%'); }
-        
-        try {
-          const projectChangeRes = await axios.get('/api/projects/change');
-          setProjectChange(projectChangeRes.data);
-        } catch { setProjectChange('0.00%'); }
-        
-        try {
-          const clientChangeRes = await axios.get('/api/clients/change');
-          setClientChange(clientChangeRes.data);
-        } catch { setClientChange('0.00%'); }
-        
-        try {
-          const pendingChangeRes = await axios.get('/api/payments/pending/change');
-          setPendingChange(pendingChangeRes.data);
-        } catch { setPendingChange('0.00%'); }
+        setChartsLoading(false);
       } catch (error) {
-        console.error('Error fetching dashboard data:', error);
-      } finally {
-        setLoading(false);
+        console.error('Error fetching charts data:', error);
+        setChartsLoading(false);
       }
     };
 
-    fetchData();
+    // Load critical data first
+    fetchCriticalData();
+    
+    // Load charts data after a short delay to prioritize critical data
+    setTimeout(fetchChartsData, 100);
   }, []);
-  if (loading) {
+  if (criticalDataLoading) {
     return (
       <div className="flex h-full w-full flex-1 flex-col gap-2 rounded-tl-2xl border border-neutral-200 bg-gray-50 p-2 md:p-6 dark:border-neutral-700 dark:bg-neutral-900">
         <div className="space-y-6">
@@ -262,81 +276,96 @@ export default function Home() {
             </div>
 
             <div className="h-80">
-              <Line
-                data={{
-                  labels: monthlyData.map(item => item.month),
-                  datasets: [
-                    {
-                      label: 'Clients',
-                      data: monthlyData.map(item => item.clients),
-                      borderColor: '#1f2937',
-                      backgroundColor: 'rgba(31, 41, 55, 0.1)',
-                      borderWidth: 4,
-                      pointBackgroundColor: '#1f2937',
-                      pointBorderColor: 'white',
-                      pointBorderWidth: 3,
-                      pointRadius: 5,
-                      tension: 0.4
+              {chartsLoading ? (
+                <div className="flex items-center justify-center h-full">
+                  <div className="animate-pulse bg-gray-200 rounded w-full h-full"></div>
+                </div>
+              ) : (
+                <Line
+                  data={{
+                    labels: monthlyData.map(item => item.month),
+                    datasets: [
+                      {
+                        label: 'Clients',
+                        data: monthlyData.map(item => item.clients),
+                        borderColor: '#1f2937',
+                        backgroundColor: 'rgba(31, 41, 55, 0.1)',
+                        borderWidth: 4,
+                        pointBackgroundColor: '#1f2937',
+                        pointBorderColor: 'white',
+                        pointBorderWidth: 3,
+                        pointRadius: 5,
+                        tension: 0.4
+                      },
+                      {
+                        label: 'Projects',
+                        data: monthlyData.map(item => item.projects),
+                        borderColor: '#9ca3af',
+                        backgroundColor: 'rgba(156, 163, 175, 0.1)',
+                        borderWidth: 3,
+                        borderDash: [10, 5],
+                        pointBackgroundColor: '#9ca3af',
+                        pointBorderColor: 'white',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        tension: 0.4
+                      }
+                    ]
+                  }}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: { display: false },
+                      tooltip: {
+                        backgroundColor: '#1f2937',
+                        titleColor: '#e5e7eb',
+                        bodyColor: 'white',
+                        borderWidth: 0,
+                        cornerRadius: 12
+                      }
                     },
-                    {
-                      label: 'Projects',
-                      data: monthlyData.map(item => item.projects),
-                      borderColor: '#9ca3af',
-                      backgroundColor: 'rgba(156, 163, 175, 0.1)',
-                      borderWidth: 3,
-                      borderDash: [10, 5],
-                      pointBackgroundColor: '#9ca3af',
-                      pointBorderColor: 'white',
-                      pointBorderWidth: 2,
-                      pointRadius: 4,
-                      tension: 0.4
+                    scales: {
+                      x: {
+                        grid: { color: '#f3f4f6' },
+                        border: { display: false },
+                        ticks: { color: '#9ca3af', font: { size: 12 } }
+                      },
+                      y: {
+                        grid: { color: '#f3f4f6' },
+                        border: { display: false },
+                        ticks: { color: '#9ca3af', font: { size: 12 } }
+                      }
                     }
-                  ]
-                }}
-                options={{
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                      backgroundColor: '#1f2937',
-                      titleColor: '#e5e7eb',
-                      bodyColor: 'white',
-                      borderWidth: 0,
-                      cornerRadius: 12
-                    }
-                  },
-                  scales: {
-                    x: {
-                      grid: { color: '#f3f4f6' },
-                      border: { display: false },
-                      ticks: { color: '#9ca3af', font: { size: 12 } }
-                    },
-                    y: {
-                      grid: { color: '#f3f4f6' },
-                      border: { display: false },
-                      ticks: { color: '#9ca3af', font: { size: 12 } }
-                    }
-                  }
-                }}
-              />
+                  }}
+                />
+              )}
             </div>
           </div>
 
           <div className="bg-[#F7F9FB] p-6 rounded-3xl shadow-sm border border-gray-100">
             <h3 className="text-gray-900 font-semibold mb-6">Clients from</h3>
             <div className="space-y-5">
-              {clientSourcesData.map((source, index) => (
-                <div key={index} className="flex items-center justify-between">
-                  <span className="text-gray-600 font-medium">{source.name}</span>
-                  <div className="w-24 h-2 bg-gray-100 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-gray-800 rounded-full" 
-                      style={{ width: `${Math.min(source.percentage, 100)}%` }}
-                    ></div>
+              {chartsLoading ? (
+                [...Array(4)].map((_, index) => (
+                  <div key={index} className="flex items-center justify-between">
+                    <div className="h-4 bg-gray-300 rounded w-20 animate-pulse"></div>
+                    <div className="w-24 h-2 bg-gray-200 rounded-full animate-pulse"></div>
                   </div>
-                </div>
-              ))}
+                ))
+              ) : (
+                clientSourcesData.map((source, index) => (
+                  <div key={index} className="flex items-center justify-between">
+                    <span className="text-gray-600 font-medium">{source.name}</span>
+                    <div className="w-24 h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-gray-800 rounded-full" 
+                        style={{ width: `${Math.min(source.percentage, 100)}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
@@ -348,161 +377,203 @@ export default function Home() {
           <div className="bg-[#F7F9FB] p-6 rounded-3xl shadow-sm border border-gray-100">
             <h3 className="text-gray-900 font-semibold mb-6">Payment Methods</h3>
             <div className="h-48">
-              <Bar
-                data={{
-                  labels: paymentMethodsData.map(item => item.method.replace('_', ' ')),
-                  datasets: [{
-                    data: paymentMethodsData.map(item => item.count),
-                    backgroundColor: ['#8b5cf6', '#10b981', '#f59e0b', '#3b82f6', '#ef4444', '#06b6d4'],
-                    borderRadius: 6,
-                    borderSkipped: false
-                  }]
-                }}
-                options={{
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                      backgroundColor: '#1f2937',
-                      titleColor: '#e5e7eb',
-                      bodyColor: 'white',
-                      borderWidth: 0,
-                      cornerRadius: 12
-                    }
-                  },
-                  scales: {
-                    x: {
-                      grid: { display: false },
-                      ticks: { color: '#9ca3af', font: { size: 11 } }
+              {chartsLoading ? (
+                <div className="flex items-center justify-center h-full">
+                  <div className="animate-pulse bg-gray-200 rounded w-full h-full"></div>
+                </div>
+              ) : (
+                <Bar
+                  data={{
+                    labels: paymentMethodsData.map(item => item.method.replace('_', ' ')),
+                    datasets: [{
+                      data: paymentMethodsData.map(item => item.count),
+                      backgroundColor: ['#8b5cf6', '#10b981', '#f59e0b', '#3b82f6', '#ef4444', '#06b6d4'],
+                      borderRadius: 6,
+                      borderSkipped: false
+                    }]
+                  }}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: { display: false },
+                      tooltip: {
+                        backgroundColor: '#1f2937',
+                        titleColor: '#e5e7eb',
+                        bodyColor: 'white',
+                        borderWidth: 0,
+                        cornerRadius: 12
+                      }
                     },
-                    y: {
-                      grid: { color: '#f3f4f6' },
-                      border: { display: false },
-                      ticks: { color: '#9ca3af', font: { size: 12 } }
+                    scales: {
+                      x: {
+                        grid: { display: false },
+                        ticks: { color: '#9ca3af', font: { size: 11 } }
+                      },
+                      y: {
+                        grid: { color: '#f3f4f6' },
+                        border: { display: false },
+                        ticks: { color: '#9ca3af', font: { size: 12 } }
+                      }
                     }
-                  }
-                }}
-              />
+                  }}
+                />
+              )}
             </div>
           </div>
 
           <div className="bg-[#F7F9FB] p-6 rounded-3xl shadow-sm border border-gray-100">
             <h3 className="text-gray-900 font-semibold mb-6">Project Status</h3>
             <div className="h-48 mb-4">
-              <Doughnut
-                data={{
-                  labels: projectStatusData.map(item => item.name),
-                  datasets: [{
-                    data: projectStatusData.map(item => item.value),
-                    backgroundColor: projectStatusData.map(item => item.color),
-                    borderWidth: 0
-                  }]
-                }}
-                options={{
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  cutout: '60%',
-                  plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                      backgroundColor: '#1f2937',
-                      titleColor: '#e5e7eb',
-                      bodyColor: 'white',
-                      borderWidth: 0,
-                      cornerRadius: 8
+              {chartsLoading ? (
+                <div className="flex items-center justify-center h-full">
+                  <div className="animate-pulse bg-gray-200 rounded-full w-32 h-32"></div>
+                </div>
+              ) : (
+                <Doughnut
+                  data={{
+                    labels: projectStatusData.map(item => item.name),
+                    datasets: [{
+                      data: projectStatusData.map(item => item.value),
+                      backgroundColor: projectStatusData.map(item => item.color),
+                      borderWidth: 0
+                    }]
+                  }}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '60%',
+                    plugins: {
+                      legend: { display: false },
+                      tooltip: {
+                        backgroundColor: '#1f2937',
+                        titleColor: '#e5e7eb',
+                        bodyColor: 'white',
+                        borderWidth: 0,
+                        cornerRadius: 8
+                      }
                     }
-                  }
-                }}
-              />
+                  }}
+                />
+              )}
             </div>
 
             <div className="space-y-3">
-              {projectStatusData.map((item, index) => (
-                <div key={index} className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div
-                      className="w-3 h-3 rounded-full mr-3"
-                      style={{ backgroundColor: item.color }}
-                    ></div>
-                    <span className="text-gray-600 font-medium">{item.name}</span>
+              {chartsLoading ? (
+                [...Array(4)].map((_, index) => (
+                  <div key={index} className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div className="w-3 h-3 bg-gray-300 rounded-full mr-3 animate-pulse"></div>
+                      <div className="h-4 bg-gray-300 rounded w-16 animate-pulse"></div>
+                    </div>
+                    <div className="h-4 bg-gray-300 rounded w-8 animate-pulse"></div>
                   </div>
-                  <span className="text-gray-900 font-semibold">{item.value}</span>
-                </div>
-              ))}
+                ))
+              ) : (
+                projectStatusData.map((item, index) => (
+                  <div key={index} className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div
+                        className="w-3 h-3 rounded-full mr-3"
+                        style={{ backgroundColor: item.color }}
+                      ></div>
+                      <span className="text-gray-600 font-medium">{item.name}</span>
+                    </div>
+                    <span className="text-gray-900 font-semibold">{item.value}</span>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
           <div className="bg-[#F7F9FB] p-6 rounded-3xl shadow-sm border border-gray-100">
             <h3 className="text-gray-900 font-semibold mb-6">Payment Percentages</h3>
             <div className="h-48">
-              <Bar
-                data={{
-                  labels: paymentMethodsData.map(item => item.method.replace('_', ' ')),
-                  datasets: [{
-                    data: paymentMethodsData.map(item => parseFloat(item.percentage)),
-                    backgroundColor: '#10b981',
-                    borderRadius: 6,
-                    borderSkipped: false
-                  }]
-                }}
-                options={{
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                      backgroundColor: '#1f2937',
-                      titleColor: '#e5e7eb',
-                      bodyColor: 'white',
-                      borderWidth: 0,
-                      cornerRadius: 12,
-                      callbacks: {
-                        label: (context) => `${context.parsed.y}%`
+              {chartsLoading ? (
+                <div className="flex items-center justify-center h-full">
+                  <div className="animate-pulse bg-gray-200 rounded w-full h-full"></div>
+                </div>
+              ) : (
+                <Bar
+                  data={{
+                    labels: paymentMethodsData.map(item => item.method.replace('_', ' ')),
+                    datasets: [{
+                      data: paymentMethodsData.map(item => parseFloat(item.percentage)),
+                      backgroundColor: '#10b981',
+                      borderRadius: 6,
+                      borderSkipped: false
+                    }]
+                  }}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: { display: false },
+                      tooltip: {
+                        backgroundColor: '#1f2937',
+                        titleColor: '#e5e7eb',
+                        bodyColor: 'white',
+                        borderWidth: 0,
+                        cornerRadius: 12,
+                        callbacks: {
+                          label: (context) => `${context.parsed.y}%`
+                        }
+                      }
+                    },
+                    scales: {
+                      x: {
+                        grid: { display: false },
+                        ticks: { color: '#9ca3af', font: { size: 11 } }
+                      },
+                      y: {
+                        grid: { color: '#f3f4f6' },
+                        border: { display: false },
+                        ticks: { color: '#9ca3af', font: { size: 12 } }
                       }
                     }
-                  },
-                  scales: {
-                    x: {
-                      grid: { display: false },
-                      ticks: { color: '#9ca3af', font: { size: 11 } }
-                    },
-                    y: {
-                      grid: { color: '#f3f4f6' },
-                      border: { display: false },
-                      ticks: { color: '#9ca3af', font: { size: 12 } }
-                    }
-                  }
-                }}
-              />
+                  }}
+                />
+              )}
             </div>
           </div>
 
           <div className="bg-[#F7F9FB] p-6 rounded-3xl shadow-sm border border-gray-100">
             <h3 className="text-gray-900 font-semibold mb-6">Recent Activity</h3>
             <div className="space-y-4 max-h-64 overflow-y-auto">
-              {recentActivity.map((activity, index) => (
-                <div key={index} className="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50">
-                  <div className={`w-2 h-2 rounded-full mt-2 ${
-                    activity.type === 'payment' ? 'bg-green-500' :
-                    activity.type === 'project' ? 'bg-blue-500' : 'bg-purple-500'
-                  }`}></div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">
-                      {activity.title}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {new Date(activity.date).toLocaleDateString()}
-                    </p>
-                    {activity.amount && (
-                      <p className="text-xs text-green-600 font-medium">
-                        ₹{activity.amount}
-                      </p>
-                    )}
+              {chartsLoading ? (
+                [...Array(4)].map((_, index) => (
+                  <div key={index} className="flex items-start space-x-3 p-3 rounded-lg">
+                    <div className="w-2 h-2 bg-gray-300 rounded-full mt-2 animate-pulse"></div>
+                    <div className="flex-1">
+                      <div className="h-4 bg-gray-300 rounded w-full mb-2 animate-pulse"></div>
+                      <div className="h-3 bg-gray-300 rounded w-20 animate-pulse"></div>
+                    </div>
                   </div>
-                </div>
-              ))}
-              {recentActivity.length === 0 && (
+                ))
+              ) : (
+                recentActivity.map((activity, index) => (
+                  <div key={index} className="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50">
+                    <div className={`w-2 h-2 rounded-full mt-2 ${
+                      activity.type === 'payment' ? 'bg-green-500' :
+                      activity.type === 'project' ? 'bg-blue-500' : 'bg-purple-500'
+                    }`}></div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 truncate">
+                        {activity.title}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {new Date(activity.date).toLocaleDateString()}
+                      </p>
+                      {activity.amount && (
+                        <p className="text-xs text-green-600 font-medium">
+                          ₹{activity.amount}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
+              {!chartsLoading && recentActivity.length === 0 && (
                 <p className="text-gray-500 text-sm text-center py-8">
                   No recent activity
                 </p>

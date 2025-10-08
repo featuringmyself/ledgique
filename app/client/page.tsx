@@ -2,7 +2,7 @@
 import axios from "axios";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
-import { IconPlus, IconFilter, IconSortDescending, IconSearch, IconCalendar, IconDots, IconMail, IconPhone, IconBuilding, IconEdit, IconTrash, IconEye } from "@tabler/icons-react";
+import { IconPlus, IconSearch, IconCalendar, IconDots, IconMail, IconPhone, IconBuilding, IconEdit, IconTrash, IconEye } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 
 interface Project {
@@ -27,31 +27,48 @@ interface Client {
   };
 }
 
+interface PaginationInfo {
+  currentPage: number;
+  totalPages: number;
+  totalCount: number;
+  limit: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+}
+
 export default function ClientPage() {
   const [clients, setClients] = useState<Client[]>([]);
+  const [pagination, setPagination] = useState<PaginationInfo>({
+    currentPage: 1,
+    totalPages: 1,
+    totalCount: 0,
+    limit: 10,
+    hasNextPage: false,
+    hasPrevPage: false
+  });
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [viewClient, setViewClient] = useState<Client | null>(null);
-  const [_showProjects, _setShowProjects] = useState(false);
-  const [statusFilter, setStatusFilter] = useState<string>("");
-  const [sortBy, setSortBy] = useState<string>("name");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
 
   useEffect(() => {
     const fetchClients = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('/api/clients');
+        const response = await axios.get(`/api/clients?page=${pagination.currentPage}&limit=${pagination.limit}`);
+        const { clients: fetchedClients, pagination: paginationInfo } = response.data;
+        
         // Ensure projects have id for navigation
-        const clientsWithProjectIds = response.data.map((client: Client) => ({
+        const clientsWithProjectIds = fetchedClients.map((client: Client) => ({
           ...client,
           projects: client.projects.map((project, index: number) => ({
             id: (project as { id?: string; name: string }).id || `temp-${client.id}-${index}`,
             name: project.name
           }))
         }));
+        
         setClients(clientsWithProjectIds);
+        setPagination(paginationInfo);
       } catch (error) {
         console.error('Error fetching clients:', error);
       } finally {
@@ -60,7 +77,7 @@ export default function ClientPage() {
     }
 
     fetchClients();
-  }, []);
+  }, [pagination.currentPage, pagination.limit]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -93,28 +110,14 @@ export default function ClientPage() {
     setOpenDropdown(null);
   };
 
-  const filteredAndSortedClients = clients
-    .filter(client => {
-      const matchesSearch = client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        client.company?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        client.email.some(email => email.toLowerCase().includes(searchTerm.toLowerCase()));
-      const matchesStatus = !statusFilter || client.status === statusFilter;
-      return matchesSearch && matchesStatus;
-    })
-    .sort((a, b) => {
-      let aVal, bVal;
-      switch (sortBy) {
-        case "name": aVal = a.name; bVal = b.name; break;
-        case "company": aVal = a.company || ""; bVal = b.company || ""; break;
-        case "created": aVal = a.createdAt; bVal = b.createdAt; break;
-        case "projects": aVal = a._count.projects; bVal = b._count.projects; break;
-        default: aVal = a.name; bVal = b.name;
-      }
-      if (typeof aVal === "string" && typeof bVal === "string") {
-        return sortOrder === "asc" ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
-      }
-      return sortOrder === "asc" ? (aVal as number) - (bVal as number) : (bVal as number) - (aVal as number);
-    });
+  const handlePageChange = (newPage: number) => {
+    setPagination(prev => ({ ...prev, currentPage: newPage }));
+  };
+
+  const handleLimitChange = (newLimit: number) => {
+    setPagination(prev => ({ ...prev, limit: newLimit, currentPage: 1 }));
+  };
+
 
   if (loading) {
     return (
@@ -140,76 +143,6 @@ export default function ClientPage() {
             Add Client
           </button>
         </Link>
-        <div className="relative dropdown-container">
-          <button 
-            onClick={(e) => {
-              e.stopPropagation();
-              setOpenDropdown(openDropdown === 'filter' ? null : 'filter');
-            }}
-            className="p-2 hover:bg-gray-100 rounded-lg border"
-          >
-            <IconFilter size={20} />
-          </button>
-          {openDropdown === 'filter' && (
-            <div 
-              onClick={(e) => e.stopPropagation()}
-              className="absolute top-12 left-0 w-48 bg-white border rounded-lg shadow-lg z-10 p-3"
-            >
-              <label className="block text-sm font-medium mb-2">Filter by Status</label>
-              <select 
-                value={statusFilter} 
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full p-2 border rounded"
-              >
-                <option value="">All Statuses</option>
-                <option value="ACTIVE">Active</option>
-                <option value="INACTIVE">Inactive</option>
-              </select>
-            </div>
-          )}
-        </div>
-        <div className="relative dropdown-container">
-          <button 
-            onClick={(e) => {
-              e.stopPropagation();
-              setOpenDropdown(openDropdown === 'sort' ? null : 'sort');
-            }}
-            className="p-2 hover:bg-gray-100 rounded-lg border"
-          >
-            <IconSortDescending size={20} />
-          </button>
-          {openDropdown === 'sort' && (
-            <div 
-              onClick={(e) => e.stopPropagation()}
-              className="absolute top-12 left-0 w-48 bg-white border rounded-lg shadow-lg z-10 p-3 space-y-3"
-            >
-              <div>
-                <label className="block text-sm font-medium mb-2">Sort by</label>
-                <select 
-                  value={sortBy} 
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="w-full p-2 border rounded"
-                >
-                  <option value="name">Name</option>
-                  <option value="company">Company</option>
-                  <option value="created">Created Date</option>
-                  <option value="projects">Project Count</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">Order</label>
-                <select 
-                  value={sortOrder} 
-                  onChange={(e) => setSortOrder(e.target.value as "asc" | "desc")}
-                  className="w-full p-2 border rounded"
-                >
-                  <option value="asc">Ascending</option>
-                  <option value="desc">Descending</option>
-                </select>
-              </div>
-            </div>
-          )}
-        </div>
         <div className="ml-auto relative">
           <IconSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
@@ -225,7 +158,7 @@ export default function ClientPage() {
       <div className="grid grid-cols-4 gap-4 mb-6">
         <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
           <h3 className="text-sm font-medium text-blue-600 mb-1">Total Clients</h3>
-          <p className="text-2xl font-bold text-blue-900">{clients.length}</p>
+          <p className="text-2xl font-bold text-blue-900">{pagination.totalCount}</p>
         </div>
         <div className="bg-green-50 p-4 rounded-lg border border-green-100">
           <h3 className="text-sm font-medium text-green-600 mb-1">Active Clients</h3>
@@ -256,7 +189,7 @@ export default function ClientPage() {
             </tr>
           </thead>
           <tbody>
-            {filteredAndSortedClients.map((client) => (
+            {clients.map((client) => (
               <tr key={client.id} className="border-t border-gray-100 hover:bg-gray-50">
                 <td className="p-4">
                   <div className="flex items-center gap-3">
@@ -365,11 +298,81 @@ export default function ClientPage() {
           </tbody>
         </table>
         
-        {filteredAndSortedClients.length === 0 && (
+        {clients.length === 0 && (
           <div className="text-center py-12">
             <p className="text-gray-500">No clients found</p>
           </div>
         )}
+      </div>
+
+      {/* Pagination Controls */}
+      <div className="flex items-center justify-between mt-6 pr-20">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-gray-600">Show</span>
+            <select 
+              value={pagination.limit} 
+              onChange={(e) => handleLimitChange(parseInt(e.target.value))}
+              className="px-2 py-1 border rounded text-sm"
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={25}>25</option>
+              <option value={50}>50</option>
+            </select>
+            <span className="text-sm text-gray-600">per page</span>
+          </div>
+          <div className="text-sm text-gray-600">
+            Showing {((pagination.currentPage - 1) * pagination.limit) + 1} to {Math.min(pagination.currentPage * pagination.limit, pagination.totalCount)} of {pagination.totalCount} clients
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => handlePageChange(pagination.currentPage - 1)}
+            disabled={!pagination.hasPrevPage}
+            className="px-3 py-1 text-sm border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Previous
+          </button>
+          
+          <div className="flex items-center gap-1">
+            {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+              let pageNum;
+              if (pagination.totalPages <= 5) {
+                pageNum = i + 1;
+              } else if (pagination.currentPage <= 3) {
+                pageNum = i + 1;
+              } else if (pagination.currentPage >= pagination.totalPages - 2) {
+                pageNum = pagination.totalPages - 4 + i;
+              } else {
+                pageNum = pagination.currentPage - 2 + i;
+              }
+              
+              return (
+                <button
+                  key={pageNum}
+                  onClick={() => handlePageChange(pageNum)}
+                  className={`px-3 py-1 text-sm border rounded ${
+                    pageNum === pagination.currentPage 
+                      ? 'bg-blue-600 text-white border-blue-600' 
+                      : 'hover:bg-gray-50'
+                  }`}
+                >
+                  {pageNum}
+                </button>
+              );
+            })}
+          </div>
+          
+          <button
+            onClick={() => handlePageChange(pagination.currentPage + 1)}
+            disabled={!pagination.hasNextPage}
+            className="px-3 py-1 text-sm border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Next
+          </button>
+        </div>
       </div>
 
       {/* View Modal */}
