@@ -10,7 +10,8 @@ import {
     IconCreditCardPay,
     IconBriefcase,
     IconWallet,
-    IconReceipt
+    IconReceipt,
+    IconHelpCircle
 } from "@tabler/icons-react";
 import { motion } from "motion/react";
 import logo from "@/public/logo.png"
@@ -168,6 +169,7 @@ export function Sidebar({ children }: { children?: React.ReactNode }) {
                                 ),
                             }}
                         />
+                        <HelpButton />
                     </div>
                 </SidebarBody>
             </SidebarUI>
@@ -196,6 +198,26 @@ const LogoutButton = () => {
                 {effectiveOpen && <span>Logout</span>}
             </div>
         </SignOutButton>
+    );
+};
+
+const HelpButton = () => {
+    const { open, hoverOpen } = useSidebar();
+    const effectiveOpen = open || hoverOpen;
+
+    const handleHelpClick = () => {
+        // You can customize this to open a help modal, navigate to help page, or trigger support
+        window.open('mailto:ledgique@dodox.in?subject=Need Help', '_blank');
+    };
+
+    return (
+        <div 
+            onClick={handleHelpClick}
+            className="flex items-center gap-2 p-2 mb-2 text-sm font-normal text-zinc-500  hover:bg-zinc-50 rounded-md transition-colors cursor-pointer"
+        >
+            <IconHelpCircle className="h-5 w-5 shrink-0" />
+            {effectiveOpen && <span>Need Help?</span>}
+        </div>
     );
 };
 
