@@ -36,6 +36,18 @@ interface PaginationInfo {
   hasPrevPage: boolean;
 }
 
+interface DropdownPosition {
+  top: number;
+  left: number;
+}
+
+// Extend Window interface to include dropdownPosition
+declare global {
+  interface Window {
+    dropdownPosition?: DropdownPosition;
+  }
+}
+
 export default function ClientPage() {
   const [clients, setClients] = useState<Client[]>([]);
   const [pagination, setPagination] = useState<PaginationInfo>({
@@ -266,7 +278,7 @@ export default function ClientPage() {
                             const rect = e.currentTarget.getBoundingClientRect();
                             setOpenDropdown(openDropdown === client.id ? null : client.id);
                             if (openDropdown !== client.id) {
-                              (window as any).dropdownPosition = {
+                              window.dropdownPosition = {
                                 top: rect.bottom + 4,
                                 left: rect.right - 128
                               };
@@ -282,8 +294,8 @@ export default function ClientPage() {
                             onClick={(e) => e.stopPropagation()}
                             className="fixed bg-white border rounded-lg shadow-xl z-50 w-32"
                             style={{
-                              top: `${(window as any).dropdownPosition?.top || 0}px`,
-                              left: `${(window as any).dropdownPosition?.left || 0}px`
+                              top: `${window.dropdownPosition?.top || 0}px`,
+                              left: `${window.dropdownPosition?.left || 0}px`
                             }}
                           >
                             <button 
