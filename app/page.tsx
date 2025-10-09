@@ -1,8 +1,15 @@
 "use client";
 import axios from "axios";
-import { IconTrendingUp, IconTrendingDown } from "@tabler/icons-react";
+import { IconTrendingUp, IconTrendingDown, IconRefresh } from "@tabler/icons-react";
 import dynamic from 'next/dynamic';
 import { useEffect, useState } from "react";
+import { 
+  getCachedDashboardData, 
+  setCachedDashboardData, 
+  hasDataChanged,
+  isCacheExpired,
+  type DashboardCacheData 
+} from '@/lib/dashboardCache';
 
 // Chart.js imports - lazy loaded
 const Line = dynamic(() => import('react-chartjs-2').then((mod) => mod.Line), { 
@@ -64,6 +71,10 @@ export default function Home() {
   const [clientSourcesData, setClientSourcesData] = useState<{name: string; percentage: number}[]>([])
   const [recentActivity, setRecentActivity] = useState<{type: string; title: string; date: string; amount?: string}[]>([])
 
+  // Refresh states
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const [hasCachedData, setHasCachedData] = useState(false)
+
   const getChangeStyle = (change: string) => {
     const isZero = change.includes('0.00%')
     const isPositive = change.startsWith('+')
@@ -75,9 +86,37 @@ export default function Home() {
   }
 
   useEffect(() => {
-    const fetchCriticalData = async () => {
+    const loadDashboardData = async () => {
+      // Always check for cached data first
+      const cachedData = getCachedDashboardData();
+      
+      if (cachedData) {
+        // Always load cached data immediately (regardless of expiry)
+        setProjectCount(cachedData.criticalData.projectCount);
+        setClientCount(cachedData.criticalData.clientCount);
+        setPendingAmount(cachedData.criticalData.pendingAmount);
+        setRevenue(cachedData.criticalData.revenue);
+        setRevenueChange(cachedData.criticalData.revenueChange);
+        setProjectChange(cachedData.criticalData.projectChange);
+        setClientChange(cachedData.criticalData.clientChange);
+        setPendingChange(cachedData.criticalData.pendingChange);
+        
+        setMonthlyData(cachedData.chartsData.monthlyData);
+        setProjectStatusData(cachedData.chartsData.projectStatusData);
+        setPaymentMethodsData(cachedData.chartsData.paymentMethodsData);
+        setClientSourcesData(cachedData.chartsData.clientSourcesData);
+        setRecentActivity(cachedData.chartsData.recentActivity);
+        
+        setCriticalDataLoading(false);
+        setChartsLoading(false);
+        setHasCachedData(true);
+        
+        // Always start background refresh (regardless of cache expiry)
+        setIsRefreshing(true);
+      }
+
       try {
-        // Load critical stats first (top 4 cards)
+        // Always fetch fresh data from API in background
         const criticalPromises = [
           axios.get('/api/projects/active/count'),
           axios.get('/api/clients/active/count'),
@@ -87,30 +126,33 @@ export default function Home() {
 
         const [projectsRes, clientsRes, revenueRes, pendingRes] = await Promise.all(criticalPromises);
         
-        setProjectCount(projectsRes.data);
-        setClientCount(clientsRes.data);
-        setRevenue(revenueRes.data);
-        setPendingAmount(pendingRes.data.totalPendingAmount);
+        const freshCriticalData = {
+          projectCount: projectsRes.data,
+          clientCount: clientsRes.data,
+          revenue: revenueRes.data,
+          pendingAmount: pendingRes.data.totalPendingAmount,
+          revenueChange: "+0.00%",
+          projectChange: "+0.00%",
+          clientChange: "+0.00%",
+          pendingChange: "+0.00%"
+        };
+
+        // Fetch percentage changes
+        const changePromises = [
+          axios.get('/api/payments/revenue/change').then(res => res.data).catch(() => "+0.00%"),
+          axios.get('/api/projects/change').then(res => res.data).catch(() => "+0.00%"),
+          axios.get('/api/clients/change').then(res => res.data).catch(() => "+0.00%"),
+          axios.get('/api/payments/pending/change').then(res => res.data).catch(() => "+0.00%")
+        ];
+
+        const [revenueChangeRes, projectChangeRes, clientChangeRes, pendingChangeRes] = await Promise.all(changePromises);
         
-        setCriticalDataLoading(false);
+        freshCriticalData.revenueChange = revenueChangeRes;
+        freshCriticalData.projectChange = projectChangeRes;
+        freshCriticalData.clientChange = clientChangeRes;
+        freshCriticalData.pendingChange = pendingChangeRes;
 
-        // Load percentage changes in background
-        Promise.allSettled([
-          axios.get('/api/payments/revenue/change').then(res => setRevenueChange(res.data)).catch(() => setRevenueChange('0.00%')),
-          axios.get('/api/projects/change').then(res => setProjectChange(res.data)).catch(() => setProjectChange('0.00%')),
-          axios.get('/api/clients/change').then(res => setClientChange(res.data)).catch(() => setClientChange('0.00%')),
-          axios.get('/api/payments/pending/change').then(res => setPendingChange(res.data)).catch(() => setPendingChange('0.00%'))
-        ]);
-
-      } catch (error) {
-        console.error('Error fetching critical data:', error);
-        setCriticalDataLoading(false);
-      }
-    };
-
-    const fetchChartsData = async () => {
-      try {
-        // Load chart data after critical data is loaded
+        // Fetch charts data
         const chartPromises = [
           axios.get('/api/dashboard/monthly-stats'),
           axios.get('/api/dashboard/project-status'),
@@ -121,24 +163,55 @@ export default function Home() {
 
         const [monthlyRes, projectStatusRes, paymentMethodsRes, clientSourcesRes, recentActivityRes] = await Promise.all(chartPromises);
         
-        setMonthlyData(monthlyRes.data);
-        setProjectStatusData(projectStatusRes.data);
-        setPaymentMethodsData(paymentMethodsRes.data);
-        setClientSourcesData(clientSourcesRes.data);
-        setRecentActivity(recentActivityRes.data);
+        const freshChartsData = {
+          monthlyData: monthlyRes.data,
+          projectStatusData: projectStatusRes.data,
+          paymentMethodsData: paymentMethodsRes.data,
+          clientSourcesData: clientSourcesRes.data,
+          recentActivity: recentActivityRes.data
+        };
+
+        // Check if data has changed
+        const freshData = {
+          criticalData: freshCriticalData,
+          chartsData: freshChartsData
+        };
+
+        if (!cachedData || hasDataChanged(cachedData, freshData)) {
+          // Update state with fresh data
+          setProjectCount(freshCriticalData.projectCount);
+          setClientCount(freshCriticalData.clientCount);
+          setPendingAmount(freshCriticalData.pendingAmount);
+          setRevenue(freshCriticalData.revenue);
+          setRevenueChange(freshCriticalData.revenueChange);
+          setProjectChange(freshCriticalData.projectChange);
+          setClientChange(freshCriticalData.clientChange);
+          setPendingChange(freshCriticalData.pendingChange);
+          
+          setMonthlyData(freshChartsData.monthlyData);
+          setProjectStatusData(freshChartsData.projectStatusData);
+          setPaymentMethodsData(freshChartsData.paymentMethodsData);
+          setClientSourcesData(freshChartsData.clientSourcesData);
+          setRecentActivity(freshChartsData.recentActivity);
+        }
+
+        // Always cache the fresh data
+        setCachedDashboardData(freshData);
         
+        setCriticalDataLoading(false);
         setChartsLoading(false);
+        setIsRefreshing(false);
+        setHasCachedData(false);
+
       } catch (error) {
-        console.error('Error fetching charts data:', error);
+        console.error('Error fetching dashboard data:', error);
+        setCriticalDataLoading(false);
         setChartsLoading(false);
+        setIsRefreshing(false);
       }
     };
 
-    // Load critical data first
-    fetchCriticalData();
-    
-    // Load charts data after a short delay to prioritize critical data
-    setTimeout(fetchChartsData, 100);
+    loadDashboardData();
   }, []);
   if (criticalDataLoading) {
     return (
@@ -240,8 +313,13 @@ export default function Home() {
             { title: "Active Clients", value: clientCount, change: clientChange, bg: "bg-[#E3F5FF]", border: "border-blue-100/50" },
             { title: "Pending Payments", value: `₹${typeof pendingAmount === 'string' && pendingAmount !== '-' ? fmt.format(Number(pendingAmount)) : fmt.format(Number(pendingAmount))}`, change: pendingChange, bg: "bg-[#E5ECF6]", border: "border-purple-100/50" }
           ].map((card, index) => (
-            <div key={index} className={`${card.bg} p-6 rounded-xl border ${card.border}`}>
-              <h3 className="text-gray-600 font-semibold text-sm mb-3">{card.title}</h3>
+            <div key={index} className={`${card.bg} p-6 rounded-xl border ${card.border} relative`}>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-gray-600 font-semibold text-sm">{card.title}</h3>
+                {isRefreshing && hasCachedData && (
+                  <IconRefresh size={14} className="text-gray-400 animate-spin" />
+                )}
+              </div>
               <div className="flex items-end justify-between">
                 <p className="text-4xl font-bold text-gray-900">{card.value}</p>
                 <div className={`flex items-center ${getChangeStyle(card.change).color} text-sm font-medium`}>
@@ -262,6 +340,9 @@ export default function Home() {
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center space-x-8">
                 <button className="text-gray-900 font-semibold border-b-2 border-gray-900 pb-2">Monthly Growth</button>
+                {isRefreshing && hasCachedData && (
+                  <IconRefresh size={16} className="text-gray-400 animate-spin" />
+                )}
               </div>
               <div className="flex items-center space-x-6">
                 <div className="flex items-center">
@@ -344,7 +425,12 @@ export default function Home() {
           </div>
 
           <div className="bg-[#F7F9FB] p-6 rounded-3xl shadow-sm border border-gray-100">
-            <h3 className="text-gray-900 font-semibold mb-6">Clients from</h3>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-gray-900 font-semibold">Clients from</h3>
+              {isRefreshing && hasCachedData && (
+                <IconRefresh size={14} className="text-gray-400 animate-spin" />
+              )}
+            </div>
             <div className="space-y-5">
               {chartsLoading ? (
                 [...Array(4)].map((_, index) => (
@@ -375,7 +461,12 @@ export default function Home() {
 
 
           <div className="bg-[#F7F9FB] p-6 rounded-3xl shadow-sm border border-gray-100">
-            <h3 className="text-gray-900 font-semibold mb-6">Payment Methods</h3>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-gray-900 font-semibold">Payment Methods</h3>
+              {isRefreshing && hasCachedData && (
+                <IconRefresh size={14} className="text-gray-400 animate-spin" />
+              )}
+            </div>
             <div className="h-48">
               {chartsLoading ? (
                 <div className="flex items-center justify-center h-full">
@@ -423,7 +514,12 @@ export default function Home() {
           </div>
 
           <div className="bg-[#F7F9FB] p-6 rounded-3xl shadow-sm border border-gray-100">
-            <h3 className="text-gray-900 font-semibold mb-6">Project Status</h3>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-gray-900 font-semibold">Project Status</h3>
+              {isRefreshing && hasCachedData && (
+                <IconRefresh size={14} className="text-gray-400 animate-spin" />
+              )}
+            </div>
             <div className="h-48 mb-4">
               {chartsLoading ? (
                 <div className="flex items-center justify-center h-full">
@@ -487,7 +583,12 @@ export default function Home() {
           </div>
 
           <div className="bg-[#F7F9FB] p-6 rounded-3xl shadow-sm border border-gray-100">
-            <h3 className="text-gray-900 font-semibold mb-6">Payment Percentages</h3>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-gray-900 font-semibold">Payment Percentages</h3>
+              {isRefreshing && hasCachedData && (
+                <IconRefresh size={14} className="text-gray-400 animate-spin" />
+              )}
+            </div>
             <div className="h-48">
               {chartsLoading ? (
                 <div className="flex items-center justify-center h-full">
@@ -538,7 +639,12 @@ export default function Home() {
           </div>
 
           <div className="bg-[#F7F9FB] p-6 rounded-3xl shadow-sm border border-gray-100">
-            <h3 className="text-gray-900 font-semibold mb-6">Recent Activity</h3>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-gray-900 font-semibold">Recent Activity</h3>
+              {isRefreshing && hasCachedData && (
+                <IconRefresh size={14} className="text-gray-400 animate-spin" />
+              )}
+            </div>
             <div className="space-y-4 max-h-64 overflow-y-auto">
               {chartsLoading ? (
                 [...Array(4)].map((_, index) => (
