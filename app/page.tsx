@@ -306,23 +306,23 @@ export default function Home() {
     <div className="flex h-full w-full flex-1 flex-col gap-2 rounded-tl-2xl border border-neutral-200 bg-gray-50 p-2 md:p-6 dark:border-neutral-700 dark:bg-neutral-900">
       <div className="space-y-6">
         {/* Top Stats Cards */}
-        <div className="grid grid-cols-4 gap-6">
+        <div className="grid md:grid-cols-4 grid-cols-2 gap-6">
           {[
             { title: "Total Revenue", value: `₹${revenue === '-' ? revenue : fmt.format(Number(revenue))}`, change: revenueChange, bg: "bg-[#E3F5FF]", border: "border-blue-100/50" },
             { title: "Active Projects", value: projectCount, change: projectChange, bg: "bg-[#E5ECF6]", border: "border-purple-100/50" },
             { title: "Active Clients", value: clientCount, change: clientChange, bg: "bg-[#E3F5FF]", border: "border-blue-100/50" },
             { title: "Pending Payments", value: `₹${typeof pendingAmount === 'string' && pendingAmount !== '-' ? fmt.format(Number(pendingAmount)) : fmt.format(Number(pendingAmount))}`, change: pendingChange, bg: "bg-[#E5ECF6]", border: "border-purple-100/50" }
           ].map((card, index) => (
-            <div key={index} className={`${card.bg} p-6 rounded-xl border ${card.border} relative`}>
+            <div key={index} className={`${card.bg} md:p-6 p-3 rounded-xl border ${card.border} relative`}>
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-gray-600 font-semibold text-sm">{card.title}</h3>
+                <h3 className="text-gray-600 font-semibold md:text-sm text-xs">{card.title}</h3>
                 {isRefreshing && hasCachedData && (
                   <IconRefresh size={14} className="text-gray-400 animate-spin" />
                 )}
               </div>
               <div className="flex items-end justify-between">
-                <p className="text-4xl font-bold text-gray-900">{card.value}</p>
-                <div className={`flex items-center ${getChangeStyle(card.change).color} text-sm font-medium`}>
+                <p className="md:text-4xl text-xl font-bold text-gray-900">{card.value}</p>
+                <div className={`flex items-center ${getChangeStyle(card.change).color} md:text-sm text-xs font-medium`}>
                   <span>{card.change}</span>
                   {!getChangeStyle(card.change).isZero && (getChangeStyle(card.change).isPositive ? 
                     <IconTrendingUp size={16} className="ml-1" /> : 
@@ -335,8 +335,8 @@ export default function Home() {
         </div>
 
         {/* Middle Section - Chart and Clients */}
-        <div className="grid grid-cols-3 gap-6">
-          <div className="col-span-2 bg-[#F7F9FB] p-8 rounded-xl shadow-sm border border-gray-100">
+        <div className="grid md:grid-cols-3 grid-cols-1 gap-6">
+          <div className="col-span-2 bg-[#F7F9FB] md:p-8 p-3 rounded-xl shadow-sm border border-gray-100">
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center space-x-8">
                 <button className="text-gray-900 font-semibold border-b-2 border-gray-900 pb-2">Monthly Growth</button>
@@ -344,7 +344,7 @@ export default function Home() {
                   <IconRefresh size={16} className="text-gray-400 animate-spin" />
                 )}
               </div>
-              <div className="flex items-center space-x-6">
+              <div className="flex items-center md:space-x-6 space-x-2">
                 <div className="flex items-center">
                   <div className="w-3 h-3 bg-gray-900 rounded-full mr-2"></div>
                   <span className="text-sm text-gray-600 font-medium">Clients</span>
@@ -457,7 +457,7 @@ export default function Home() {
         </div>
 
         {/* Bottom Section */}
-        <div className="grid grid-cols-4 gap-6">
+        <div className="grid md:grid-cols-4 grid-cols-1 gap-6">
 
 
           <div className="bg-[#F7F9FB] p-6 rounded-3xl shadow-sm border border-gray-100">

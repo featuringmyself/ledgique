@@ -115,63 +115,66 @@ export default function InvoicePage() {
   }
 
   return (
-    <div className="p-6 bg-white w-full min-h-screen">
+    <div className="p-4 sm:p-6 bg-white w-full min-h-screen">
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Invoices</h1>
-        <p className="text-gray-600">Create, send, and track your invoices</p>
+      <div className="mb-4 sm:mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Invoices</h1>
+        <p className="text-sm sm:text-base text-gray-600">Create, send, and track your invoices</p>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-4 gap-4 mb-6">
-        <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
-          <h3 className="text-sm font-medium text-blue-600 mb-1">Total Invoiced</h3>
-          <p className="text-2xl font-bold text-blue-900">₹{totalAmount.toLocaleString()}</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
+        <div className="bg-blue-50 p-3 sm:p-4 rounded-lg border border-blue-100">
+          <h3 className="text-xs sm:text-sm font-medium text-blue-600 mb-1">Total Invoiced</h3>
+          <p className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-900">₹{totalAmount.toLocaleString()}</p>
         </div>
-        <div className="bg-green-50 p-4 rounded-lg border border-green-100">
-          <h3 className="text-sm font-medium text-green-600 mb-1">Paid Amount</h3>
-          <p className="text-2xl font-bold text-green-900">₹{paidAmount.toLocaleString()}</p>
+        <div className="bg-green-50 p-3 sm:p-4 rounded-lg border border-green-100">
+          <h3 className="text-xs sm:text-sm font-medium text-green-600 mb-1">Paid Amount</h3>
+          <p className="text-lg sm:text-xl lg:text-2xl font-bold text-green-900">₹{paidAmount.toLocaleString()}</p>
         </div>
-        <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-100">
-          <h3 className="text-sm font-medium text-yellow-600 mb-1">Pending Amount</h3>
-          <p className="text-2xl font-bold text-yellow-900">₹{pendingAmount.toLocaleString()}</p>
+        <div className="bg-yellow-50 p-3 sm:p-4 rounded-lg border border-yellow-100">
+          <h3 className="text-xs sm:text-sm font-medium text-yellow-600 mb-1">Pending Amount</h3>
+          <p className="text-lg sm:text-xl lg:text-2xl font-bold text-yellow-900">₹{pendingAmount.toLocaleString()}</p>
         </div>
-        <div className="bg-red-50 p-4 rounded-lg border border-red-100">
-          <h3 className="text-sm font-medium text-red-600 mb-1">Overdue</h3>
-          <p className="text-2xl font-bold text-red-900">{overdueCount}</p>
+        <div className="bg-red-50 p-3 sm:p-4 rounded-lg border border-red-100">
+          <h3 className="text-xs sm:text-sm font-medium text-red-600 mb-1">Overdue</h3>
+          <p className="text-lg sm:text-xl lg:text-2xl font-bold text-red-900">{overdueCount}</p>
         </div>
       </div>
 
       {/* Top Actions */}
-      <div className="flex items-center gap-4 mb-6">
-        <Link href="/invoice/create">
-          <button className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-            <IconPlus size={20} />
-            Create Invoice
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+          <Link href="/invoice/create">
+            <button className="flex items-center gap-2 bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base">
+              <IconPlus size={18} className="sm:w-5 sm:h-5" />
+              <span className="hidden sm:inline">Create Invoice</span>
+              <span className="sm:hidden">Create</span>
+            </button>
+          </Link>
+          <select 
+            className="px-2 sm:px-3 py-2 border border-gray-300 rounded-lg text-sm"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <option value="ALL">All Status</option>
+            <option value="DRAFT">Draft</option>
+            <option value="SENT">Sent</option>
+            <option value="PAID">Paid</option>
+            <option value="OVERDUE">Overdue</option>
+          </select>
+          <button className="p-2 hover:bg-gray-100 rounded-lg border">
+            <IconFilter size={18} className="sm:w-5 sm:h-5" />
           </button>
-        </Link>
-        <select 
-          className="px-3 py-2 border border-gray-300 rounded-lg"
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-        >
-          <option value="ALL">All Status</option>
-          <option value="DRAFT">Draft</option>
-          <option value="SENT">Sent</option>
-          <option value="PAID">Paid</option>
-          <option value="OVERDUE">Overdue</option>
-        </select>
-        <button className="p-2 hover:bg-gray-100 rounded-lg border">
-          <IconFilter size={20} />
-        </button>
-        <button className="p-2 hover:bg-gray-100 rounded-lg border">
-          <IconSortDescending size={20} />
-        </button>
-        <div className="ml-auto relative">
+          <button className="p-2 hover:bg-gray-100 rounded-lg border">
+            <IconSortDescending size={18} className="sm:w-5 sm:h-5" />
+          </button>
+        </div>
+        <div className="w-full sm:w-auto sm:ml-auto relative">
           <IconSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
             placeholder="Search invoices..."
-            className="pl-10 w-64 border-gray-300"
+            className="pl-10 w-full sm:w-64 border-gray-300"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -180,98 +183,178 @@ export default function InvoicePage() {
 
       {/* Table */}
       <div className="bg-white rounded-lg border overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-gray-50">
-            <tr className="text-left text-sm text-gray-500">
-              <th className="p-4 font-medium">Invoice</th>
-              <th className="p-4 font-medium">Client</th>
-              <th className="p-4 font-medium">Project</th>
-              <th className="p-4 font-medium">Amount</th>
-              <th className="p-4 font-medium">Status</th>
-              <th className="p-4 font-medium">Issue Date</th>
-              <th className="p-4 font-medium">Due Date</th>
-              <th className="p-4 font-medium">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {invoices.map((invoice) => (
-              <tr key={invoice.id} className="border-t border-gray-100 hover:bg-gray-50">
-                <td className="p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center">
-                      <IconFileInvoice size={20} className="text-white" />
+        {/* Desktop Table */}
+        <div className="hidden lg:block overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr className="text-left text-sm text-gray-500">
+                <th className="p-4 font-medium">Invoice</th>
+                <th className="p-4 font-medium">Client</th>
+                <th className="p-4 font-medium">Project</th>
+                <th className="p-4 font-medium">Amount</th>
+                <th className="p-4 font-medium">Status</th>
+                <th className="p-4 font-medium">Issue Date</th>
+                <th className="p-4 font-medium">Due Date</th>
+                <th className="p-4 font-medium">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {invoices.map((invoice) => (
+                <tr key={invoice.id} className="border-t border-gray-100 hover:bg-gray-50">
+                  <td className="p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center">
+                        <IconFileInvoice size={20} className="text-white" />
+                      </div>
+                      <div>
+                        <div className="font-medium text-gray-900">{invoice.invoiceNumber}</div>
+                        <div className="text-sm text-gray-500 truncate max-w-xs">{invoice.title}</div>
+                      </div>
                     </div>
+                  </td>
+                  <td className="p-4">
                     <div>
-                      <div className="font-medium text-gray-900">{invoice.invoiceNumber}</div>
-                      <div className="text-sm text-gray-500 truncate max-w-xs">{invoice.title}</div>
+                      <div className="font-medium text-gray-900">{invoice.client.name}</div>
+                      {invoice.client.company && (
+                        <div className="text-sm text-gray-500">{invoice.client.company}</div>
+                      )}
                     </div>
-                  </div>
-                </td>
-                <td className="p-4">
-                  <div>
-                    <div className="font-medium text-gray-900">{invoice.client.name}</div>
-                    {invoice.client.company && (
-                      <div className="text-sm text-gray-500">{invoice.client.company}</div>
+                  </td>
+                  <td className="p-4 text-sm text-gray-900">
+                    {invoice.project?.name || '-'}
+                  </td>
+                  <td className="p-4">
+                    <div className="font-medium text-gray-900">
+                      ₹{invoice.totalAmount.toLocaleString()}
+                    </div>
+                  </td>
+                  <td className="p-4">
+                    <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full ${getStatusColor(invoice.status)}`}>
+                      {invoice.status}
+                    </span>
+                  </td>
+                  <td className="p-4">
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <IconCalendar size={16} className="text-gray-400" />
+                      {new Date(invoice.issueDate).toLocaleDateString()}
+                    </div>
+                  </td>
+                  <td className="p-4">
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <IconCalendar size={16} className="text-gray-400" />
+                      {new Date(invoice.dueDate).toLocaleDateString()}
+                    </div>
+                    {new Date(invoice.dueDate) < new Date() && invoice.status !== 'PAID' && (
+                      <div className="text-xs text-red-600 font-medium">Overdue</div>
                     )}
+                  </td>
+                  <td className="p-4">
+                    <div className="flex items-center gap-2">
+                      <button className="p-1 hover:bg-gray-100 rounded" title="View">
+                        <IconEye size={16} className="text-gray-400" />
+                      </button>
+                      <button className="p-1 hover:bg-gray-100 rounded" title="Download">
+                        <IconDownload size={16} className="text-gray-400" />
+                      </button>
+                      <button className="p-1 hover:bg-gray-100 rounded" title="Send">
+                        <IconSend size={16} className="text-gray-400" />
+                      </button>
+                      {invoice.status !== 'PAID' && (
+                        <button 
+                          className="p-1 hover:bg-green-100 rounded text-green-600" 
+                          title="Mark as Paid"
+                          onClick={() => markAsPaid(invoice.id, invoice.totalAmount)}
+                        >
+                          <IconCheck size={16} />
+                        </button>
+                      )}
+                      <button className="p-1 hover:bg-gray-100 rounded">
+                        <IconDots size={16} className="text-gray-400" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Mobile Card Layout */}
+        <div className="lg:hidden">
+          {invoices.map((invoice) => (
+            <div key={invoice.id} className="border-b border-gray-100 p-4 hover:bg-gray-50">
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center">
+                    <IconFileInvoice size={20} className="text-white" />
                   </div>
-                </td>
-                <td className="p-4 text-sm text-gray-900">
-                  {invoice.project?.name || '-'}
-                </td>
-                <td className="p-4">
-                  <div className="font-medium text-gray-900">
-                    ₹{invoice.totalAmount.toLocaleString()}
+                  <div>
+                    <div className="font-medium text-gray-900">{invoice.invoiceNumber}</div>
+                    <div className="text-sm text-gray-500 truncate max-w-xs">{invoice.title}</div>
                   </div>
-                </td>
-                <td className="p-4">
-                  <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full ${getStatusColor(invoice.status)}`}>
-                    {invoice.status}
-                  </span>
-                </td>
-                <td className="p-4">
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <IconCalendar size={16} className="text-gray-400" />
-                    {new Date(invoice.issueDate).toLocaleDateString()}
-                  </div>
-                </td>
-                <td className="p-4">
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <IconCalendar size={16} className="text-gray-400" />
-                    {new Date(invoice.dueDate).toLocaleDateString()}
-                  </div>
+                </div>
+                <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full ${getStatusColor(invoice.status)}`}>
+                  {invoice.status}
+                </span>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-3 mb-3 text-sm">
+                <div>
+                  <div className="text-gray-500">Client</div>
+                  <div className="font-medium text-gray-900">{invoice.client.name}</div>
+                  {invoice.client.company && (
+                    <div className="text-xs text-gray-500">{invoice.client.company}</div>
+                  )}
+                </div>
+                <div>
+                  <div className="text-gray-500">Amount</div>
+                  <div className="font-medium text-gray-900">₹{invoice.totalAmount.toLocaleString()}</div>
+                </div>
+                <div>
+                  <div className="text-gray-500">Project</div>
+                  <div className="font-medium text-gray-900">{invoice.project?.name || '-'}</div>
+                </div>
+                <div>
+                  <div className="text-gray-500">Due Date</div>
+                  <div className="font-medium text-gray-900">{new Date(invoice.dueDate).toLocaleDateString()}</div>
                   {new Date(invoice.dueDate) < new Date() && invoice.status !== 'PAID' && (
                     <div className="text-xs text-red-600 font-medium">Overdue</div>
                   )}
-                </td>
-                <td className="p-4">
-                  <div className="flex items-center gap-2">
-                    <button className="p-1 hover:bg-gray-100 rounded" title="View">
-                      <IconEye size={16} className="text-gray-400" />
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <IconCalendar size={16} className="text-gray-400" />
+                  {new Date(invoice.issueDate).toLocaleDateString()}
+                </div>
+                <div className="flex items-center gap-2">
+                  <button className="p-1 hover:bg-gray-100 rounded" title="View">
+                    <IconEye size={16} className="text-gray-400" />
+                  </button>
+                  <button className="p-1 hover:bg-gray-100 rounded" title="Download">
+                    <IconDownload size={16} className="text-gray-400" />
+                  </button>
+                  <button className="p-1 hover:bg-gray-100 rounded" title="Send">
+                    <IconSend size={16} className="text-gray-400" />
+                  </button>
+                  {invoice.status !== 'PAID' && (
+                    <button 
+                      className="p-1 hover:bg-green-100 rounded text-green-600" 
+                      title="Mark as Paid"
+                      onClick={() => markAsPaid(invoice.id, invoice.totalAmount)}
+                    >
+                      <IconCheck size={16} />
                     </button>
-                    <button className="p-1 hover:bg-gray-100 rounded" title="Download">
-                      <IconDownload size={16} className="text-gray-400" />
-                    </button>
-                    <button className="p-1 hover:bg-gray-100 rounded" title="Send">
-                      <IconSend size={16} className="text-gray-400" />
-                    </button>
-                    {invoice.status !== 'PAID' && (
-                      <button 
-                        className="p-1 hover:bg-green-100 rounded text-green-600" 
-                        title="Mark as Paid"
-                        onClick={() => markAsPaid(invoice.id, invoice.totalAmount)}
-                      >
-                        <IconCheck size={16} />
-                      </button>
-                    )}
-                    <button className="p-1 hover:bg-gray-100 rounded">
-                      <IconDots size={16} className="text-gray-400" />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                  )}
+                  <button className="p-1 hover:bg-gray-100 rounded">
+                    <IconDots size={16} className="text-gray-400" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
         
         {invoices.length === 0 && (
           <div className="text-center py-12">
@@ -281,8 +364,8 @@ export default function InvoicePage() {
       </div>
 
       {/* Pagination Controls */}
-      <div className="flex items-center justify-between mt-6 pr-20">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-4 sm:mt-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-600">Show</span>
             <select 
@@ -302,13 +385,14 @@ export default function InvoicePage() {
           </div>
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
           <button
             onClick={() => handlePageChange(pagination.currentPage - 1)}
             disabled={!pagination.hasPrevPage}
-            className="px-3 py-1 text-sm border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-2 sm:px-3 py-1 text-sm border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Previous
+            <span className="hidden sm:inline">Previous</span>
+            <span className="sm:hidden">Prev</span>
           </button>
           
           <div className="flex items-center gap-1">
@@ -328,7 +412,7 @@ export default function InvoicePage() {
                 <button
                   key={pageNum}
                   onClick={() => handlePageChange(pageNum)}
-                  className={`px-3 py-1 text-sm border rounded ${
+                  className={`px-2 sm:px-3 py-1 text-sm border rounded ${
                     pageNum === pagination.currentPage 
                       ? 'bg-blue-600 text-white border-blue-600' 
                       : 'hover:bg-gray-50'
@@ -343,7 +427,7 @@ export default function InvoicePage() {
           <button
             onClick={() => handlePageChange(pagination.currentPage + 1)}
             disabled={!pagination.hasNextPage}
-            className="px-3 py-1 text-sm border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-2 sm:px-3 py-1 text-sm border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Next
           </button>

@@ -99,138 +99,289 @@ export default function RetainersPage() {
   }
 
   return (
-    <div className="p-6 bg-white w-full min-h-screen">
+    <div className="p-4 sm:p-6 bg-white w-full min-h-screen">
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Retainers</h1>
-        <p className="text-gray-600">Manage client retainers</p>
+      <div className="mb-4 sm:mb-6">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-1 sm:mb-2">Retainers</h1>
+        <p className="text-sm sm:text-base text-gray-600">Manage client retainers</p>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
-        <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
-          <h3 className="text-sm font-medium text-blue-600 mb-1">Total Value</h3>
-          <p className="text-2xl font-bold text-blue-900">₹{totalRetainerValue.toLocaleString()}</p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
+        <div className="bg-blue-50 p-3 sm:p-4 rounded-lg border border-blue-100">
+          <h3 className="text-xs sm:text-sm font-medium text-blue-600 mb-1">Total Value</h3>
+          <p className="text-lg sm:text-2xl font-bold text-blue-900">₹{totalRetainerValue.toLocaleString()}</p>
         </div>
-        <div className="bg-purple-50 p-4 rounded-lg border border-purple-100">
-          <h3 className="text-sm font-medium text-purple-600 mb-1">Active Retainers</h3>
-          <p className="text-2xl font-bold text-purple-900">{activeCount}</p>
+        <div className="bg-purple-50 p-3 sm:p-4 rounded-lg border border-purple-100">
+          <h3 className="text-xs sm:text-sm font-medium text-purple-600 mb-1">Active Retainers</h3>
+          <p className="text-lg sm:text-2xl font-bold text-purple-900">{activeCount}</p>
         </div>
       </div>
 
       {/* Top Actions */}
-      <div className="flex items-center gap-4 mb-6">
-        <Link href="/retainers/add">
-          <button className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-            <IconPlus size={20} />
-            Add Retainer
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+        <div className="flex items-center gap-2 sm:gap-4">
+          <Link href="/retainers/add">
+            <button className="flex items-center gap-2 bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base">
+              <IconPlus size={16} className="sm:w-5 sm:h-5" />
+              <span className="hidden sm:inline">Add Retainer</span>
+              <span className="sm:hidden">Add</span>
+            </button>
+          </Link>
+          <select 
+            className="px-2 sm:px-3 py-2 border border-gray-300 rounded-lg text-sm"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <option value="ALL">All Status</option>
+            <option value="ACTIVE">Active</option>
+            <option value="DEPLETED">Depleted</option>
+            <option value="EXPIRED">Expired</option>
+            <option value="CANCELLED">Cancelled</option>
+          </select>
+        </div>
+        <div className="flex items-center gap-2">
+          <button className="p-2 hover:bg-gray-100 rounded-lg border">
+            <IconFilter size={16} className="sm:w-5 sm:h-5" />
           </button>
-        </Link>
-        <select 
-          className="px-3 py-2 border border-gray-300 rounded-lg"
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-        >
-          <option value="ALL">All Status</option>
-          <option value="ACTIVE">Active</option>
-          <option value="DEPLETED">Depleted</option>
-          <option value="EXPIRED">Expired</option>
-          <option value="CANCELLED">Cancelled</option>
-        </select>
-        <button className="p-2 hover:bg-gray-100 rounded-lg border">
-          <IconFilter size={20} />
-        </button>
-        <button className="p-2 hover:bg-gray-100 rounded-lg border">
-          <IconSortDescending size={20} />
-        </button>
-        <div className="ml-auto relative">
+          <button className="p-2 hover:bg-gray-100 rounded-lg border">
+            <IconSortDescending size={16} className="sm:w-5 sm:h-5" />
+          </button>
+        </div>
+        <div className="relative flex-1 sm:ml-auto sm:max-w-xs">
           <IconSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
             placeholder="Search retainers..."
-            className="pl-10 w-64 border-gray-300"
+            className="pl-10 w-full border-gray-300 text-sm"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
       </div>
 
-      {/* Table */}
-      <div className="bg-white rounded-lg border overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-gray-50">
-            <tr className="text-left text-sm text-gray-500">
-              <th className="p-4 font-medium">Retainer</th>
-              <th className="p-4 font-medium">Client</th>
-              <th className="p-4 font-medium">Project</th>
-              <th className="p-4 font-medium">Amount</th>
-              <th className="p-4 font-medium">Status</th>
-              <th className="p-4 font-medium">Start Date</th>
-              <th className="p-4 font-medium"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {retainers.map((retainer) => (
-              <tr key={retainer.id} className="border-t border-gray-100 hover:bg-gray-50">
-                <td className="p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-full flex items-center justify-center">
-                      <IconWallet size={20} className="text-white" />
+      {/* Table - Desktop View */}
+      <div className="bg-white rounded-lg border">
+        <div className="hidden lg:block">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[800px]">
+            <thead className="bg-gray-50">
+              <tr className="text-left text-sm text-gray-500">
+                <th className="p-4 font-medium">Retainer</th>
+                <th className="p-4 font-medium">Client</th>
+                <th className="p-4 font-medium">Project</th>
+                <th className="p-4 font-medium">Amount</th>
+                <th className="p-4 font-medium">Status</th>
+                <th className="p-4 font-medium">Start Date</th>
+                <th className="p-4 font-medium"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {retainers.map((retainer) => (
+                <tr key={retainer.id} className="border-t border-gray-100 hover:bg-gray-50">
+                  <td className="p-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-full flex items-center justify-center">
+                        <IconWallet size={20} className="text-white" />
+                      </div>
+                      <div>
+                        <div className="font-medium text-gray-900">{retainer.title}</div>
+                        {retainer.description && (
+                          <div className="text-sm text-gray-500 truncate max-w-xs">{retainer.description}</div>
+                        )}
+                      </div>
                     </div>
+                  </td>
+                  <td className="p-4">
                     <div>
-                      <div className="font-medium text-gray-900">{retainer.title}</div>
-                      {retainer.description && (
-                        <div className="text-sm text-gray-500 truncate max-w-xs">{retainer.description}</div>
+                      <div className="font-medium text-gray-900">{retainer.client.name}</div>
+                      {retainer.client.company && (
+                        <div className="text-sm text-gray-500">{retainer.client.company}</div>
                       )}
                     </div>
+                  </td>
+                  <td className="p-4 text-sm text-gray-900">
+                    {retainer.project?.name || '-'}
+                  </td>
+                  <td className="p-4">
+                    <div className="font-medium text-gray-900">
+                      ₹{retainer.totalAmount.toLocaleString()}
+                    </div>
+                    {retainer.hourlyRate && (
+                      <div className="text-sm text-gray-500">
+                        ₹{retainer.hourlyRate}/hr
+                      </div>
+                    )}
+                  </td>
+                  <td className="p-4">
+                    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(retainer.status)}`}>
+                      {getStatusIcon(retainer.status)}
+                      {retainer.status}
+                    </span>
+                  </td>
+                  <td className="p-4">
+                    <div className="flex items-center gap-1 text-sm text-gray-900">
+                      <IconCalendar size={16} className="text-gray-400" />
+                      {new Date(retainer.startDate).toLocaleDateString()}
+                    </div>
+                    {retainer.endDate && (
+                      <div className="text-xs text-gray-500 mt-1">
+                        Ends: {new Date(retainer.endDate).toLocaleDateString()}
+                      </div>
+                    )}
+                  </td>
+                  <td className="p-4">
+                    <button className="p-1 hover:bg-gray-100 rounded">
+                      <IconDots size={16} className="text-gray-400" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Tablet Table View */}
+        <div className="hidden md:block lg:hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[600px]">
+              <thead className="bg-gray-50">
+                <tr className="text-left text-sm text-gray-500">
+                  <th className="p-3 font-medium">Retainer</th>
+                  <th className="p-3 font-medium">Client</th>
+                  <th className="p-3 font-medium">Amount</th>
+                  <th className="p-3 font-medium">Status</th>
+                  <th className="p-3 font-medium">Start Date</th>
+                  <th className="p-3 font-medium"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {retainers.map((retainer) => (
+                  <tr key={retainer.id} className="border-t border-gray-100 hover:bg-gray-50">
+                    <td className="p-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-full flex items-center justify-center">
+                          <IconWallet size={16} className="text-white" />
+                        </div>
+                        <div>
+                          <div className="font-medium text-gray-900 text-sm">{retainer.title}</div>
+                          {retainer.description && (
+                            <div className="text-xs text-gray-500 truncate max-w-[150px]">{retainer.description}</div>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="p-3">
+                      <div>
+                        <div className="font-medium text-gray-900 text-sm">{retainer.client.name}</div>
+                        {retainer.client.company && (
+                          <div className="text-xs text-gray-500">{retainer.client.company}</div>
+                        )}
+                      </div>
+                    </td>
+                    <td className="p-3">
+                      <div className="font-medium text-gray-900 text-sm">
+                        ₹{retainer.totalAmount.toLocaleString()}
+                      </div>
+                      {retainer.hourlyRate && (
+                        <div className="text-xs text-gray-500">
+                          ₹{retainer.hourlyRate}/hr
+                        </div>
+                      )}
+                    </td>
+                    <td className="p-3">
+                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(retainer.status)}`}>
+                        {getStatusIcon(retainer.status)}
+                        {retainer.status}
+                      </span>
+                    </td>
+                    <td className="p-3">
+                      <div className="flex items-center gap-1 text-sm text-gray-900">
+                        <IconCalendar size={14} className="text-gray-400" />
+                        {new Date(retainer.startDate).toLocaleDateString()}
+                      </div>
+                    </td>
+                    <td className="p-3">
+                      <button className="p-1 hover:bg-gray-100 rounded">
+                        <IconDots size={14} className="text-gray-400" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Mobile Card View */}
+        <div className="md:hidden">
+          {retainers.map((retainer) => (
+            <div key={retainer.id} className="border-b border-gray-100 p-4 hover:bg-gray-50">
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-full flex items-center justify-center">
+                    <IconWallet size={20} className="text-white" />
                   </div>
-                </td>
-                <td className="p-4">
-                  <div>
-                    <div className="font-medium text-gray-900">{retainer.client.name}</div>
-                    {retainer.client.company && (
-                      <div className="text-sm text-gray-500">{retainer.client.company}</div>
+                  <div className="flex-1">
+                    <div className="font-medium text-gray-900">{retainer.title}</div>
+                    {retainer.description && (
+                      <div className="text-sm text-gray-500 mt-1">{retainer.description}</div>
                     )}
                   </div>
-                </td>
-                <td className="p-4 text-sm text-gray-900">
-                  {retainer.project?.name || '-'}
-                </td>
-                <td className="p-4">
-                  <div className="font-medium text-gray-900">
-                    ₹{retainer.totalAmount.toLocaleString()}
-                  </div>
-                  {retainer.hourlyRate && (
-                    <div className="text-sm text-gray-500">
-                      ₹{retainer.hourlyRate}/hr
-                    </div>
+                </div>
+                <button className="p-1 hover:bg-gray-100 rounded">
+                  <IconDots size={16} className="text-gray-400" />
+                </button>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <div className="text-gray-500 text-xs font-medium mb-1">Client</div>
+                  <div className="font-medium text-gray-900">{retainer.client.name}</div>
+                  {retainer.client.company && (
+                    <div className="text-gray-500">{retainer.client.company}</div>
                   )}
-                </td>
-                <td className="p-4">
+                </div>
+                
+                <div>
+                  <div className="text-gray-500 text-xs font-medium mb-1">Amount</div>
+                  <div className="font-medium text-gray-900">₹{retainer.totalAmount.toLocaleString()}</div>
+                  {retainer.hourlyRate && (
+                    <div className="text-gray-500">₹{retainer.hourlyRate}/hr</div>
+                  )}
+                </div>
+                
+                <div>
+                  <div className="text-gray-500 text-xs font-medium mb-1">Project</div>
+                  <div className="text-gray-900">{retainer.project?.name || '-'}</div>
+                </div>
+                
+                <div>
+                  <div className="text-gray-500 text-xs font-medium mb-1">Status</div>
                   <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(retainer.status)}`}>
                     {getStatusIcon(retainer.status)}
                     {retainer.status}
                   </span>
-                </td>
-                <td className="p-4">
-                  <div className="flex items-center gap-1 text-sm text-gray-900">
+                </div>
+              </div>
+              
+              <div className="mt-3 pt-3 border-t border-gray-100">
+                <div className="flex items-center gap-1 text-sm text-gray-900">
+                  <IconCalendar size={16} className="text-gray-400" />
+                  <span className="text-gray-500 text-xs font-medium mr-2">Start:</span>
+                  {new Date(retainer.startDate).toLocaleDateString()}
+                </div>
+                {retainer.endDate && (
+                  <div className="flex items-center gap-1 text-sm text-gray-500 mt-1">
                     <IconCalendar size={16} className="text-gray-400" />
-                    {new Date(retainer.startDate).toLocaleDateString()}
+                    <span className="text-gray-500 text-xs font-medium mr-2">Ends:</span>
+                    {new Date(retainer.endDate).toLocaleDateString()}
                   </div>
-                  {retainer.endDate && (
-                    <div className="text-xs text-gray-500 mt-1">
-                      Ends: {new Date(retainer.endDate).toLocaleDateString()}
-                    </div>
-                  )}
-                </td>
-                <td className="p-4">
-                  <button className="p-1 hover:bg-gray-100 rounded">
-                    <IconDots size={16} className="text-gray-400" />
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
         
         {retainers.length === 0 && (
           <div className="text-center py-12">
@@ -247,8 +398,8 @@ export default function RetainersPage() {
       </div>
 
       {/* Pagination Controls */}
-      <div className="flex items-center justify-between mt-6 pr-20">
-        <div className="flex items-center gap-4">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mt-4 sm:mt-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-600">Show</span>
             <select 
@@ -268,13 +419,14 @@ export default function RetainersPage() {
           </div>
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-center sm:justify-end gap-2">
           <button
             onClick={() => handlePageChange(pagination.currentPage - 1)}
             disabled={!pagination.hasPrevPage}
             className="px-3 py-1 text-sm border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Previous
+            <span className="hidden sm:inline">Previous</span>
+            <span className="sm:hidden">Prev</span>
           </button>
           
           <div className="flex items-center gap-1">
@@ -294,7 +446,7 @@ export default function RetainersPage() {
                 <button
                   key={pageNum}
                   onClick={() => handlePageChange(pageNum)}
-                  className={`px-3 py-1 text-sm border rounded ${
+                  className={`px-2 sm:px-3 py-1 text-sm border rounded ${
                     pageNum === pagination.currentPage 
                       ? 'bg-blue-600 text-white border-blue-600' 
                       : 'hover:bg-gray-50'

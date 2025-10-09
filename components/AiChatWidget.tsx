@@ -83,13 +83,13 @@ export function AiChatWidget() {
       {/* Chat Toggle Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 z-50 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white p-4 rounded-full shadow-xl transition-all duration-300 transform hover:scale-110 active:scale-95"
+        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white p-3 sm:p-4 rounded-full shadow-xl transition-all duration-300 transform hover:scale-110 active:scale-95"
       >
         <div className="relative">
           {isOpen ? (
-            <IconX className="h-6 w-6 transition-transform duration-200" />
+            <IconX className="h-5 w-5 sm:h-6 sm:w-6 transition-transform duration-200" />
           ) : (
-            <IconMessageCircle className="h-6 w-6 transition-transform duration-200" />
+            <IconMessageCircle className="h-5 w-5 sm:h-6 sm:w-6 transition-transform duration-200" />
           )}
           {/* {!isOpen && (
             <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full animate-pulse" />
@@ -106,40 +106,40 @@ export function AiChatWidget() {
       )}
 
       {/* Chat Window */}
-      <div className={`fixed bottom-20 right-6 z-40 w-96 h-[32rem] bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl flex flex-col transition-all duration-300  ${
+      <div className={`fixed bottom-16 right-2 sm:bottom-20 sm:right-6 z-40 w-[calc(100vw-1rem)] sm:w-96 max-w-sm sm:max-w-none h-[calc(100vh-8rem)] sm:h-[32rem] max-h-[32rem] bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl flex flex-col transition-all duration-300 ${
         isOpen 
           ? 'translate-y-0 opacity-100 scale-100' 
           : 'translate-y-8 opacity-0 scale-95 pointer-events-none'
       }`}>
           {/* Header */}
-          <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-800 rounded-t-2xl">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
-                <span className="text-white text-sm font-bold">L</span>
+          <div className="p-3 sm:p-4 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-800 rounded-t-2xl">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
+                <span className="text-white text-xs sm:text-sm font-bold">L</span>
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900 dark:text-white">Ledgique AI</h3>
+                <h3 className="font-semibold text-sm sm:text-base text-gray-900 dark:text-white">Ledgique AI</h3>
                 <p className="text-xs text-gray-500 dark:text-gray-400">Your accounting assistant</p>
               </div>
             </div>
           </div>
 
           {/* Messages */}
-          <div className="flex-1 p-4 overflow-y-auto space-y-4 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
+          <div className="flex-1 p-3 sm:p-4 overflow-y-auto space-y-3 sm:space-y-4 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
             {messages.map((msg, index) => (
               <div
                 key={msg.id}
                 className={`flex ${msg.isUser ? "justify-end" : "justify-start"} animate-in fade-in slide-in-from-bottom-2 duration-300`}
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                <div className={`flex items-end gap-2 max-w-[85%] ${msg.isUser ? "flex-row-reverse" : "flex-row"}`}>
+                <div className={`flex items-end gap-2 max-w-[90%] sm:max-w-[85%] ${msg.isUser ? "flex-row-reverse" : "flex-row"}`}>
                   {!msg.isUser && (
-                    <div className="w-6 h-6 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                    <div className="w-5 h-5 sm:w-6 sm:h-6 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
                       <span className="text-white text-xs font-bold">L</span>
                     </div>
                   )}
                   <div
-                    className={`px-4 py-3 rounded-2xl text-sm leading-relaxed ${
+                    className={`px-3 py-2 sm:px-4 sm:py-3 rounded-2xl text-xs sm:text-sm leading-relaxed ${
                       msg.isUser
                         ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-br-md"
                         : "bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white rounded-bl-md border border-gray-200 dark:border-gray-700"
@@ -164,13 +164,13 @@ export function AiChatWidget() {
             {isLoading && (
               <div className="flex justify-start animate-in fade-in duration-300">
                 <div className="flex items-end gap-2">
-                  <div className="w-6 h-6 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
+                  <div className="w-5 h-5 sm:w-6 sm:h-6 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center">
                     <span className="text-white text-xs font-bold">L</span>
                   </div>
-                  <div className="bg-gray-100 dark:bg-gray-800 px-4 py-3 rounded-2xl rounded-bl-md border border-gray-200 dark:border-gray-700">
+                  <div className="bg-gray-100 dark:bg-gray-800 px-3 py-2 sm:px-4 sm:py-3 rounded-2xl rounded-bl-md border border-gray-200 dark:border-gray-700">
                     <div className="flex items-center gap-2">
-                      <IconLoader2 className="h-4 w-4 animate-spin text-gray-500" />
-                      <span className="text-sm text-gray-500 dark:text-gray-400">Thinking...</span>
+                      <IconLoader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin text-gray-500" />
+                      <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">Thinking...</span>
                     </div>
                   </div>
                 </div>
@@ -180,8 +180,8 @@ export function AiChatWidget() {
           </div>
 
           {/* Input */}
-          <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 rounded-b-2xl">
-            <div className="flex gap-3 items-end">
+          <div className="p-3 sm:p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 rounded-b-2xl">
+            <div className="flex gap-2 sm:gap-3 items-end">
               <div className="flex-1 relative">
                 <input
                   ref={inputRef}
@@ -191,18 +191,18 @@ export function AiChatWidget() {
                   onKeyPress={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
                   placeholder="Ask me about expenses, clients, invoices..."
                   disabled={isLoading}
-                  className="w-full px-4 py-3 text-sm border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-2 sm:px-4 sm:py-3 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
               <button
                 onClick={handleSend}
                 disabled={!message.trim() || isLoading}
-                className="p-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-400 text-white rounded-xl transition-all duration-200 transform hover:scale-105 active:scale-95 disabled:hover:scale-100 disabled:cursor-not-allowed flex items-center justify-center"
+                className="p-2 sm:p-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-400 disabled:to-gray-400 text-white rounded-xl transition-all duration-200 transform hover:scale-105 active:scale-95 disabled:hover:scale-100 disabled:cursor-not-allowed flex items-center justify-center"
               >
                 {isLoading ? (
-                  <IconLoader2 className="h-5 w-5 animate-spin" />
+                  <IconLoader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
                 ) : (
-                  <IconSend className="h-5 w-5" />
+                  <IconSend className="h-4 w-4 sm:h-5 sm:w-5" />
                 )}
               </button>
             </div>

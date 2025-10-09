@@ -79,7 +79,7 @@ export default function CreateInvoicePage() {
   const fetchClients = async () => {
     try {
       const response = await axios.get('/api/clients');
-      setClients(response.data);
+      setClients(response.data.clients || []);
     } catch (error) {
       console.error('Error fetching clients:', error);
     }
@@ -88,7 +88,7 @@ export default function CreateInvoicePage() {
   const fetchProjects = async () => {
     try {
       const response = await axios.get('/api/projects');
-      setProjects(response.data);
+      setProjects(response.data.projects || []);
     } catch (error) {
       console.error('Error fetching projects:', error);
     }
