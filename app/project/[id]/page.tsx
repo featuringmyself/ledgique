@@ -66,7 +66,7 @@ export default function ProjectViewPage() {
           <div className="flex items-center gap-4">
             <button 
               onClick={() => {
-                console.log('Back button clicked');
+                // console.log('Back button clicked');
                 router.push('/client');
               }} 
               className="p-2 hover:bg-gray-200 rounded "

@@ -55,7 +55,7 @@ export default function ProjectsPage() {
         setProjects(fetchedProjects);
         setPagination(paginationInfo);
       } catch (error) {
-        console.log(error);
+        // console.log(error);
       } finally {
         setLoading(false);
       }
