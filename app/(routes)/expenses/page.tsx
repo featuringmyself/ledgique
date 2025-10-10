@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { IconPlus, IconFilter, IconSortDescending, IconSearch, IconCalendar, IconDots, IconCurrencyDollar, IconReceipt } from '@tabler/icons-react';
 import Link from 'next/link';
@@ -41,9 +41,9 @@ export default function ExpensesPage() {
 
   useEffect(() => {
     fetchExpenses();
-  }, [pagination.currentPage, pagination.limit]);
+  }, [pagination.currentPage, pagination.limit, fetchExpenses]);
 
-  const fetchExpenses = async () => {
+  const fetchExpenses = useCallback(async () => {
     try {
       const response = await fetch(`/api/expenses?page=${pagination.currentPage}&limit=${pagination.limit}`);
       if (response.ok) {
@@ -56,7 +56,7 @@ export default function ExpensesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [pagination.currentPage, pagination.limit]);
 
   const handlePageChange = (newPage: number) => {
     setPagination(prev => ({ ...prev, currentPage: newPage }));

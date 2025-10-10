@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import prisma from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 
 export async function GET(
   request: NextRequest,
@@ -103,13 +104,13 @@ export async function PUT(
     }
 
     // Prepare update data
-    const updateData: any = {};
+    const updateData: Prisma.NoteUpdateInput = {};
     
     if (title !== undefined) updateData.title = title;
     if (content !== undefined) updateData.content = content;
-    if (type !== undefined) updateData.type = type;
-    if (priority !== undefined) updateData.priority = priority;
-    if (status !== undefined) updateData.status = status;
+    if (type !== undefined) updateData.type = type as Prisma.NoteType;
+    if (priority !== undefined) updateData.priority = priority as Prisma.NotePriority;
+    if (status !== undefined) updateData.status = status as Prisma.NoteStatus;
     if (tags !== undefined) updateData.tags = tags;
     if (dueDate !== undefined) updateData.dueDate = dueDate ? new Date(dueDate) : null;
     if (clientId !== undefined) updateData.clientId = clientId || null;

@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { IconPlus, IconFilter, IconSortDescending, IconSearch, IconCalendar, IconDots, IconWallet, IconClock, IconCheck, IconX } from '@tabler/icons-react';
 import Link from 'next/link';
@@ -42,9 +42,9 @@ export default function RetainersPage() {
 
   useEffect(() => {
     fetchRetainers();
-  }, [pagination.currentPage, pagination.limit]);
+  }, [fetchRetainers]);
 
-  const fetchRetainers = async () => {
+  const fetchRetainers = useCallback(async () => {
     try {
       const response = await fetch(`/api/retainers?page=${pagination.currentPage}&limit=${pagination.limit}`);
       if (response.ok) {
@@ -57,7 +57,7 @@ export default function RetainersPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [pagination.currentPage, pagination.limit]);
 
   const handlePageChange = (newPage: number) => {
     setPagination(prev => ({ ...prev, currentPage: newPage }));

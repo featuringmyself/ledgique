@@ -5,7 +5,6 @@ import { useState, useEffect } from "react";
 import { 
   IconArrowLeft, 
   IconEdit, 
-  IconTrash,
   IconDots,
   IconCalendar,
   IconUser,
@@ -13,8 +12,6 @@ import {
   IconTag,
   IconNotes,
   IconCheck,
-  IconAlertCircle,
-  IconStar,
   IconClock
 } from "@tabler/icons-react";
 import Link from "next/link";
@@ -163,7 +160,7 @@ export default function NoteViewPage({ params }: { params: Promise<{ id: string 
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Note not found</h1>
           <p className="text-gray-600 dark:text-gray-400 mb-6">
-            The note you're looking for doesn't exist or has been deleted.
+            The note you&apos;re looking for doesn&apos;t exist or has been deleted.
           </p>
           <Link
             href="/notes"

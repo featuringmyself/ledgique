@@ -4,18 +4,14 @@ import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { 
   IconPlus, 
-  IconFilter, 
-  IconSortDescending, 
   IconSearch, 
   IconCalendar, 
   IconDots, 
   IconEye, 
   IconEdit, 
-  IconTrash,
   IconCheck,
   IconClock,
   IconAlertCircle,
-  IconStar,
   IconTag,
   IconUser,
   IconBriefcase,
@@ -23,7 +19,6 @@ import {
   IconFileText,
   IconCheckbox,
   IconPackage,
-  IconPackageCheck,
   IconUsers,
   IconMessageCircle
 } from "@tabler/icons-react";
@@ -200,7 +195,6 @@ export default function NotesPage() {
   const overdueNotes = notes.filter(n => isOverdue(n.dueDate, n.status)).length;
 
   const getAddButtonColor = () => {
-    const noteType = noteTypes.find(nt => nt.key === activeTab);
     switch (activeTab) {
       case 'TODO': return 'bg-blue-600 hover:bg-blue-700';
       case 'DELIVERABLE': return 'bg-purple-600 hover:bg-purple-700';

@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { IconPlus, IconFilter, IconSortDescending, IconSearch, IconCalendar, IconDots, IconFileInvoice, IconEye, IconDownload, IconSend, IconCheck } from '@tabler/icons-react';
 import Link from 'next/link';
@@ -40,11 +40,7 @@ export default function InvoicePage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
 
-  useEffect(() => {
-    fetchInvoices();
-  }, [pagination.currentPage, pagination.limit]);
-
-  const fetchInvoices = async () => {
+  const fetchInvoices = useCallback(async () => {
     try {
       const response = await fetch(`/api/invoices?page=${pagination.currentPage}&limit=${pagination.limit}`);
       if (response.ok) {
@@ -57,7 +53,11 @@ export default function InvoicePage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [pagination.currentPage, pagination.limit]);
+
+  useEffect(() => {
+    fetchInvoices();
+  }, [fetchInvoices]);
 
   const markAsPaid = async (invoiceId: string, amount: number) => {
     try {

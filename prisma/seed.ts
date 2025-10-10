@@ -1,4 +1,4 @@
-import { PrismaClient, ClientStatus, ProjectStatus, Priority, PaymentType, PaymentMethod, PaymentStatus, NoteType, NotePriority, NoteStatus } from '@/app/generated/prisma';
+import { PrismaClient, ClientStatus, ProjectStatus, Priority, NoteType, NotePriority, NoteStatus } from '@/app/generated/prisma';
 
 const prisma = new PrismaClient();
 

@@ -553,9 +553,6 @@ interface GetCurrentDateTimeParams {
   timezone?: string;
 }
 
-interface GetBusinessContextParams {
-  [key: string]: never;
-}
 
 interface AddQuickExpenseParams {
   amount: number;
@@ -627,7 +624,7 @@ async function createClient(params: CreateClientParams, userId: string): Promise
   }
 }
 
-async function updateClient(params: UpdateClientParams, userId: string): Promise<FunctionResult> {
+async function updateClient(params: UpdateClientParams): Promise<FunctionResult> {
   try {
     const updateData: { name?: string; email?: string[]; phone?: string[] } = {};
     
@@ -732,7 +729,7 @@ async function createProject(params: CreateProjectParams, userId: string): Promi
   }
 }
 
-async function createInvoice(params: CreateInvoiceParams, userId: string): Promise<FunctionResult> {
+async function createInvoice(params: CreateInvoiceParams): Promise<FunctionResult> {
   try {
     const subtotal = params.items.reduce((sum: number, item: InvoiceItem) => sum + (item.quantity * item.unitPrice), 0);
     const taxAmount = subtotal * (params.taxRate || 0) / 100;
@@ -768,7 +765,7 @@ async function createInvoice(params: CreateInvoiceParams, userId: string): Promi
   }
 }
 
-async function addPayment(params: AddPaymentParams, userId: string): Promise<FunctionResult> {
+async function addPayment(params: AddPaymentParams): Promise<FunctionResult> {
   try {
     const payment = await prisma.payment.create({
       data: {
@@ -1026,7 +1023,7 @@ async function showThisYearStats(userId: string): Promise<FunctionResult> {
   }
 }
 
-async function createRetainer(params: CreateRetainerParams, userId: string): Promise<FunctionResult> {
+async function createRetainer(params: CreateRetainerParams): Promise<FunctionResult> {
   try {
     const retainer = await prisma.retainer.create({
       data: {
@@ -1083,7 +1080,7 @@ async function createClientSource(params: CreateClientSourceParams, userId: stri
   }
 }
 
-async function updateProject(params: UpdateProjectParams, userId: string): Promise<FunctionResult> {
+async function updateProject(params: UpdateProjectParams): Promise<FunctionResult> {
   try {
     const updateData: Record<string, unknown> = {};
     if (params.name) updateData.name = params.name;
@@ -1103,7 +1100,7 @@ async function updateProject(params: UpdateProjectParams, userId: string): Promi
   }
 }
 
-async function updateExpense(params: UpdateExpenseParams, userId: string): Promise<FunctionResult> {
+async function updateExpense(params: UpdateExpenseParams): Promise<FunctionResult> {
   try {
     const updateData: Record<string, unknown> = {};
     if (params.amount) updateData.amount = params.amount;
@@ -1124,7 +1121,7 @@ async function updateExpense(params: UpdateExpenseParams, userId: string): Promi
   }
 }
 
-async function updatePayment(params: UpdatePaymentParams, userId: string): Promise<FunctionResult> {
+async function updatePayment(params: UpdatePaymentParams): Promise<FunctionResult> {
   try {
     const updateData: Record<string, unknown> = {};
     if (params.amount) updateData.amount = params.amount;
@@ -1386,7 +1383,7 @@ async function addExpenseToClient(params: AddExpenseToClientParams, userId: stri
 }
 
 // Get current date and time with context
-async function getCurrentDateTime(params: GetCurrentDateTimeParams, _userId: string): Promise<FunctionResult> {
+async function getCurrentDateTime(params: GetCurrentDateTimeParams): Promise<FunctionResult> {
   try {
     const now = new Date();
     const timezone = params.timezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -1431,7 +1428,7 @@ async function getCurrentDateTime(params: GetCurrentDateTimeParams, _userId: str
 }
 
 // Get business context information
-async function getBusinessContext(_params: GetBusinessContextParams, _userId: string): Promise<FunctionResult> {
+async function getBusinessContext(): Promise<FunctionResult> {
   try {
     const now = new Date();
     const currentYear = now.getFullYear();
@@ -1556,7 +1553,7 @@ async function executeParallelFunctions(functionCalls: Array<{ name: string; arg
       case "createClient":
         return createClient(functionArgs as CreateClientParams, userId);
       case "updateClient":
-        return updateClient(functionArgs as UpdateClientParams, userId);
+        return updateClient(functionArgs as UpdateClientParams);
       case "showRevenue":
         return showRevenue(functionArgs as ShowRevenueParams, userId);
       case "addIncome":
@@ -1564,9 +1561,9 @@ async function executeParallelFunctions(functionCalls: Array<{ name: string; arg
       case "createProject":
         return createProject(functionArgs as CreateProjectParams, userId);
       case "createInvoice":
-        return createInvoice(functionArgs as CreateInvoiceParams, userId);
+        return createInvoice(functionArgs as CreateInvoiceParams);
       case "addPayment":
-        return addPayment(functionArgs as AddPaymentParams, userId);
+        return addPayment(functionArgs as AddPaymentParams);
       case "showPendingPayments":
         return showPendingPayments(userId);
       case "showOverdueAmount":
@@ -1580,17 +1577,17 @@ async function executeParallelFunctions(functionCalls: Array<{ name: string; arg
       case "showThisYearStats":
         return showThisYearStats(userId);
       case "createRetainer":
-        return createRetainer(functionArgs as CreateRetainerParams, userId);
+        return createRetainer(functionArgs as CreateRetainerParams);
       case "addClientSource":
         return addClientSource(functionArgs as AddClientSourceParams, userId);
       case "createClientSource":
         return createClientSource(functionArgs as CreateClientSourceParams, userId);
       case "updateProject":
-        return updateProject(functionArgs as UpdateProjectParams, userId);
+        return updateProject(functionArgs as UpdateProjectParams);
       case "updateExpense":
-        return updateExpense(functionArgs as UpdateExpenseParams, userId);
+        return updateExpense(functionArgs as UpdateExpenseParams);
       case "updatePayment":
-        return updatePayment(functionArgs as UpdatePaymentParams, userId);
+        return updatePayment(functionArgs as UpdatePaymentParams);
       case "showExpenses":
         return showExpenses(functionArgs as ShowExpensesParams, userId);
       case "showUnpaidInvoices":
@@ -1612,9 +1609,9 @@ async function executeParallelFunctions(functionCalls: Array<{ name: string; arg
       case "addExpenseToClient":
         return addExpenseToClient(functionArgs as AddExpenseToClientParams, userId);
       case "getCurrentDateTime":
-        return getCurrentDateTime(functionArgs as GetCurrentDateTimeParams, userId);
+        return getCurrentDateTime(functionArgs as GetCurrentDateTimeParams);
       case "getBusinessContext":
-        return getBusinessContext(functionArgs as GetBusinessContextParams, userId);
+        return getBusinessContext();
       case "addQuickExpense":
         return addQuickExpense(functionArgs as AddQuickExpenseParams, userId);
       default:

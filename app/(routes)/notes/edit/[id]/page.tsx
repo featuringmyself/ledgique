@@ -12,9 +12,7 @@ import {
   IconTag,
   IconCalendar,
   IconNotes,
-  IconCheck,
-  IconAlertCircle,
-  IconStar
+  IconCheck
 } from "@tabler/icons-react";
 import Link from "next/link";
 

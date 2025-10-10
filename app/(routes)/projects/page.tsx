@@ -54,8 +54,8 @@ export default function ProjectsPage() {
         const { projects: fetchedProjects, pagination: paginationInfo } = response.data;
         setProjects(fetchedProjects);
         setPagination(paginationInfo);
-      } catch (error) {
-        // console.log(error);
+      } catch {
+        // Error handled silently
       } finally {
         setLoading(false);
       }
