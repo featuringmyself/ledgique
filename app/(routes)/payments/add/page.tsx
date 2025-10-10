@@ -51,6 +51,8 @@ export default function AddPaymentPage() {
   }, []);
 
   useEffect(() => {
+    if (!projects || !Array.isArray(projects)) return;
+    
     if (formData.clientId) {
       setFilteredProjects(projects.filter(project => project.clientId === formData.clientId));
     } else {
@@ -59,6 +61,8 @@ export default function AddPaymentPage() {
   }, [formData.clientId, projects]);
 
   useEffect(() => {
+    if (!clients || !Array.isArray(clients)) return;
+    
     setFilteredClients(
       clients.filter(client => 
         client.name.toLowerCase().includes(clientSearch.toLowerCase()) ||
@@ -68,6 +72,8 @@ export default function AddPaymentPage() {
   }, [clientSearch, clients]);
 
   useEffect(() => {
+    if (!projects || !Array.isArray(projects)) return;
+    
     const filtered = (formData.clientId ? 
       projects.filter(project => project.clientId === formData.clientId) : 
       projects
