@@ -113,8 +113,8 @@ export function Sidebar({ children }: { children?: React.ReactNode }) {
                     icon: <IconCreditCardPay className="h-4 w-4 shrink-0 text-neutral-600 dark:text-neutral-400" />,
                 },
                 {
-                    label: "Payment History",
-                    href: "/payments/history",
+                    label: "Add Payments",
+                    href: "/payments/add",
                     icon: <IconCreditCardPay className="h-4 w-4 shrink-0 text-neutral-600 dark:text-neutral-400" />,
                 },
             ],
