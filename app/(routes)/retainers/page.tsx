@@ -40,10 +40,6 @@ export default function RetainersPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
 
-  useEffect(() => {
-    fetchRetainers();
-  }, [fetchRetainers]);
-
   const fetchRetainers = useCallback(async () => {
     try {
       const response = await fetch(`/api/retainers?page=${pagination.currentPage}&limit=${pagination.limit}`);
@@ -58,6 +54,10 @@ export default function RetainersPage() {
       setLoading(false);
     }
   }, [pagination.currentPage, pagination.limit]);
+
+  useEffect(() => {
+    fetchRetainers();
+  }, [fetchRetainers]);
 
   const handlePageChange = (newPage: number) => {
     setPagination(prev => ({ ...prev, currentPage: newPage }));
