@@ -46,7 +46,7 @@ export default function AddExpensePage() {
       const response = await fetch('/api/projects');
       if (response.ok) {
         const data = await response.json();
-        setProjects(data);
+        setProjects(data.projects || []);
       }
     } catch (error) {
       console.error('Failed to fetch projects:', error);
