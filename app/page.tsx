@@ -6,9 +6,7 @@ import { useEffect, useState } from "react";
 import { 
   getCachedDashboardData, 
   setCachedDashboardData, 
-  hasDataChanged,
-  isCacheExpired,
-  type DashboardCacheData 
+  hasDataChanged
 } from '@/lib/dashboardCache';
 
 // Chart.js imports - lazy loaded

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import prisma from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,7 +15,7 @@ export async function GET(request: NextRequest) {
     const clientId = searchParams.get('clientId');
     const projectId = searchParams.get('projectId');
 
-    const where: any = {
+    const where: Prisma.NoteWhereInput = {
       clerkId: userId,
       status: 'ACTIVE',
     };

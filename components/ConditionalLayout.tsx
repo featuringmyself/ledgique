@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth, SignInButton, SignIn } from "@clerk/nextjs";
+import { useAuth, SignIn } from "@clerk/nextjs";
 import { Sidebar } from "./Sidebar";
 import { SidebarStateProvider } from "./providers/SidebarProvider";
 import { AiChatWidget } from "./AiChatWidget";
