@@ -39,10 +39,6 @@ export default function ExpensesPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("ALL");
 
-  useEffect(() => {
-    fetchExpenses();
-  }, [pagination.currentPage, pagination.limit, fetchExpenses]);
-
   const fetchExpenses = useCallback(async () => {
     try {
       const response = await fetch(`/api/expenses?page=${pagination.currentPage}&limit=${pagination.limit}`);
@@ -57,6 +53,10 @@ export default function ExpensesPage() {
       setLoading(false);
     }
   }, [pagination.currentPage, pagination.limit]);
+
+  useEffect(() => {
+    fetchExpenses();
+  }, [fetchExpenses]);
 
   const handlePageChange = (newPage: number) => {
     setPagination(prev => ({ ...prev, currentPage: newPage }));
