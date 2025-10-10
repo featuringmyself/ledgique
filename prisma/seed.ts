@@ -1,4 +1,4 @@
-import { PrismaClient, ClientStatus, ProjectStatus, Priority, PaymentType, PaymentMethod, PaymentStatus } from '@/app/generated/prisma';
+import { PrismaClient, ClientStatus, ProjectStatus, Priority, PaymentType, PaymentMethod, PaymentStatus, NoteType, NotePriority, NoteStatus } from '@/app/generated/prisma';
 
 const prisma = new PrismaClient();
 
@@ -27,18 +27,18 @@ async function main() {
   const now = new Date();
   
   const clientData = [
-    { name: 'TechCorp Solutions', company: 'TechCorp Inc.', email: ['contact@techcorp.com'], phone: ['+1-555-0123'], address: '123 Tech Street, Silicon Valley, CA 94000', website: 'https://techcorp.com', notes: 'Long-term client, prefers agile methodology.', clientSourceId: clientSources[0].id, status: ClientStatus.ACTIVE, clerkId: clerkUserIds[0] },
-    { name: 'GreenEarth Initiative', company: 'GreenEarth Foundation', email: ['info@greenearth.org'], phone: ['+1-555-0234'], address: '456 Eco Lane, Portland, OR 97200', website: 'https://greenearth.org', notes: 'Non-profit organization focused on environmental projects.', clientSourceId: clientSources[1].id, status: ClientStatus.ACTIVE, clerkId: clerkUserIds[0] },
-    { name: 'RetailMax Chain', company: 'RetailMax Corporation', email: ['business@retailmax.com'], phone: ['+1-555-0345'], address: '789 Commerce Blvd, New York, NY 10001', website: 'https://retailmax.com', notes: 'Large retail chain looking to modernize their systems.', clientSourceId: clientSources[2].id, status: ClientStatus.ACTIVE, clerkId: clerkUserIds[0] },
-    { name: 'StartupXYZ', company: 'StartupXYZ Ltd.', email: ['hello@startupxyz.com'], phone: ['+1-555-0456'], address: '321 Innovation Ave, Austin, TX 78701', website: 'https://startupxyz.com', notes: 'Fast-moving startup, needs quick turnaround.', clientSourceId: clientSources[3].id, status: ClientStatus.ACTIVE, clerkId: clerkUserIds[0] },
-    { name: 'HealthTech Innovations', company: 'HealthTech Medical Solutions', email: ['contact@healthtech.com'], phone: ['+1-555-0678'], address: '890 Medical Center Dr, Houston, TX 77030', website: 'https://healthtech-innovations.com', notes: 'Healthcare technology company. Requires HIPAA compliance.', clientSourceId: clientSources[4].id, status: ClientStatus.ACTIVE, clerkId: clerkUserIds[0] },
-    { name: 'FinanceFlow Pro', company: 'FinanceFlow Solutions', email: ['admin@financeflow.com'], phone: ['+1-555-0789'], address: '567 Wall Street, New York, NY 10005', website: 'https://financeflow.com', notes: 'Financial services company requiring secure solutions.', clientSourceId: clientSources[0].id, status: ClientStatus.ACTIVE, clerkId: clerkUserIds[0] },
-    { name: 'EduTech Academy', company: 'EduTech Learning Systems', email: ['info@edutech.edu'], phone: ['+1-555-0890'], address: '234 Education Blvd, Boston, MA 02101', website: 'https://edutech-academy.com', notes: 'Educational technology platform for K-12 schools.', clientSourceId: clientSources[1].id, status: ClientStatus.ACTIVE, clerkId: clerkUserIds[0] },
-    { name: 'FoodieDelight', company: 'FoodieDelight Restaurants', email: ['orders@foodiedelight.com'], phone: ['+1-555-0901'], address: '678 Culinary Ave, Los Angeles, CA 90210', website: 'https://foodiedelight.com', notes: 'Restaurant chain needing online ordering system.', clientSourceId: clientSources[2].id, status: ClientStatus.ACTIVE, clerkId: clerkUserIds[0] },
-    { name: 'AutoMotive Plus', company: 'AutoMotive Plus Dealerships', email: ['sales@automotiveplus.com'], phone: ['+1-555-1012'], address: '890 Motor Way, Detroit, MI 48201', website: 'https://automotiveplus.com', notes: 'Car dealership network requiring inventory management.', clientSourceId: clientSources[3].id, status: ClientStatus.ACTIVE, clerkId: clerkUserIds[0] },
-    { name: 'RealEstate Pro', company: 'RealEstate Pro Agency', email: ['listings@realestatepro.com'], phone: ['+1-555-1123'], address: '345 Property Lane, Miami, FL 33101', website: 'https://realestatepro.com', notes: 'Real estate agency needing property management system.', clientSourceId: clientSources[4].id, status: ClientStatus.ACTIVE, clerkId: clerkUserIds[0] },
-    { name: 'FitnessFirst Gyms', company: 'FitnessFirst Health Centers', email: ['membership@fitnessfirst.com'], phone: ['+1-555-1234'], address: '456 Wellness St, Denver, CO 80201', website: 'https://fitnessfirst.com', notes: 'Gym chain requiring membership management system.', clientSourceId: clientSources[0].id, status: ClientStatus.ACTIVE, clerkId: clerkUserIds[0] },
-    { name: 'TravelBug Adventures', company: 'TravelBug Tourism', email: ['bookings@travelbug.com'], phone: ['+1-555-1345'], address: '789 Adventure Rd, Seattle, WA 98101', website: 'https://travelbug.com', notes: 'Travel agency needing booking and itinerary system.', clientSourceId: clientSources[1].id, status: ClientStatus.ACTIVE, clerkId: clerkUserIds[0] },
+    { name: 'TechCorp Solutions', company: 'TechCorp Inc.', email: ['contact@techcorp.com'], phone: ['+1-555-0123'], address: '123 Tech Street, Silicon Valley, CA 94000', website: 'https://techcorp.com', clientNotes: 'Long-term client, prefers agile methodology.', clientSourceId: clientSources[0].id, status: ClientStatus.ACTIVE, clerkId: clerkUserIds[0] },
+    { name: 'GreenEarth Initiative', company: 'GreenEarth Foundation', email: ['info@greenearth.org'], phone: ['+1-555-0234'], address: '456 Eco Lane, Portland, OR 97200', website: 'https://greenearth.org', clientNotes: 'Non-profit organization focused on environmental projects.', clientSourceId: clientSources[1].id, status: ClientStatus.ACTIVE, clerkId: clerkUserIds[0] },
+    { name: 'RetailMax Chain', company: 'RetailMax Corporation', email: ['business@retailmax.com'], phone: ['+1-555-0345'], address: '789 Commerce Blvd, New York, NY 10001', website: 'https://retailmax.com', clientNotes: 'Large retail chain looking to modernize their systems.', clientSourceId: clientSources[2].id, status: ClientStatus.ACTIVE, clerkId: clerkUserIds[0] },
+    { name: 'StartupXYZ', company: 'StartupXYZ Ltd.', email: ['hello@startupxyz.com'], phone: ['+1-555-0456'], address: '321 Innovation Ave, Austin, TX 78701', website: 'https://startupxyz.com', clientNotes: 'Fast-moving startup, needs quick turnaround.', clientSourceId: clientSources[3].id, status: ClientStatus.ACTIVE, clerkId: clerkUserIds[0] },
+    { name: 'HealthTech Innovations', company: 'HealthTech Medical Solutions', email: ['contact@healthtech.com'], phone: ['+1-555-0678'], address: '890 Medical Center Dr, Houston, TX 77030', website: 'https://healthtech-innovations.com', clientNotes: 'Healthcare technology company. Requires HIPAA compliance.', clientSourceId: clientSources[4].id, status: ClientStatus.ACTIVE, clerkId: clerkUserIds[0] },
+    { name: 'FinanceFlow Pro', company: 'FinanceFlow Solutions', email: ['admin@financeflow.com'], phone: ['+1-555-0789'], address: '567 Wall Street, New York, NY 10005', website: 'https://financeflow.com', clientNotes: 'Financial services company requiring secure solutions.', clientSourceId: clientSources[0].id, status: ClientStatus.ACTIVE, clerkId: clerkUserIds[0] },
+    { name: 'EduTech Academy', company: 'EduTech Learning Systems', email: ['info@edutech.edu'], phone: ['+1-555-0890'], address: '234 Education Blvd, Boston, MA 02101', website: 'https://edutech-academy.com', clientNotes: 'Educational technology platform for K-12 schools.', clientSourceId: clientSources[1].id, status: ClientStatus.ACTIVE, clerkId: clerkUserIds[0] },
+    { name: 'FoodieDelight', company: 'FoodieDelight Restaurants', email: ['orders@foodiedelight.com'], phone: ['+1-555-0901'], address: '678 Culinary Ave, Los Angeles, CA 90210', website: 'https://foodiedelight.com', clientNotes: 'Restaurant chain needing online ordering system.', clientSourceId: clientSources[2].id, status: ClientStatus.ACTIVE, clerkId: clerkUserIds[0] },
+    { name: 'AutoMotive Plus', company: 'AutoMotive Plus Dealerships', email: ['sales@automotiveplus.com'], phone: ['+1-555-1012'], address: '890 Motor Way, Detroit, MI 48201', website: 'https://automotiveplus.com', clientNotes: 'Car dealership network requiring inventory management.', clientSourceId: clientSources[3].id, status: ClientStatus.ACTIVE, clerkId: clerkUserIds[0] },
+    { name: 'RealEstate Pro', company: 'RealEstate Pro Agency', email: ['listings@realestatepro.com'], phone: ['+1-555-1123'], address: '345 Property Lane, Miami, FL 33101', website: 'https://realestatepro.com', clientNotes: 'Real estate agency needing property management system.', clientSourceId: clientSources[4].id, status: ClientStatus.ACTIVE, clerkId: clerkUserIds[0] },
+    { name: 'FitnessFirst Gyms', company: 'FitnessFirst Health Centers', email: ['membership@fitnessfirst.com'], phone: ['+1-555-1234'], address: '456 Wellness St, Denver, CO 80201', website: 'https://fitnessfirst.com', clientNotes: 'Gym chain requiring membership management system.', clientSourceId: clientSources[0].id, status: ClientStatus.ACTIVE, clerkId: clerkUserIds[0] },
+    { name: 'TravelBug Adventures', company: 'TravelBug Tourism', email: ['bookings@travelbug.com'], phone: ['+1-555-1345'], address: '789 Adventure Rd, Seattle, WA 98101', website: 'https://travelbug.com', clientNotes: 'Travel agency needing booking and itinerary system.', clientSourceId: clientSources[1].id, status: ClientStatus.ACTIVE, clerkId: clerkUserIds[0] },
   ];
 
   // Create clients with even distribution across last 12 months
@@ -97,13 +97,60 @@ async function main() {
 
   console.log('📋 Created projects');
 
+  // Create Notes - distributed across last 6 months
+  const notes = [];
+  
+  const noteData = [
+    // General Notes
+    { title: 'Weekly Team Meeting Notes', content: 'Discussed project priorities and upcoming deadlines. Need to focus on TechCorp Solutions e-commerce platform completion.', type: NoteType.MEETING_NOTES, priority: NotePriority.MEDIUM, status: NoteStatus.ACTIVE, tags: ['meeting', 'team', 'priorities'], clientId: clients[0].id, projectId: projects[0].id, clerkId: clerkUserIds[0] },
+    { title: 'Client Communication - GreenEarth', content: 'Follow-up call with GreenEarth about dashboard requirements. They want real-time data updates and mobile responsiveness.', type: NoteType.CLIENT_COMMUNICATION, priority: NotePriority.HIGH, status: NoteStatus.ACTIVE, tags: ['client', 'requirements', 'mobile'], clientId: clients[1].id, projectId: projects[1].id, clerkId: clerkUserIds[0] },
+    { title: 'Project Documentation Update', content: 'Updated project documentation for RetailMax inventory system. Added new API endpoints and database schema changes.', type: NoteType.PROJECT_NOTES, priority: NotePriority.MEDIUM, status: NoteStatus.COMPLETED, tags: ['documentation', 'api', 'database'], clientId: clients[2].id, projectId: projects[2].id, clerkId: clerkUserIds[0] },
+    
+    // Todo Items
+    { title: 'Review StartupXYZ MVP Code', content: 'Need to review the MVP code before final deployment. Check for security vulnerabilities and performance issues.', type: NoteType.TODO, priority: NotePriority.HIGH, status: NoteStatus.ACTIVE, tags: ['code-review', 'security', 'performance'], clientId: clients[3].id, projectId: projects[3].id, clerkId: clerkUserIds[0], dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000) },
+    { title: 'HIPAA Compliance Audit', content: 'Schedule HIPAA compliance audit for HealthTech system. Need to prepare documentation and coordinate with compliance team.', type: NoteType.TODO, priority: NotePriority.URGENT, status: NoteStatus.ACTIVE, tags: ['hipaa', 'compliance', 'audit'], clientId: clients[4].id, projectId: projects[4].id, clerkId: clerkUserIds[0], dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) },
+    { title: 'Update Financial Trading Platform', content: 'Update trading platform with new market data feeds and improve analytics dashboard performance.', type: NoteType.TODO, priority: NotePriority.MEDIUM, status: NoteStatus.ACTIVE, tags: ['trading', 'analytics', 'performance'], clientId: clients[5].id, projectId: projects[5].id, clerkId: clerkUserIds[0], dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000) },
+    
+    // Deliverables
+    { title: 'Educational LMS User Manual', content: 'Create comprehensive user manual for teachers and students using the educational LMS platform.', type: NoteType.DELIVERABLE, priority: NotePriority.MEDIUM, status: NoteStatus.ACTIVE, tags: ['documentation', 'user-manual', 'education'], clientId: clients[6].id, projectId: projects[6].id, clerkId: clerkUserIds[0], dueDate: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000) },
+    { title: 'Restaurant Ordering System Testing', content: 'Complete end-to-end testing of the restaurant ordering system across all locations.', type: NoteType.DELIVERABLE, priority: NotePriority.HIGH, status: NoteStatus.ACTIVE, tags: ['testing', 'restaurant', 'ordering'], clientId: clients[7].id, projectId: projects[7].id, clerkId: clerkUserIds[0], dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000) },
+    { title: 'Automotive Inventory Reports', content: 'Generate monthly inventory reports and sales analytics for AutoMotive Plus dealerships.', type: NoteType.DELIVERABLE, priority: NotePriority.LOW, status: NoteStatus.ACTIVE, tags: ['reports', 'inventory', 'analytics'], clientId: clients[8].id, projectId: projects[8].id, clerkId: clerkUserIds[0], dueDate: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000) },
+    
+    // Personal Notes
+    { title: 'Professional Development Plan', content: 'Plan for upcoming professional development activities. Consider attending React conference and learning new database technologies.', type: NoteType.PERSONAL, priority: NotePriority.LOW, status: NoteStatus.ACTIVE, tags: ['development', 'learning', 'conference'], clerkId: clerkUserIds[0] },
+    { title: 'Team Building Ideas', content: 'Research team building activities for the development team. Consider virtual events and in-person meetups.', type: NoteType.PERSONAL, priority: NotePriority.LOW, status: NoteStatus.ACTIVE, tags: ['team-building', 'team', 'activities'], clerkId: clerkUserIds[0] },
+    
+    // General Notes
+    { title: 'Technology Stack Evaluation', content: 'Evaluate new technology stack options for upcoming projects. Consider Next.js 14, Prisma updates, and new deployment strategies.', type: NoteType.GENERAL, priority: NotePriority.MEDIUM, status: NoteStatus.ACTIVE, tags: ['technology', 'evaluation', 'stack'], clerkId: clerkUserIds[0] },
+    { title: 'Client Feedback Summary', content: 'Compile feedback from recent client meetings. Common themes: faster delivery, better communication, more detailed documentation.', type: NoteType.GENERAL, priority: NotePriority.MEDIUM, status: NoteStatus.COMPLETED, tags: ['feedback', 'clients', 'improvement'], clerkId: clerkUserIds[0] },
+  ];
+
+  // Create notes with even distribution across last 6 months
+  for (let i = 0; i < noteData.length; i++) {
+    const monthsAgo = i % 6; // Distribute evenly across 6 months
+    const createdAt = new Date(now.getFullYear(), now.getMonth() - monthsAgo, Math.floor(Math.random() * 28) + 1);
+    
+    const note = await prisma.note.create({
+      data: {
+        ...noteData[i],
+        createdAt,
+        updatedAt: createdAt,
+      },
+    });
+    notes.push(note);
+  }
+
+  console.log('📝 Created notes');
+
   const clientCount = await prisma.client.count();
   const projectCount = await prisma.project.count();
+  const noteCount = await prisma.note.count();
 
   console.log('\n🎉 Database seeding completed successfully!');
   console.log(`📊 Summary:`);
   console.log(`   Clients: ${clientCount}`);
   console.log(`   Projects: ${projectCount}`);
+  console.log(`   Notes: ${noteCount}`);
 }
 
 main()
