@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import prisma from '@/lib/prisma';
-import { Prisma } from '@prisma/client';
+import { Prisma, NoteType, NoteStatus, NotePriority } from '@/app/generated/prisma';
 
 export async function GET(request: NextRequest) {
   try {
@@ -28,15 +28,15 @@ export async function GET(request: NextRequest) {
     };
 
     if (type && type !== 'ALL') {
-      where.type = type as Prisma.NoteType;
+      where.type = type as NoteType;
     }
 
     if (status && status !== 'ALL') {
-      where.status = status as Prisma.NoteStatus;
+      where.status = status as NoteStatus;
     }
 
     if (priority && priority !== 'ALL') {
-      where.priority = priority as Prisma.NotePriority;
+      where.priority = priority as NotePriority;
     }
 
     if (clientId && clientId !== 'ALL') {
