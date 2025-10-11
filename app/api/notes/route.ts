@@ -74,6 +74,7 @@ export async function GET(request: NextRequest) {
           },
         },
         orderBy: [
+          { status: 'asc' }, // COMPLETED comes after ACTIVE alphabetically, so completed items will be at bottom
           { priority: 'desc' },
           { dueDate: 'asc' },
           { createdAt: 'desc' },
