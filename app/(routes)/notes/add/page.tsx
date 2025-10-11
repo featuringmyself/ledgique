@@ -340,7 +340,7 @@ export default function AddNotePage() {
                   Due Date
                 </label>
                 <Input
-                  type="datetime-local"
+                  type="date"
                   name="dueDate"
                   value={formData.dueDate}
                   onChange={handleChange}
