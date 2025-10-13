@@ -179,7 +179,7 @@ export default function ProjectViewPage() {
                 <label className="text-sm font-medium text-gray-500 mb-2 block">Budget</label>
                 <div className="flex items-center gap-2">
                   <IconCurrencyDollar size={16} className="text-gray-400" />
-                  <span className="text-gray-900 font-medium">${project.budget.toLocaleString()}</span>
+                  <span className="text-gray-900 font-medium">₹{project.budget.toLocaleString()}</span>
                 </div>
               </div>
             )}
