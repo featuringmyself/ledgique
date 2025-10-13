@@ -15,19 +15,13 @@ export async function GET(request: NextRequest) {
         const limit = parseInt(searchParams.get('limit') || '10');
         const skip = (page - 1) * limit;
 
-        // Find projects that are marked as COMPLETED but have incomplete payments
+        // Find projects where total payments made is not equal to project budget
         const [projects, totalCount] = await Promise.all([
             prisma.project.findMany({
                 where: {
                     clerkId: userId,
-                    status: 'COMPLETED',
-                    payments: {
-                        some: {
-                            status: {
-                                not: 'COMPLETED' // Still filter projects with pending payments
-                            }
-                        }
-                    }
+                    // Remove status filter - we want all projects regardless of status
+                    // Remove payments filter - we'll calculate this in the application logic
                 },
                 include: {
                     client: {
@@ -67,50 +61,65 @@ export async function GET(request: NextRequest) {
             prisma.project.count({
                 where: {
                     clerkId: userId,
-                    status: 'COMPLETED',
-                    payments: {
-                        some: {
-                            status: {
-                                not: 'COMPLETED'
-                            }
-                        }
-                    }
+                    // Remove status filter - we want all projects regardless of status
                 }
             })
         ]);
 
-        // Calculate payment summary for each project
-        const projectsWithPaymentSummary = projects.map(project => {
-            const totalBudget = project.budget ? Number(project.budget) : 0;
-            const completedPayments = project.payments.filter(p => p.status === 'COMPLETED');
-            const pendingPayments = project.payments.filter(p => p.status !== 'COMPLETED');
-            
-            const totalPaid = completedPayments.reduce((sum, payment) => sum + Number(payment.amount), 0);
-            const totalPending = pendingPayments.reduce((sum, payment) => sum + Number(payment.amount), 0);
-            const paymentCompletionPercentage = totalBudget > 0 ? (totalPaid / totalBudget) * 100 : 0;
+        // Calculate payment summary for each project and filter incomplete ones
+        const projectsWithPaymentSummary = projects
+            .map(project => {
+                const totalBudget = project.budget ? Number(project.budget) : 0;
+                const completedPayments = project.payments.filter(p => p.status === 'COMPLETED');
+                const pendingPayments = project.payments.filter(p => p.status !== 'COMPLETED');
+                
+                const totalPaid = completedPayments.reduce((sum, payment) => sum + Number(payment.amount), 0);
+                const totalPending = pendingPayments.reduce((sum, payment) => sum + Number(payment.amount), 0);
+                const paymentCompletionPercentage = totalBudget > 0 ? (totalPaid / totalBudget) * 100 : 0;
 
-            return {
-                ...project,
-                paymentSummary: {
-                    totalBudget,
-                    totalPaid,
-                    totalPending,
-                    paymentCompletionPercentage: Math.round(paymentCompletionPercentage),
-                    completedPaymentsCount: completedPayments.length,
-                    pendingPaymentsCount: pendingPayments.length,
-                    totalPaymentsCount: project._count.payments
+                return {
+                    ...project,
+                    paymentSummary: {
+                        totalBudget,
+                        totalPaid,
+                        totalPending,
+                        paymentCompletionPercentage: Math.round(paymentCompletionPercentage),
+                        completedPaymentsCount: completedPayments.length,
+                        pendingPaymentsCount: pendingPayments.length,
+                        totalPaymentsCount: project._count.payments
+                    }
+                };
+            })
+            .filter(project => {
+                // Only include projects where total payments made is not equal to project budget
+                // This includes projects with no budget set (budget = 0) but has payments
+                // Or projects where totalPaid != totalBudget
+                const { totalBudget, totalPaid } = project.paymentSummary;
+                
+                // If budget is 0 or null, but there are payments, it's incomplete
+                if (totalBudget === 0 && totalPaid > 0) {
+                    return true;
                 }
-            };
-        });
+                
+                // If budget is set, check if payments don't equal budget
+                if (totalBudget > 0 && totalPaid !== totalBudget) {
+                    return true;
+                }
+                
+                return false;
+            });
 
-        const totalPages = Math.ceil(totalCount / limit);
+        // Apply pagination to filtered results
+        const filteredProjects = projectsWithPaymentSummary.slice(skip, skip + limit);
+        const filteredTotalCount = projectsWithPaymentSummary.length;
+        const totalPages = Math.ceil(filteredTotalCount / limit);
 
         return NextResponse.json({
-            projects: projectsWithPaymentSummary,
+            projects: filteredProjects,
             pagination: {
                 currentPage: page,
                 totalPages,
-                totalCount,
+                totalCount: filteredTotalCount,
                 limit,
                 hasNextPage: page < totalPages,
                 hasPrevPage: page > 1

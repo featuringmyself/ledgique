@@ -130,8 +130,8 @@ function IncompletePaymentsTab() {
         <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <IconCheck size={32} className="text-green-600" />
         </div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">All Payments Complete!</h3>
-        <p className="text-gray-600">No projects with incomplete payments found.</p>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">All Payments Match Budget!</h3>
+        <p className="text-gray-600">No projects with payment mismatches found.</p>
       </div>
     );
   }
@@ -147,7 +147,7 @@ function IncompletePaymentsTab() {
           </h3>
         </div>
         <p className="text-sm text-yellow-700 mb-4">
-          These projects are marked as completed but still have pending payments.
+          These projects have payments that don't match their budget amount.
         </p>
         
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
@@ -239,7 +239,7 @@ function IncompletePaymentsTab() {
             
             {project.payments.length > 0 && (
               <div className="border-t border-gray-200 pt-4">
-                <div className="text-sm font-medium text-gray-700 mb-3">Pending Payments:</div>
+                <div className="text-sm font-medium text-gray-700 mb-3">All Payments:</div>
                 <div className="space-y-3">
                   {project.payments.map((payment) => (
                     <div key={payment.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
