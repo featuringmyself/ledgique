@@ -204,7 +204,11 @@ async function main() {
     // FitnessFirst - Gym Management (IN_PROGRESS project with some payments)
     { amount: 15000.00, description: 'Gym management system', type: PaymentType.ADVANCE, method: PaymentMethod.BANK_TRANSFER, status: PaymentStatus.COMPLETED, projectId: projects[10].id, clientId: clients[10].id, date: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000) },
     { amount: 15000.00, description: 'Member portal development', type: PaymentType.MILESTONE, method: PaymentMethod.BANK_TRANSFER, status: PaymentStatus.COMPLETED, projectId: projects[10].id, clientId: clients[10].id, date: new Date(now.getTime() - 10 * 24 * 60 * 60 * 1000) },
-    { amount: 15000.00, description: 'Final payment - pending', type: PaymentType.FINAL, method: PaymentMethod.BANK_TRANSFER, status: PaymentStatus.PENDING, projectId: projects[10].id, clientId: clients[10].id, date: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000), dueDate: new Date(now.getTime() + 25 * 24 * 60 * 60 * 1000) },
+    { amount: 15000.00, description: 'Final payment - overdue', type: PaymentType.FINAL, method: PaymentMethod.BANK_TRANSFER, status: PaymentStatus.PENDING, projectId: projects[10].id, clientId: clients[10].id, date: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000), dueDate: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000) },
+    
+    // Additional overdue payments for better testing
+    { amount: 12000.00, description: 'Additional overdue payment', type: PaymentType.MILESTONE, method: PaymentMethod.BANK_TRANSFER, status: PaymentStatus.PENDING, projectId: projects[0].id, clientId: clients[0].id, date: new Date(now.getTime() - 15 * 24 * 60 * 60 * 1000), dueDate: new Date(now.getTime() - 10 * 24 * 60 * 60 * 1000) },
+    { amount: 8000.00, description: 'Failed overdue payment', type: PaymentType.FINAL, method: PaymentMethod.BANK_TRANSFER, status: PaymentStatus.FAILED, projectId: projects[1].id, clientId: clients[1].id, date: new Date(now.getTime() - 20 * 24 * 60 * 60 * 1000), dueDate: new Date(now.getTime() - 12 * 24 * 60 * 60 * 1000) },
   ];
 
   // Create payments
