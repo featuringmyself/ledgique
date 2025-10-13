@@ -20,11 +20,11 @@ export async function GET(request: NextRequest) {
             prisma.project.findMany({
                 where: {
                     clerkId: userId,
-                    status: 'COMPLETED', // Project is marked as complete
+                    status: 'COMPLETED',
                     payments: {
                         some: {
                             status: {
-                                not: 'COMPLETED' // But has payments that are not completed
+                                not: 'COMPLETED' // Still filter projects with pending payments
                             }
                         }
                     }
@@ -37,11 +37,7 @@ export async function GET(request: NextRequest) {
                         },
                     },
                     payments: {
-                        where: {
-                            status: {
-                                not: 'COMPLETED'
-                            }
-                        },
+                        // Remove the where clause to get ALL payments
                         select: {
                             id: true,
                             amount: true,
