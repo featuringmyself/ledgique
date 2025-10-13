@@ -12,59 +12,49 @@ export async function GET(request: NextRequest) {
 
         const { searchParams } = new URL(request.url);
         const page = parseInt(searchParams.get('page') || '1');
-        const limit = parseInt(searchParams.get('limit') || '10');
+        const limit = parseInt(searchParams.get('limit') || '50'); // Increased default limit
         const skip = (page - 1) * limit;
 
-        // Find projects where total payments made is not equal to project budget
-        const [projects, totalCount] = await Promise.all([
-            prisma.project.findMany({
-                where: {
-                    clerkId: userId,
-                    // Remove status filter - we want all projects regardless of status
-                    // Remove payments filter - we'll calculate this in the application logic
+        // Get ALL projects first, then filter and paginate
+        const projects = await prisma.project.findMany({
+            where: {
+                clerkId: userId,
+                // Remove status filter - we want all projects regardless of status
+                // Remove payments filter - we'll calculate this in the application logic
+            },
+            include: {
+                client: {
+                    select: {
+                        name: true,
+                        company: true,
+                    },
                 },
-                include: {
-                    client: {
-                        select: {
-                            name: true,
-                            company: true,
-                        },
+                payments: {
+                    // Remove the where clause to get ALL payments
+                    select: {
+                        id: true,
+                        amount: true,
+                        status: true,
+                        date: true,
+                        dueDate: true,
+                        description: true,
+                        type: true,
+                        method: true
                     },
-                    payments: {
-                        // Remove the where clause to get ALL payments
-                        select: {
-                            id: true,
-                            amount: true,
-                            status: true,
-                            date: true,
-                            dueDate: true,
-                            description: true,
-                            type: true,
-                            method: true
-                        },
-                        orderBy: {
-                            dueDate: 'asc'
-                        }
-                    },
-                    _count: {
-                        select: {
-                            payments: true
-                        }
+                    orderBy: {
+                        dueDate: 'asc'
                     }
                 },
-                orderBy: {
-                    updatedAt: 'desc'
-                },
-                skip,
-                take: limit,
-            }),
-            prisma.project.count({
-                where: {
-                    clerkId: userId,
-                    // Remove status filter - we want all projects regardless of status
+                _count: {
+                    select: {
+                        payments: true
+                    }
                 }
-            })
-        ]);
+            },
+            orderBy: {
+                updatedAt: 'desc'
+            }
+        });
 
         // Calculate payment summary for each project and filter incomplete ones
         const projectsWithPaymentSummary = projects
@@ -92,9 +82,11 @@ export async function GET(request: NextRequest) {
                 };
             })
             .filter(project => {
-                // Only include projects where total payments made is not equal to project budget
-                // This includes projects with no budget set (budget = 0) but has payments
-                // Or projects where totalPaid != totalBudget
+                // Show all projects that have incomplete payments
+                // This includes:
+                // 1. Projects with budget > 0 and payments don't equal budget
+                // 2. Projects with budget = 0 but have payments
+                // 3. Projects with budget > 0 but no payments yet
                 const { totalBudget, totalPaid } = project.paymentSummary;
                 
                 // If budget is 0 or null, but there are payments, it's incomplete
@@ -102,7 +94,7 @@ export async function GET(request: NextRequest) {
                     return true;
                 }
                 
-                // If budget is set, check if payments don't equal budget
+                // If budget is set, check if payments don't equal budget (including no payments)
                 if (totalBudget > 0 && totalPaid !== totalBudget) {
                     return true;
                 }
