@@ -147,7 +147,7 @@ function IncompletePaymentsTab() {
           </h3>
         </div>
         <p className="text-sm text-yellow-700 mb-4">
-          These projects have payments that don't match their budget amount.
+          These projects have payments that don&apos;t match their budget amount.
         </p>
         
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
