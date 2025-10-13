@@ -1,17 +1,47 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
 import prisma from '@/lib/prisma';
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { userId } = await auth();
+    
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { id } = await params;
     const project = await prisma.project.findUnique({
-      where: { id },
+      where: { 
+        id,
+        clerkId: userId // Ensure user can only access their own projects
+      },
       include: {
         client: {
           select: {
             id: true,
             name: true,
             company: true
+          }
+        },
+        payments: {
+          select: {
+            id: true,
+            amount: true,
+            status: true,
+            date: true,
+            dueDate: true,
+            description: true,
+            type: true,
+            method: true
+          },
+          orderBy: {
+            dueDate: 'asc'
+          }
+        },
+        _count: {
+          select: {
+            payments: true
           }
         }
       }
@@ -21,7 +51,33 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ error: 'Project not found' }, { status: 404 });
     }
 
-    return NextResponse.json(project);
+    // Calculate payment summary
+    const totalBudget = project.budget ? Number(project.budget) : 0;
+    const completedPayments = project.payments.filter(p => p.status === 'COMPLETED');
+    const pendingPayments = project.payments.filter(p => p.status !== 'COMPLETED');
+    
+    const totalPaid = completedPayments.reduce((sum, payment) => sum + Number(payment.amount), 0);
+    const totalPending = pendingPayments.reduce((sum, payment) => sum + Number(payment.amount), 0);
+    const paymentCompletionPercentage = totalBudget > 0 ? (totalPaid / totalBudget) * 100 : 0;
+    
+    // Determine if payments are incomplete
+    const isPaymentIncomplete = totalBudget > 0 && totalPaid !== totalBudget;
+
+    const projectWithPaymentSummary = {
+      ...project,
+      paymentSummary: {
+        totalBudget,
+        totalPaid,
+        totalPending,
+        paymentCompletionPercentage: Math.round(paymentCompletionPercentage),
+        completedPaymentsCount: completedPayments.length,
+        pendingPaymentsCount: pendingPayments.length,
+        totalPaymentsCount: project._count.payments,
+        isPaymentIncomplete
+      }
+    };
+
+    return NextResponse.json(projectWithPaymentSummary);
   } catch {
     return NextResponse.json({ error: 'Failed to fetch project' }, { status: 500 });
   }
