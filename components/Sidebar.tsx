@@ -191,7 +191,9 @@ export function Sidebar({ children }: { children?: React.ReactNode }) {
                     </div>
                 </SidebarBody>
             </SidebarUI>
-            <main className="flex flex-1 pt-12 md:pt-0 md:ml-[60px]">
+            <main className={`flex flex-1 pt-12 md:pt-0 transition-all duration-300 ease-in-out ${
+                open ? 'md:ml-[280px]' : 'md:ml-[60px]'
+            }`}>
                 {children || <Dashboard />}
             </main>
         </div>

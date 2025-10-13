@@ -1,4 +1,4 @@
-import { PrismaClient, ClientStatus, ProjectStatus, Priority, NoteType, NotePriority, NoteStatus } from '@/app/generated/prisma';
+import { PrismaClient, ClientStatus, ProjectStatus, Priority, NoteType, NotePriority, NoteStatus, PaymentType, PaymentMethod, PaymentStatus } from '@/app/generated/prisma';
 
 const prisma = new PrismaClient();
 
@@ -142,15 +142,100 @@ async function main() {
 
   console.log('📝 Created notes');
 
+  // Create Payments - Mix of completed and incomplete payments for testing
+  const payments = [];
+  
+  const paymentData = [
+    // TechCorp Solutions - E-commerce Platform (COMPLETED project with incomplete payments)
+    { amount: 25000.00, description: 'Initial project deposit', type: PaymentType.ADVANCE, method: PaymentMethod.BANK_TRANSFER, status: PaymentStatus.COMPLETED, projectId: projects[0].id, clientId: clients[0].id, date: new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000) },
+    { amount: 30000.00, description: 'Mid-project milestone payment', type: PaymentType.MILESTONE, method: PaymentMethod.BANK_TRANSFER, status: PaymentStatus.COMPLETED, projectId: projects[0].id, clientId: clients[0].id, date: new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000) },
+    { amount: 30000.00, description: 'Final payment - pending', type: PaymentType.FINAL, method: PaymentMethod.BANK_TRANSFER, status: PaymentStatus.PENDING, projectId: projects[0].id, clientId: clients[0].id, date: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000), dueDate: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000) },
+    
+    // GreenEarth Initiative - Environmental Dashboard (COMPLETED project with incomplete payments)
+    { amount: 15000.00, description: 'Project kickoff payment', type: PaymentType.ADVANCE, method: PaymentMethod.BANK_TRANSFER, status: PaymentStatus.COMPLETED, projectId: projects[1].id, clientId: clients[1].id, date: new Date(now.getTime() - 80 * 24 * 60 * 60 * 1000) },
+    { amount: 20000.00, description: 'Dashboard completion payment', type: PaymentType.MILESTONE, method: PaymentMethod.BANK_TRANSFER, status: PaymentStatus.COMPLETED, projectId: projects[1].id, clientId: clients[1].id, date: new Date(now.getTime() - 50 * 24 * 60 * 60 * 1000) },
+    { amount: 10000.00, description: 'Final payment - overdue', type: PaymentType.FINAL, method: PaymentMethod.BANK_TRANSFER, status: PaymentStatus.PENDING, projectId: projects[1].id, clientId: clients[1].id, date: new Date(now.getTime() - 20 * 24 * 60 * 60 * 1000), dueDate: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000) },
+    
+    // RetailMax Chain - Inventory System (COMPLETED project with incomplete payments)
+    { amount: 40000.00, description: 'Initial payment', type: PaymentType.ADVANCE, method: PaymentMethod.BANK_TRANSFER, status: PaymentStatus.COMPLETED, projectId: projects[2].id, clientId: clients[2].id, date: new Date(now.getTime() - 100 * 24 * 60 * 60 * 1000) },
+    { amount: 50000.00, description: 'System development milestone', type: PaymentType.MILESTONE, method: PaymentMethod.BANK_TRANSFER, status: PaymentStatus.COMPLETED, projectId: projects[2].id, clientId: clients[2].id, date: new Date(now.getTime() - 70 * 24 * 60 * 60 * 1000) },
+    { amount: 30000.00, description: 'Final payment - failed', type: PaymentType.FINAL, method: PaymentMethod.BANK_TRANSFER, status: PaymentStatus.FAILED, projectId: projects[2].id, clientId: clients[2].id, date: new Date(now.getTime() - 10 * 24 * 60 * 60 * 1000), dueDate: new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000) },
+    
+    // StartupXYZ - MVP Development (COMPLETED project with incomplete payments)
+    { amount: 20000.00, description: 'MVP development deposit', type: PaymentType.ADVANCE, method: PaymentMethod.BANK_TRANSFER, status: PaymentStatus.COMPLETED, projectId: projects[3].id, clientId: clients[3].id, date: new Date(now.getTime() - 75 * 24 * 60 * 60 * 1000) },
+    { amount: 25000.00, description: 'Core features completion', type: PaymentType.MILESTONE, method: PaymentMethod.BANK_TRANSFER, status: PaymentStatus.COMPLETED, projectId: projects[3].id, clientId: clients[3].id, date: new Date(now.getTime() - 45 * 24 * 60 * 60 * 1000) },
+    { amount: 20000.00, description: 'Final payment - partially paid', type: PaymentType.FINAL, method: PaymentMethod.BANK_TRANSFER, status: PaymentStatus.PARTIALLY_PAID, projectId: projects[3].id, clientId: clients[3].id, date: new Date(now.getTime() - 15 * 24 * 60 * 60 * 1000), dueDate: new Date(now.getTime() + 10 * 24 * 60 * 60 * 1000) },
+    
+    // HealthTech - HIPAA Compliance System (COMPLETED project with incomplete payments)
+    { amount: 30000.00, description: 'Security audit payment', type: PaymentType.ADVANCE, method: PaymentMethod.BANK_TRANSFER, status: PaymentStatus.COMPLETED, projectId: projects[4].id, clientId: clients[4].id, date: new Date(now.getTime() - 85 * 24 * 60 * 60 * 1000) },
+    { amount: 40000.00, description: 'Compliance implementation', type: PaymentType.MILESTONE, method: PaymentMethod.BANK_TRANSFER, status: PaymentStatus.COMPLETED, projectId: projects[4].id, clientId: clients[4].id, date: new Date(now.getTime() - 55 * 24 * 60 * 60 * 1000) },
+    { amount: 25000.00, description: 'Final payment - cancelled', type: PaymentType.FINAL, method: PaymentMethod.BANK_TRANSFER, status: PaymentStatus.CANCELLED, projectId: projects[4].id, clientId: clients[4].id, date: new Date(now.getTime() - 25 * 24 * 60 * 60 * 1000), dueDate: new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000) },
+    
+    // FinanceFlow - Trading Platform (COMPLETED project with incomplete payments)
+    { amount: 50000.00, description: 'Platform development deposit', type: PaymentType.ADVANCE, method: PaymentMethod.BANK_TRANSFER, status: PaymentStatus.COMPLETED, projectId: projects[5].id, clientId: clients[5].id, date: new Date(now.getTime() - 95 * 24 * 60 * 60 * 1000) },
+    { amount: 60000.00, description: 'Trading engine completion', type: PaymentType.MILESTONE, method: PaymentMethod.BANK_TRANSFER, status: PaymentStatus.COMPLETED, projectId: projects[5].id, clientId: clients[5].id, date: new Date(now.getTime() - 65 * 24 * 60 * 60 * 1000) },
+    { amount: 40000.00, description: 'Final payment - pending', type: PaymentType.FINAL, method: PaymentMethod.BANK_TRANSFER, status: PaymentStatus.PENDING, projectId: projects[5].id, clientId: clients[5].id, date: new Date(now.getTime() - 35 * 24 * 60 * 60 * 1000), dueDate: new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000) },
+    
+    // EduTech - Learning Management System (COMPLETED project with incomplete payments)
+    { amount: 25000.00, description: 'LMS development payment', type: PaymentType.ADVANCE, method: PaymentMethod.BANK_TRANSFER, status: PaymentStatus.COMPLETED, projectId: projects[6].id, clientId: clients[6].id, date: new Date(now.getTime() - 70 * 24 * 60 * 60 * 1000) },
+    { amount: 30000.00, description: 'Portal completion milestone', type: PaymentType.MILESTONE, method: PaymentMethod.BANK_TRANSFER, status: PaymentStatus.COMPLETED, projectId: projects[6].id, clientId: clients[6].id, date: new Date(now.getTime() - 40 * 24 * 60 * 60 * 1000) },
+    { amount: 20000.00, description: 'Final payment - overdue', type: PaymentType.FINAL, method: PaymentMethod.BANK_TRANSFER, status: PaymentStatus.PENDING, projectId: projects[6].id, clientId: clients[6].id, date: new Date(now.getTime() - 20 * 24 * 60 * 60 * 1000), dueDate: new Date(now.getTime() - 8 * 24 * 60 * 60 * 1000) },
+    
+    // FoodieDelight - Restaurant Ordering System (COMPLETED project with incomplete payments)
+    { amount: 20000.00, description: 'Ordering system development', type: PaymentType.ADVANCE, method: PaymentMethod.BANK_TRANSFER, status: PaymentStatus.COMPLETED, projectId: projects[7].id, clientId: clients[7].id, date: new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000) },
+    { amount: 25000.00, description: 'Payment processing integration', type: PaymentType.MILESTONE, method: PaymentMethod.BANK_TRANSFER, status: PaymentStatus.COMPLETED, projectId: projects[7].id, clientId: clients[7].id, date: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000) },
+    { amount: 10000.00, description: 'Final payment - pending', type: PaymentType.FINAL, method: PaymentMethod.BANK_TRANSFER, status: PaymentStatus.PENDING, projectId: projects[7].id, clientId: clients[7].id, date: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000), dueDate: new Date(now.getTime() + 12 * 24 * 60 * 60 * 1000) },
+    
+    // RealEstate Pro - Property Management (COMPLETED project with incomplete payments)
+    { amount: 25000.00, description: 'Property management system', type: PaymentType.ADVANCE, method: PaymentMethod.BANK_TRANSFER, status: PaymentStatus.COMPLETED, projectId: projects[9].id, clientId: clients[9].id, date: new Date(now.getTime() - 65 * 24 * 60 * 60 * 1000) },
+    { amount: 30000.00, description: 'Client portal development', type: PaymentType.MILESTONE, method: PaymentMethod.BANK_TRANSFER, status: PaymentStatus.COMPLETED, projectId: projects[9].id, clientId: clients[9].id, date: new Date(now.getTime() - 35 * 24 * 60 * 60 * 1000) },
+    { amount: 15000.00, description: 'Final payment - failed', type: PaymentType.FINAL, method: PaymentMethod.BANK_TRANSFER, status: PaymentStatus.FAILED, projectId: projects[9].id, clientId: clients[9].id, date: new Date(now.getTime() - 12 * 24 * 60 * 60 * 1000), dueDate: new Date(now.getTime() + 8 * 24 * 60 * 60 * 1000) },
+    
+    // TravelBug - Travel Booking Platform (COMPLETED project with incomplete payments)
+    { amount: 30000.00, description: 'Booking platform development', type: PaymentType.ADVANCE, method: PaymentMethod.BANK_TRANSFER, status: PaymentStatus.COMPLETED, projectId: projects[11].id, clientId: clients[11].id, date: new Date(now.getTime() - 80 * 24 * 60 * 60 * 1000) },
+    { amount: 40000.00, description: 'Itinerary builder completion', type: PaymentType.MILESTONE, method: PaymentMethod.BANK_TRANSFER, status: PaymentStatus.COMPLETED, projectId: projects[11].id, clientId: clients[11].id, date: new Date(now.getTime() - 50 * 24 * 60 * 60 * 1000) },
+    { amount: 20000.00, description: 'Final payment - pending', type: PaymentType.FINAL, method: PaymentMethod.BANK_TRANSFER, status: PaymentStatus.PENDING, projectId: projects[11].id, clientId: clients[11].id, date: new Date(now.getTime() - 20 * 24 * 60 * 60 * 1000), dueDate: new Date(now.getTime() + 6 * 24 * 60 * 60 * 1000) },
+    
+    // AutoMotive Plus - Inventory Management (IN_PROGRESS project with some payments)
+    { amount: 30000.00, description: 'Inventory system development', type: PaymentType.ADVANCE, method: PaymentMethod.BANK_TRANSFER, status: PaymentStatus.COMPLETED, projectId: projects[8].id, clientId: clients[8].id, date: new Date(now.getTime() - 45 * 24 * 60 * 60 * 1000) },
+    { amount: 25000.00, description: 'Sales pipeline milestone', type: PaymentType.MILESTONE, method: PaymentMethod.BANK_TRANSFER, status: PaymentStatus.COMPLETED, projectId: projects[8].id, clientId: clients[8].id, date: new Date(now.getTime() - 20 * 24 * 60 * 60 * 1000) },
+    { amount: 25000.00, description: 'Final payment - pending', type: PaymentType.FINAL, method: PaymentMethod.BANK_TRANSFER, status: PaymentStatus.PENDING, projectId: projects[8].id, clientId: clients[8].id, date: new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000), dueDate: new Date(now.getTime() + 20 * 24 * 60 * 60 * 1000) },
+    
+    // FitnessFirst - Gym Management (IN_PROGRESS project with some payments)
+    { amount: 15000.00, description: 'Gym management system', type: PaymentType.ADVANCE, method: PaymentMethod.BANK_TRANSFER, status: PaymentStatus.COMPLETED, projectId: projects[10].id, clientId: clients[10].id, date: new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000) },
+    { amount: 15000.00, description: 'Member portal development', type: PaymentType.MILESTONE, method: PaymentMethod.BANK_TRANSFER, status: PaymentStatus.COMPLETED, projectId: projects[10].id, clientId: clients[10].id, date: new Date(now.getTime() - 10 * 24 * 60 * 60 * 1000) },
+    { amount: 15000.00, description: 'Final payment - pending', type: PaymentType.FINAL, method: PaymentMethod.BANK_TRANSFER, status: PaymentStatus.PENDING, projectId: projects[10].id, clientId: clients[10].id, date: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000), dueDate: new Date(now.getTime() + 25 * 24 * 60 * 60 * 1000) },
+  ];
+
+  // Create payments
+  for (const paymentInfo of paymentData) {
+    const payment = await prisma.payment.create({
+      data: paymentInfo,
+    });
+    payments.push(payment);
+  }
+
+  console.log('💰 Created payments');
+
   const clientCount = await prisma.client.count();
   const projectCount = await prisma.project.count();
   const noteCount = await prisma.note.count();
+  const paymentCount = await prisma.payment.count();
 
   console.log('\n🎉 Database seeding completed successfully!');
   console.log(`📊 Summary:`);
   console.log(`   Clients: ${clientCount}`);
   console.log(`   Projects: ${projectCount}`);
   console.log(`   Notes: ${noteCount}`);
+  console.log(`   Payments: ${paymentCount}`);
+  console.log(`\n🔍 Test Data Created:`);
+  console.log(`   - ${projects.filter(p => p.status === 'COMPLETED').length} completed projects`);
+  console.log(`   - ${projects.filter(p => p.status === 'IN_PROGRESS').length} in-progress projects`);
+  console.log(`   - ${payments.filter(p => p.status === 'COMPLETED').length} completed payments`);
+  console.log(`   - ${payments.filter(p => p.status === 'PENDING').length} pending payments`);
+  console.log(`   - ${payments.filter(p => p.status === 'FAILED').length} failed payments`);
+  console.log(`   - ${payments.filter(p => p.status === 'CANCELLED').length} cancelled payments`);
+  console.log(`   - ${payments.filter(p => p.status === 'PARTIALLY_PAID').length} partially paid payments`);
 }
 
 main()

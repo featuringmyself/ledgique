@@ -60,6 +60,235 @@ interface PaymentMethod {
   percentage: string;
 }
 
+interface ProjectWithIncompletePayments {
+  id: string;
+  name: string;
+  description: string;
+  status: string;
+  priority: string;
+  budget: number;
+  startDate: string;
+  endDate: string;
+  createdAt: string;
+  client: {
+    name: string;
+    company: string;
+  };
+  payments: Array<{
+    id: string;
+    amount: number;
+    status: string;
+    date: string;
+    dueDate: string;
+    description: string;
+    type: string;
+    method: string;
+  }>;
+  paymentSummary: {
+    totalBudget: number;
+    totalPaid: number;
+    totalPending: number;
+    paymentCompletionPercentage: number;
+    completedPaymentsCount: number;
+    pendingPaymentsCount: number;
+    totalPaymentsCount: number;
+  };
+}
+
+function IncompletePaymentsTab() {
+  const [incompletePaymentProjects, setIncompletePaymentProjects] = useState<ProjectWithIncompletePayments[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchIncompletePaymentProjects = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get('/api/projects/incomplete-payments');
+        const { projects: fetchedIncompleteProjects } = response.data;
+        setIncompletePaymentProjects(fetchedIncompleteProjects);
+      } catch {
+        // Error handled silently
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchIncompletePaymentProjects();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex h-64 w-full items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+      </div>
+    );
+  }
+
+  if (incompletePaymentProjects.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <IconCheck size={32} className="text-green-600" />
+        </div>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">All Payments Complete!</h3>
+        <p className="text-gray-600">No projects with incomplete payments found.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Summary Card */}
+      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+          <h3 className="text-lg font-semibold text-yellow-800">
+            Projects with Incomplete Payments ({incompletePaymentProjects.length})
+          </h3>
+        </div>
+        <p className="text-sm text-yellow-700 mb-4">
+          These projects are marked as completed but still have pending payments.
+        </p>
+        
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+          <div className="bg-white rounded-lg p-3 border border-yellow-200">
+            <div className="text-yellow-600 font-medium">Total Projects</div>
+            <div className="text-xl font-bold text-gray-900">{incompletePaymentProjects.length}</div>
+          </div>
+          <div className="bg-white rounded-lg p-3 border border-yellow-200">
+            <div className="text-yellow-600 font-medium">Total Budget</div>
+            <div className="text-xl font-bold text-gray-900">
+              ₹{incompletePaymentProjects.reduce((sum, p) => sum + p.paymentSummary.totalBudget, 0).toLocaleString()}
+            </div>
+          </div>
+          <div className="bg-white rounded-lg p-3 border border-yellow-200">
+            <div className="text-yellow-600 font-medium">Total Paid</div>
+            <div className="text-xl font-bold text-green-600">
+              ₹{incompletePaymentProjects.reduce((sum, p) => sum + p.paymentSummary.totalPaid, 0).toLocaleString()}
+            </div>
+          </div>
+          <div className="bg-white rounded-lg p-3 border border-yellow-200">
+            <div className="text-yellow-600 font-medium">Total Pending</div>
+            <div className="text-xl font-bold text-red-600">
+              ₹{incompletePaymentProjects.reduce((sum, p) => sum + p.paymentSummary.totalPending, 0).toLocaleString()}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Projects List */}
+      <div className="space-y-4">
+        {incompletePaymentProjects.map((project) => (
+          <div key={project.id} className="bg-white rounded-lg border border-gray-200 p-6">
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
+                  <span className="text-sm font-medium text-white">
+                    {project.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                  </span>
+                </div>
+                <div>
+                  <div className="font-medium text-gray-900 text-lg">{project.name}</div>
+                  <div className="text-sm text-gray-600">{project.client?.name || 'No Client'}</div>
+                  {project.client?.company && (
+                    <div className="text-xs text-gray-500">{project.client.company}</div>
+                  )}
+                </div>
+              </div>
+              <Link href={`/project/${project.id}`}>
+                <button className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                  View Project
+                </button>
+              </Link>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-4">
+              <div>
+                <div className="text-gray-500 text-sm mb-2">Payment Progress</div>
+                <div className="flex items-center gap-3">
+                  <div className="flex-1 bg-gray-200 rounded-full h-3">
+                    <div 
+                      className="bg-yellow-500 h-3 rounded-full transition-all duration-300" 
+                      style={{ width: `${project.paymentSummary.paymentCompletionPercentage}%` }}
+                    ></div>
+                  </div>
+                  <span className="text-sm font-medium text-gray-600 min-w-[3rem]">
+                    {project.paymentSummary.paymentCompletionPercentage}%
+                  </span>
+                </div>
+              </div>
+              <div>
+                <div className="text-gray-500 text-sm mb-1">Total Budget</div>
+                <div className="font-semibold text-gray-900">
+                  ₹{new Intl.NumberFormat('en-IN').format(project.paymentSummary.totalBudget)}
+                </div>
+              </div>
+              <div>
+                <div className="text-gray-500 text-sm mb-1">Paid</div>
+                <div className="font-semibold text-green-600">
+                  ₹{new Intl.NumberFormat('en-IN').format(project.paymentSummary.totalPaid)}
+                </div>
+              </div>
+              <div>
+                <div className="text-gray-500 text-sm mb-1">Pending</div>
+                <div className="font-semibold text-red-600">
+                  ₹{new Intl.NumberFormat('en-IN').format(project.paymentSummary.totalPending)}
+                </div>
+              </div>
+            </div>
+            
+            {project.payments.length > 0 && (
+              <div className="border-t border-gray-200 pt-4">
+                <div className="text-sm font-medium text-gray-700 mb-3">Pending Payments:</div>
+                <div className="space-y-3">
+                  {project.payments.map((payment) => (
+                    <div key={payment.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                          payment.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                          payment.status === 'FAILED' ? 'bg-red-100 text-red-800' :
+                          payment.status === 'CANCELLED' ? 'bg-gray-100 text-gray-800' :
+                          payment.status === 'PARTIALLY_PAID' ? 'bg-blue-100 text-blue-800' :
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {payment.status.replace('_', ' ')}
+                        </span>
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {payment.description || 'Payment'}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {payment.type.replace('_', ' ')} • {payment.method.replace('_', ' ')}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="text-right">
+                          <div className="font-semibold text-gray-900">
+                            ₹{new Intl.NumberFormat('en-IN').format(payment.amount)}
+                          </div>
+                          {payment.dueDate && (
+                            <div className={`text-xs ${
+                              new Date(payment.dueDate) < new Date() ? 'text-red-600' : 'text-gray-500'
+                            }`}>
+                              Due: {new Date(payment.dueDate).toLocaleDateString()}
+                              {new Date(payment.dueDate) < new Date() && ' (Overdue)'}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function PaymentsPage() {
   const [loading, setLoading] = useState(true);
   const [totalRevenue, setTotalRevenue] = useState("-");
@@ -97,6 +326,7 @@ export default function PaymentsPage() {
     date: '',
     notes: ''
   });
+  const [activeTab, setActiveTab] = useState<'all-payments' | 'incomplete-payments'>('all-payments');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -421,9 +651,38 @@ export default function PaymentsPage() {
           </div>
         </div>
 
-     
+        {/* Tab Navigation */}
+        <div className="mb-6">
+          <div className="border-b border-gray-200">
+            <nav className="-mb-px flex space-x-8">
+              <button
+                onClick={() => setActiveTab('all-payments')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'all-payments'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                All Payments
+              </button>
+              <button
+                onClick={() => setActiveTab('incomplete-payments')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'incomplete-payments'
+                    ? 'border-yellow-500 text-yellow-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Incomplete Payments
+              </button>
+            </nav>
+          </div>
+        </div>
 
-        {/* Search and Filter Controls */}
+        {/* Tab Content */}
+        {activeTab === 'all-payments' && (
+          <>
+            {/* Search and Filter Controls */}
         <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
             <select 
@@ -849,23 +1108,29 @@ export default function PaymentsPage() {
             </button>
           </div>
         </div>
-      </div>
 
-           {/* Payment Stats */}
-        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-4 sm:p-6 mb-6">
-          <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">
-            Payment Stats
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {paymentMethods.map((method, index) => (
-              <div key={index} className="text-center p-4 bg-gray-50 rounded-xl">
-                <p className="text-sm text-gray-600">{capitalize.words(method.method.replace("_", " "))}</p>
-                <p className="text-xl sm:text-2xl font-bold text-gray-900">{method.percentage}%</p>
-                <p className="text-xs text-gray-500">{method.count} payments</p>
+            {/* Payment Stats */}
+            <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-4 sm:p-6 mb-6">
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">
+                Payment Stats
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {paymentMethods.map((method, index) => (
+                  <div key={index} className="text-center p-4 bg-gray-50 rounded-xl">
+                    <p className="text-sm text-gray-600">{capitalize.words(method.method.replace("_", " "))}</p>
+                    <p className="text-xl sm:text-2xl font-bold text-gray-900">{method.percentage}%</p>
+                    <p className="text-xs text-gray-500">{method.count} payments</p>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
+            </div>
+          </>
+        )}
+
+        {/* Incomplete Payments Tab */}
+        {activeTab === 'incomplete-payments' && (
+          <IncompletePaymentsTab />
+        )}
 
       {/* View Payment Modal */}
       {showViewModal && selectedPayment && (
@@ -1114,7 +1379,8 @@ export default function PaymentsPage() {
             </div>
           </div>
         </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
