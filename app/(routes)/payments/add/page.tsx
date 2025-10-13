@@ -51,14 +51,13 @@ export default function AddPaymentPage() {
   }, []);
 
   useEffect(() => {
+    fetchProjects();
+  }, [formData.clientId]);
+
+  useEffect(() => {
     if (!projects || !Array.isArray(projects)) return;
-    
-    if (formData.clientId) {
-      setFilteredProjects(projects.filter(project => project.clientId === formData.clientId));
-    } else {
-      setFilteredProjects(projects);
-    }
-  }, [formData.clientId, projects]);
+    setFilteredProjects(projects);
+  }, [projects]);
 
   useEffect(() => {
     if (!clients || !Array.isArray(clients)) return;
@@ -74,18 +73,15 @@ export default function AddPaymentPage() {
   useEffect(() => {
     if (!projects || !Array.isArray(projects)) return;
     
-    const filtered = (formData.clientId ? 
-      projects.filter(project => project.clientId === formData.clientId) : 
-      projects
-    ).filter(project => 
+    const filtered = projects.filter(project => 
       project.name.toLowerCase().includes(projectSearch.toLowerCase())
     );
     setFilteredProjects(filtered);
-  }, [projectSearch, projects, formData.clientId]);
+  }, [projectSearch, projects]);
 
   const fetchClients = async () => {
     try {
-      const response = await axios.get('/api/clients');
+      const response = await axios.get('/api/clients/autocomplete');
       setClients(response.data);
     } catch (error) {
       console.error('Error fetching clients:', error);
@@ -94,7 +90,10 @@ export default function AddPaymentPage() {
 
   const fetchProjects = async () => {
     try {
-      const response = await axios.get('/api/projects');
+      const url = formData.clientId 
+        ? `/api/projects/autocomplete?clientId=${formData.clientId}`
+        : '/api/projects/autocomplete';
+      const response = await axios.get(url);
       setProjects(response.data);
     } catch (error) {
       console.error('Error fetching projects:', error);
