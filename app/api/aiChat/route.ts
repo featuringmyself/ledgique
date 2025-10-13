@@ -787,15 +787,39 @@ async function addPayment(params: AddPaymentParams): Promise<FunctionResult> {
 
 async function showPendingPayments(userId: string): Promise<FunctionResult> {
   try {
-    const pendingPayments = await prisma.payment.aggregate({
+    // Get all projects with their budgets and completed payments
+    const projects = await prisma.project.findMany({
       where: {
-        status: { in: ["PENDING", "PARTIALLY_PAID"] },
-        project: { clerkId: userId }
+        clerkId: userId,
+        budget: { not: null },
       },
-      _sum: { amount: true }
+      select: {
+        id: true,
+        budget: true,
+        payments: {
+          where: {
+            status: 'COMPLETED',
+          },
+          select: {
+            amount: true,
+          },
+        },
+      },
     });
-    const amount = pendingPayments._sum.amount || 0;
-    return { success: true, message: `Total pending payment amount: ₹${amount.toLocaleString()}`, data: { amount } };
+
+    let totalPendingAmount = 0;
+
+    projects.forEach(project => {
+      const budget = Number(project.budget || 0);
+      const paymentsReceived = project.payments.reduce(
+        (sum, payment) => sum + Number(payment.amount), 
+        0
+      );
+      const pendingForProject = Math.max(0, budget - paymentsReceived);
+      totalPendingAmount += pendingForProject;
+    });
+    
+    return { success: true, message: `Total pending payment amount: ₹${totalPendingAmount.toLocaleString()}`, data: { amount: totalPendingAmount } };
   } catch {
     return { success: false, error: 'Failed to fetch pending payments' };
   }

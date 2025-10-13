@@ -71,10 +71,11 @@ export async function GET(request: NextRequest) {
             .map(project => {
                 const totalBudget = project.budget ? Number(project.budget) : 0;
                 const completedPayments = project.payments.filter(p => p.status === 'COMPLETED');
-                const pendingPayments = project.payments.filter(p => p.status !== 'COMPLETED');
+                const nonCompletedPayments = project.payments.filter(p => p.status !== 'COMPLETED');
                 
                 const totalPaid = completedPayments.reduce((sum, payment) => sum + Number(payment.amount), 0);
-                const totalPending = pendingPayments.reduce((sum, payment) => sum + Number(payment.amount), 0);
+                // Pending is now calculated as: total budget - completed payments
+                const totalPending = totalBudget > 0 ? Math.max(0, totalBudget - totalPaid) : 0;
                 const paymentCompletionPercentage = totalBudget > 0 ? (totalPaid / totalBudget) * 100 : 0;
 
                 return {
@@ -85,7 +86,7 @@ export async function GET(request: NextRequest) {
                         totalPending,
                         paymentCompletionPercentage: Math.round(paymentCompletionPercentage),
                         completedPaymentsCount: completedPayments.length,
-                        pendingPaymentsCount: pendingPayments.length,
+                        pendingPaymentsCount: nonCompletedPayments.length,
                         totalPaymentsCount: project._count.payments
                     }
                 };
