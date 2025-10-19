@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { IconPlus, IconFilter, IconSortDescending, IconSearch, IconCalendar, IconDots, IconFileInvoice, IconEye, IconDownload, IconSend, IconCheck } from '@tabler/icons-react';
 import Link from 'next/link';
+import { useCurrency } from '@/components/providers/CurrencyProvider';
 
 interface Invoice {
   id: string;
@@ -27,6 +28,7 @@ interface PaginationInfo {
 }
 
 export default function InvoicePage() {
+  const { currency } = useCurrency();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [pagination, setPagination] = useState<PaginationInfo>({
     currentPage: 1,
@@ -126,15 +128,15 @@ export default function InvoicePage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
         <div className="bg-blue-50 p-3 sm:p-4 rounded-lg border border-blue-100">
           <h3 className="text-xs sm:text-sm font-medium text-blue-600 mb-1">Total Invoiced</h3>
-          <p className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-900">₹{totalAmount.toLocaleString()}</p>
+          <p className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-900">{currency}{totalAmount.toLocaleString()}</p>
         </div>
         <div className="bg-green-50 p-3 sm:p-4 rounded-lg border border-green-100">
           <h3 className="text-xs sm:text-sm font-medium text-green-600 mb-1">Paid Amount</h3>
-          <p className="text-lg sm:text-xl lg:text-2xl font-bold text-green-900">₹{paidAmount.toLocaleString()}</p>
+          <p className="text-lg sm:text-xl lg:text-2xl font-bold text-green-900">{currency}{paidAmount.toLocaleString()}</p>
         </div>
         <div className="bg-yellow-50 p-3 sm:p-4 rounded-lg border border-yellow-100">
           <h3 className="text-xs sm:text-sm font-medium text-yellow-600 mb-1">Pending Amount</h3>
-          <p className="text-lg sm:text-xl lg:text-2xl font-bold text-yellow-900">₹{pendingAmount.toLocaleString()}</p>
+          <p className="text-lg sm:text-xl lg:text-2xl font-bold text-yellow-900">{currency}{pendingAmount.toLocaleString()}</p>
         </div>
         <div className="bg-red-50 p-3 sm:p-4 rounded-lg border border-red-100">
           <h3 className="text-xs sm:text-sm font-medium text-red-600 mb-1">Overdue</h3>
@@ -225,7 +227,7 @@ export default function InvoicePage() {
                   </td>
                   <td className="p-4">
                     <div className="font-medium text-gray-900">
-                      ₹{invoice.totalAmount.toLocaleString()}
+                      {currency}{invoice.totalAmount.toLocaleString()}
                     </div>
                   </td>
                   <td className="p-4">
@@ -308,7 +310,7 @@ export default function InvoicePage() {
                 </div>
                 <div>
                   <div className="text-gray-500">Amount</div>
-                  <div className="font-medium text-gray-900">₹{invoice.totalAmount.toLocaleString()}</div>
+                  <div className="font-medium text-gray-900">{currency}{invoice.totalAmount.toLocaleString()}</div>
                 </div>
                 <div>
                   <div className="text-gray-500">Project</div>

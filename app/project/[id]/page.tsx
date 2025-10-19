@@ -4,6 +4,7 @@ import { useRouter, useParams } from "next/navigation";
 import axios from "axios";
 import { IconArrowLeft, IconCalendar, IconUser, IconBriefcase, IconCurrencyDollar, IconEdit, IconAlertTriangle, IconCheck, IconClock, IconX, IconChevronDown, IconChevronRight } from "@tabler/icons-react";
 import Link from "next/link";
+import { useCurrency } from '@/components/providers/CurrencyProvider';
 
 interface Payment {
   id: string;
@@ -49,6 +50,7 @@ export default function ProjectViewPage() {
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [isPaymentSectionExpanded, setIsPaymentSectionExpanded] = useState(false);
+  const { currency } = useCurrency();
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -179,7 +181,7 @@ export default function ProjectViewPage() {
                 <label className="text-sm font-medium text-gray-500 mb-2 block">Budget</label>
                 <div className="flex items-center gap-2">
                   <IconCurrencyDollar size={16} className="text-gray-400" />
-                  <span className="text-gray-900 font-medium">₹{project.budget.toLocaleString()}</span>
+                  <span className="text-gray-900 font-medium">{currency}{project.budget.toLocaleString()}</span>
                 </div>
               </div>
             )}
@@ -236,7 +238,7 @@ export default function ProjectViewPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-gray-500">
-                    ₹{project.paymentSummary.totalPaid.toLocaleString()} / ₹{project.paymentSummary.totalBudget.toLocaleString()}
+                    {currency}{project.paymentSummary.totalPaid.toLocaleString()} / {currency}{project.paymentSummary.totalBudget.toLocaleString()}
                   </span>
                   {isPaymentSectionExpanded ? (
                     <IconChevronDown size={20} className="text-gray-400" />
@@ -254,19 +256,19 @@ export default function ProjectViewPage() {
                 <div className="bg-gray-50 rounded-lg p-4">
                   <div className="text-sm text-gray-600 mb-1">Total Budget</div>
                   <div className="text-lg font-semibold text-gray-900">
-                    ₹{project.paymentSummary.totalBudget.toLocaleString()}
+                    {currency}{project.paymentSummary.totalBudget.toLocaleString()}
                   </div>
                 </div>
                 <div className="bg-gray-50 rounded-lg p-4">
                   <div className="text-sm text-gray-600 mb-1">Paid</div>
                   <div className="text-lg font-semibold text-gray-900">
-                    ₹{project.paymentSummary.totalPaid.toLocaleString()}
+                    {currency}{project.paymentSummary.totalPaid.toLocaleString()}
                   </div>
                 </div>
                 <div className="bg-gray-50 rounded-lg p-4">
                   <div className="text-sm text-gray-600 mb-1">Pending</div>
                   <div className="text-lg font-semibold text-gray-900">
-                    ₹{project.paymentSummary.totalPending.toLocaleString()}
+                    {currency}{project.paymentSummary.totalPending.toLocaleString()}
                   </div>
                 </div>
                 <div className="bg-gray-50 rounded-lg p-4">
@@ -326,7 +328,7 @@ export default function ProjectViewPage() {
                         </span>
                         <div className="text-right">
                           <div className="text-sm font-medium text-gray-900">
-                            ₹{payment.amount.toLocaleString()}
+                            {currency}{payment.amount.toLocaleString()}
                           </div>
                           <div className="text-xs text-gray-400">
                             {new Date(payment.date).toLocaleDateString()}

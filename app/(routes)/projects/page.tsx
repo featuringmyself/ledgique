@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { IconPlus, IconFilter, IconSortDescending, IconSearch, IconCalendar, IconDots, IconCurrencyDollar, IconEye, IconEdit, IconTrash } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
+import { useCurrency } from '@/components/providers/CurrencyProvider';
 
 interface Project {
   id: string;
@@ -31,6 +32,7 @@ interface PaginationInfo {
 }
 
 export default function ProjectsPage() {
+  const { currency } = useCurrency();
   const [projects, setProjects] = useState<Project[]>([]);
   const [pagination, setPagination] = useState<PaginationInfo>({
     currentPage: 1,
@@ -123,7 +125,7 @@ export default function ProjectsPage() {
         </div>
         <div className="bg-orange-50 p-3 sm:p-4 rounded-lg border border-orange-100">
           <h3 className="text-xs sm:text-sm font-medium text-orange-600 mb-1">Total Budget</h3>
-          <p className="text-lg sm:text-2xl font-bold text-orange-900">₹{totalBudget.toLocaleString()}</p>
+          <p className="text-lg sm:text-2xl font-bold text-orange-900">{currency}{totalBudget.toLocaleString()}</p>
         </div>
       </div>
 
@@ -224,7 +226,7 @@ export default function ProjectsPage() {
                     {project.budget ? (
                       <div className="flex items-center gap-1 font-medium text-gray-900">
                         <IconCurrencyDollar size={16} className="text-gray-400" />
-                        ₹{new Intl.NumberFormat('en-IN').format(project.budget)}
+                        {currency}{new Intl.NumberFormat('en-IN').format(project.budget)}
                       </div>
                     ) : (
                       <span className="text-sm text-gray-400">-</span>
@@ -377,7 +379,7 @@ export default function ProjectsPage() {
                 {project.budget ? (
                   <div className="flex items-center gap-1 font-medium text-gray-900">
                     <IconCurrencyDollar size={14} className="text-gray-400" />
-                    ₹{new Intl.NumberFormat('en-IN').format(project.budget)}
+                    {currency}{new Intl.NumberFormat('en-IN').format(project.budget)}
                   </div>
                 ) : (
                   <span className="text-sm text-gray-400">-</span>

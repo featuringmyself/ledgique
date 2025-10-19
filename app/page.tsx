@@ -8,6 +8,7 @@ import {
   setCachedDashboardData, 
   hasDataChanged
 } from '@/lib/dashboardCache';
+import { useCurrency } from '@/components/providers/CurrencyProvider';
 
 // Chart.js imports - lazy loaded
 const Line = dynamic(() => import('react-chartjs-2').then((mod) => mod.Line), { 
@@ -50,6 +51,8 @@ ChartJS.register(
 );
 
 export default function Home() {
+  const { currency } = useCurrency();
+  
   // Critical data states
   const [criticalDataLoading, setCriticalDataLoading] = useState(true)
   const [projectCount, setProjectCount] = useState("-")
@@ -211,6 +214,7 @@ export default function Home() {
 
     loadDashboardData();
   }, []);
+
   if (criticalDataLoading) {
     return (
       <div className="flex h-full w-full flex-1 flex-col gap-2 rounded-tl-2xl border border-neutral-200 bg-gray-50 p-2 md:p-6 dark:border-neutral-700 dark:bg-neutral-900">
@@ -299,17 +303,19 @@ export default function Home() {
       </div>
     );
   }
+
   const fmt = Intl.NumberFormat('en', { notation: 'compact' });
+  
   return (
     <div className="flex h-full w-full flex-1 flex-col gap-2 rounded-tl-2xl border border-neutral-200 bg-gray-50 p-2 md:p-6 dark:border-neutral-700 dark:bg-neutral-900">
       <div className="space-y-6">
         {/* Top Stats Cards */}
         <div className="grid md:grid-cols-4 grid-cols-2 gap-6">
           {[
-            { title: "Total Revenue", value: `₹${revenue === '-' ? revenue : fmt.format(Number(revenue))}`, change: revenueChange, bg: "bg-[#E3F5FF]", border: "border-blue-100/50" },
+            { title: "Total Revenue", value: `${currency}${revenue === '-' ? revenue : fmt.format(Number(revenue))}`, change: revenueChange, bg: "bg-[#E3F5FF]", border: "border-blue-100/50" },
             { title: "Active Projects", value: projectCount, change: projectChange, bg: "bg-[#E5ECF6]", border: "border-purple-100/50" },
             { title: "Active Clients", value: clientCount, change: clientChange, bg: "bg-[#E3F5FF]", border: "border-blue-100/50" },
-            { title: "Pending Payments", value: `₹${typeof pendingAmount === 'string' && pendingAmount !== '-' ? fmt.format(Number(pendingAmount)) : fmt.format(Number(pendingAmount))}`, change: pendingChange, bg: "bg-[#E5ECF6]", border: "border-purple-100/50" }
+            { title: "Pending Payments", value: `${currency}${typeof pendingAmount === 'string' && pendingAmount !== '-' ? fmt.format(Number(pendingAmount)) : fmt.format(Number(pendingAmount))}`, change: pendingChange, bg: "bg-[#E5ECF6]", border: "border-purple-100/50" }
           ].map((card, index) => (
             <div key={index} className={`${card.bg} md:p-6 p-3 rounded-xl border ${card.border} relative`}>
               <div className="flex items-center justify-between mb-3">
@@ -456,8 +462,6 @@ export default function Home() {
 
         {/* Bottom Section */}
         <div className="grid md:grid-cols-4 grid-cols-1 gap-6">
-
-
           <div className="bg-[#F7F9FB] p-6 rounded-3xl shadow-sm border border-gray-100">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-gray-900 font-semibold">Payment Methods</h3>
@@ -670,7 +674,7 @@ export default function Home() {
                       </p>
                       {activity.amount && (
                         <p className="text-xs text-green-600 font-medium">
-                          ₹{activity.amount}
+                          {currency}{activity.amount}
                         </p>
                       )}
                     </div>
@@ -690,4 +694,3 @@ export default function Home() {
     </div>
   );
 }
-

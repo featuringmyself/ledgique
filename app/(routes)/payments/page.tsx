@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import capitalize from "capitalize";
+import { useCurrency } from '@/components/providers/CurrencyProvider';
 import axios from "axios";
 import {
   IconTrendingUp,
@@ -96,6 +97,7 @@ interface ProjectWithIncompletePayments {
 }
 
 function IncompletePaymentsTab() {
+  const { currency } = useCurrency();
   const [incompletePaymentProjects, setIncompletePaymentProjects] = useState<ProjectWithIncompletePayments[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -158,19 +160,19 @@ function IncompletePaymentsTab() {
           <div className="bg-white rounded-lg p-3 border border-yellow-200">
             <div className="text-yellow-600 font-medium">Total Budget</div>
             <div className="text-xl font-bold text-gray-900">
-              ₹{incompletePaymentProjects.reduce((sum, p) => sum + p.paymentSummary.totalBudget, 0).toLocaleString()}
+              {currency}{incompletePaymentProjects.reduce((sum, p) => sum + p.paymentSummary.totalBudget, 0).toLocaleString()}
             </div>
           </div>
           <div className="bg-white rounded-lg p-3 border border-yellow-200">
             <div className="text-yellow-600 font-medium">Total Paid</div>
             <div className="text-xl font-bold text-green-600">
-              ₹{incompletePaymentProjects.reduce((sum, p) => sum + p.paymentSummary.totalPaid, 0).toLocaleString()}
+              {currency}{incompletePaymentProjects.reduce((sum, p) => sum + p.paymentSummary.totalPaid, 0).toLocaleString()}
             </div>
           </div>
           <div className="bg-white rounded-lg p-3 border border-yellow-200">
             <div className="text-yellow-600 font-medium">Total Pending</div>
             <div className="text-xl font-bold text-red-600">
-              ₹{incompletePaymentProjects.reduce((sum, p) => sum + p.paymentSummary.totalPending, 0).toLocaleString()}
+              {currency}{incompletePaymentProjects.reduce((sum, p) => sum + p.paymentSummary.totalPending, 0).toLocaleString()}
             </div>
           </div>
         </div>
@@ -220,19 +222,19 @@ function IncompletePaymentsTab() {
               <div>
                 <div className="text-gray-500 text-sm mb-1">Total Budget</div>
                 <div className="font-semibold text-gray-900">
-                  ₹{new Intl.NumberFormat('en-IN').format(project.paymentSummary.totalBudget)}
+                  {currency}{new Intl.NumberFormat('en-IN').format(project.paymentSummary.totalBudget)}
                 </div>
               </div>
               <div>
                 <div className="text-gray-500 text-sm mb-1">Paid</div>
                 <div className="font-semibold text-green-600">
-                  ₹{new Intl.NumberFormat('en-IN').format(project.paymentSummary.totalPaid)}
+                  {currency}{new Intl.NumberFormat('en-IN').format(project.paymentSummary.totalPaid)}
                 </div>
               </div>
               <div>
                 <div className="text-gray-500 text-sm mb-1">Pending</div>
                 <div className="font-semibold text-red-600">
-                  ₹{new Intl.NumberFormat('en-IN').format(project.paymentSummary.totalPending)}
+                  {currency}{new Intl.NumberFormat('en-IN').format(project.paymentSummary.totalPending)}
                 </div>
               </div>
             </div>
@@ -265,7 +267,7 @@ function IncompletePaymentsTab() {
                       <div className="flex items-center gap-3">
                         <div className="text-right">
                           <div className="font-semibold text-gray-900">
-                            ₹{new Intl.NumberFormat('en-IN').format(payment.amount)}
+                            {currency}{new Intl.NumberFormat('en-IN').format(payment.amount)}
                           </div>
                           {payment.dueDate && (
                             <div className={`text-xs ${
@@ -290,6 +292,7 @@ function IncompletePaymentsTab() {
 }
 
 export default function PaymentsPage() {
+  const { currency } = useCurrency();
   const [loading, setLoading] = useState(true);
   const [totalRevenue, setTotalRevenue] = useState("-");
   const [pendingAmount, setPendingAmount] = useState("-");
@@ -578,7 +581,7 @@ export default function PaymentsPage() {
             </h3>
             <div className="flex items-end justify-between">
               <p className="text-2xl sm:text-4xl font-bold text-gray-900">
-                ₹{fmt.format(Number(totalRevenue))}
+                {currency}{fmt.format(Number(totalRevenue))}
               </p>
               <div className={`flex items-center text-sm font-medium ${
                 revenueChange.startsWith('+') ? 'text-green-600' : 'text-red-500'
@@ -598,7 +601,7 @@ export default function PaymentsPage() {
             </h3>
             <div className="flex items-end justify-between">
               <p className="text-2xl sm:text-4xl font-bold text-gray-900">
-                ₹{fmt.format(Number(pendingAmount))}
+                {currency}{fmt.format(Number(pendingAmount))}
               </p>
               <div className={`flex items-center text-sm font-medium ${
                 pendingChange.startsWith('+') ? 'text-red-500' : 'text-green-600'
@@ -618,7 +621,7 @@ export default function PaymentsPage() {
             </h3>
             <div className="flex items-end justify-between">
               <p className="text-2xl sm:text-4xl font-bold text-gray-900">
-                ₹{fmt.format(Number(monthlyRevenue))}
+                {currency}{fmt.format(Number(monthlyRevenue))}
               </p>
               <div className={`flex items-center text-sm font-medium ${
                 monthlyChange.startsWith('+') ? 'text-green-600' : 'text-red-500'
@@ -636,7 +639,7 @@ export default function PaymentsPage() {
             <h3 className="text-gray-600 text-sm font-medium mb-3">Overdue</h3>
             <div className="flex items-end justify-between">
               <p className="text-2xl sm:text-4xl font-bold text-gray-900">
-                ₹{fmt.format(Number(overDueAmount))}
+                {currency}{fmt.format(Number(overDueAmount))}
               </p>
               <div className={`flex items-center text-sm font-medium ${
                 overdueChange.startsWith('+') ? 'text-red-500' : 'text-green-600'
@@ -781,7 +784,7 @@ export default function PaymentsPage() {
                       {payment.project.name}
                     </td>
                     <td className="py-4 px-2 font-semibold text-gray-900">
-                      ₹{payment.amount.toLocaleString()}
+                      {currency}{payment.amount.toLocaleString()}
                     </td>
                     <td className="py-4 px-2">
                       <div className="flex items-center gap-2 text-gray-600">
@@ -999,7 +1002,7 @@ export default function PaymentsPage() {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600">Amount</span>
-                    <span className="text-lg font-semibold text-gray-900">₹{payment.amount.toLocaleString()}</span>
+                    <span className="text-lg font-semibold text-gray-900">{currency}{payment.amount.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600">Method</span>
@@ -1154,7 +1157,7 @@ export default function PaymentsPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Amount</label>
-                  <p className="text-xl sm:text-2xl font-bold text-gray-900">₹{selectedPayment.amount.toLocaleString()}</p>
+                  <p className="text-xl sm:text-2xl font-bold text-gray-900">{currency}{selectedPayment.amount.toLocaleString()}</p>
                 </div>
               </div>
               
@@ -1352,7 +1355,7 @@ export default function PaymentsPage() {
                   <strong>Payment ID:</strong> <span className="break-all">{selectedPayment.id}</span>
                 </p>
                 <p className="text-sm text-gray-700">
-                  <strong>Amount:</strong> ₹{selectedPayment.amount.toLocaleString()}
+                  <strong>Amount:</strong> {currency}{selectedPayment.amount.toLocaleString()}
                 </p>
                 <p className="text-sm text-gray-700">
                   <strong>Client:</strong> {selectedPayment.client.name}

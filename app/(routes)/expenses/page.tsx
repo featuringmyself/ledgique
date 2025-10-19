@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { IconPlus, IconFilter, IconSortDescending, IconSearch, IconCalendar, IconDots, IconCurrencyDollar, IconReceipt } from '@tabler/icons-react';
 import Link from 'next/link';
+import { useCurrency } from '@/components/providers/CurrencyProvider';
 
 interface Expense {
   id: string;
@@ -26,6 +27,7 @@ interface PaginationInfo {
 }
 
 export default function ExpensesPage() {
+  const { currency } = useCurrency();
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [pagination, setPagination] = useState<PaginationInfo>({
     currentPage: 1,
@@ -98,11 +100,11 @@ export default function ExpensesPage() {
       <div className="grid grid-cols-4 gap-4 mb-6">
         <div className="bg-red-50 p-4 rounded-lg border border-red-100">
           <h3 className="text-sm font-medium text-red-600 mb-1">Total Expenses</h3>
-          <p className="text-2xl font-bold text-red-900">₹{totalExpenses.toLocaleString()}</p>
+          <p className="text-2xl font-bold text-red-900">{currency}{totalExpenses.toLocaleString()}</p>
         </div>
         <div className="bg-orange-50 p-4 rounded-lg border border-orange-100">
           <h3 className="text-sm font-medium text-orange-600 mb-1">This Month</h3>
-          <p className="text-2xl font-bold text-orange-900">₹{thisMonthExpenses.toLocaleString()}</p>
+          <p className="text-2xl font-bold text-orange-900">{currency}{thisMonthExpenses.toLocaleString()}</p>
         </div>
         <div className="bg-purple-50 p-4 rounded-lg border border-purple-100">
           <h3 className="text-sm font-medium text-purple-600 mb-1">Total Records</h3>
@@ -111,7 +113,7 @@ export default function ExpensesPage() {
         <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
           <h3 className="text-sm font-medium text-blue-600 mb-1">Top Category</h3>
           <p className="text-lg font-bold text-blue-900">{topCategory ? topCategory[0].replace('_', ' ') : 'N/A'}</p>
-          <p className="text-sm text-blue-700">{topCategory ? `₹${topCategory[1].toLocaleString()}` : ''}</p>
+          <p className="text-sm text-blue-700">{topCategory ? `{currency}${topCategory[1].toLocaleString()}` : ''}</p>
         </div>
       </div>
 
@@ -188,7 +190,7 @@ export default function ExpensesPage() {
                 </td>
                 <td className="p-4">
                   <div className="flex items-center gap-1 font-medium text-gray-900">
-                    ₹{expense.amount.toLocaleString()}
+                    {currency}{expense.amount.toLocaleString()}
                   </div>
                 </td>
                 <td className="p-4">

@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { IconPlus, IconFilter, IconSortDescending, IconSearch, IconCalendar, IconDots, IconWallet, IconClock, IconCheck, IconX } from '@tabler/icons-react';
 import Link from 'next/link';
+import { useCurrency } from '@/components/providers/CurrencyProvider';
 
 interface Retainer {
   id: string;
@@ -27,6 +28,7 @@ interface PaginationInfo {
 }
 
 export default function RetainersPage() {
+  const { currency } = useCurrency();
   const [retainers, setRetainers] = useState<Retainer[]>([]);
   const [pagination, setPagination] = useState<PaginationInfo>({
     currentPage: 1,
@@ -110,7 +112,7 @@ export default function RetainersPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
         <div className="bg-blue-50 p-3 sm:p-4 rounded-lg border border-blue-100">
           <h3 className="text-xs sm:text-sm font-medium text-blue-600 mb-1">Total Value</h3>
-          <p className="text-lg sm:text-2xl font-bold text-blue-900">₹{totalRetainerValue.toLocaleString()}</p>
+          <p className="text-lg sm:text-2xl font-bold text-blue-900">{currency}{totalRetainerValue.toLocaleString()}</p>
         </div>
         <div className="bg-purple-50 p-3 sm:p-4 rounded-lg border border-purple-100">
           <h3 className="text-xs sm:text-sm font-medium text-purple-600 mb-1">Active Retainers</h3>
@@ -204,11 +206,11 @@ export default function RetainersPage() {
                   </td>
                   <td className="p-4">
                     <div className="font-medium text-gray-900">
-                      ₹{retainer.totalAmount.toLocaleString()}
+                      {currency}{retainer.totalAmount.toLocaleString()}
                     </div>
                     {retainer.hourlyRate && (
                       <div className="text-sm text-gray-500">
-                        ₹{retainer.hourlyRate}/hr
+                        {currency}{retainer.hourlyRate}/hr
                       </div>
                     )}
                   </td>
@@ -281,11 +283,11 @@ export default function RetainersPage() {
                     </td>
                     <td className="p-3">
                       <div className="font-medium text-gray-900 text-sm">
-                        ₹{retainer.totalAmount.toLocaleString()}
+                        {currency}{retainer.totalAmount.toLocaleString()}
                       </div>
                       {retainer.hourlyRate && (
                         <div className="text-xs text-gray-500">
-                          ₹{retainer.hourlyRate}/hr
+                          {currency}{retainer.hourlyRate}/hr
                         </div>
                       )}
                     </td>
@@ -345,9 +347,9 @@ export default function RetainersPage() {
                 
                 <div>
                   <div className="text-gray-500 text-xs font-medium mb-1">Amount</div>
-                  <div className="font-medium text-gray-900">₹{retainer.totalAmount.toLocaleString()}</div>
+                  <div className="font-medium text-gray-900">{currency}{retainer.totalAmount.toLocaleString()}</div>
                   {retainer.hourlyRate && (
-                    <div className="text-gray-500">₹{retainer.hourlyRate}/hr</div>
+                    <div className="text-gray-500">{currency}{retainer.hourlyRate}/hr</div>
                   )}
                 </div>
                 
