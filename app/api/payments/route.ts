@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
         skip,
         take: limit,
       }),
-      prisma.payment.count({
+      prisma.payment.count({  
         where: { 
           project: { clerkId: userId }
         }
@@ -67,7 +67,8 @@ export async function POST(request: NextRequest) {
       method, 
       status, 
       date, 
-      dueDate, 
+      dueDate,
+      receiptUrl, 
       projectId, 
       clientId 
     } = await request.json();
@@ -79,6 +80,7 @@ export async function POST(request: NextRequest) {
         type,
         method,
         status,
+        receiptUrl,
         date: new Date(date),
         dueDate: dueDate ? new Date(dueDate) : null,
         projectId,
@@ -89,6 +91,8 @@ export async function POST(request: NextRequest) {
         project: { select: { name: true } }
       }
     });
+
+    console.log(payment)
 
     return NextResponse.json(payment);
   } catch (error) {

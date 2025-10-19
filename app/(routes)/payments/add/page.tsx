@@ -33,13 +33,14 @@ export default function AddPaymentPage() {
   const [showClientDropdown, setShowClientDropdown] = useState(false);
   const [showProjectDropdown, setShowProjectDropdown] = useState(false);
   const [loading, setLoading] = useState(false);
-  
+
   const [formData, setFormData] = useState({
     amount: "",
     description: "",
     type: "FULL_PAYMENT",
     method: "BANK_TRANSFER",
-    status: "COMPLETED",
+    status: "PENDING",
+    receiptUrl: "",
     date: new Date().toISOString().split('T')[0],
     clientId: "",
     projectId: "",
@@ -61,9 +62,9 @@ export default function AddPaymentPage() {
 
   useEffect(() => {
     if (!clients || !Array.isArray(clients)) return;
-    
+
     setFilteredClients(
-      clients.filter(client => 
+      clients.filter(client =>
         client.name.toLowerCase().includes(clientSearch.toLowerCase()) ||
         (client.company && client.company.toLowerCase().includes(clientSearch.toLowerCase()))
       )
@@ -72,8 +73,8 @@ export default function AddPaymentPage() {
 
   useEffect(() => {
     if (!projects || !Array.isArray(projects)) return;
-    
-    const filtered = projects.filter(project => 
+
+    const filtered = projects.filter(project =>
       project.name.toLowerCase().includes(projectSearch.toLowerCase())
     );
     setFilteredProjects(filtered);
@@ -90,7 +91,7 @@ export default function AddPaymentPage() {
 
   const fetchProjects = async () => {
     try {
-      const url = formData.clientId 
+      const url = formData.clientId
         ? `/api/projects/autocomplete?clientId=${formData.clientId}`
         : '/api/projects/autocomplete';
       const response = await axios.get(url);
@@ -118,7 +119,7 @@ export default function AddPaymentPage() {
   };
 
   return (
-    <div 
+    <div
       className="p-3 sm:p-6 bg-white w-full min-h-screen flex flex-col items-center justify-center"
       onClick={() => {
         setShowClientDropdown(false);
@@ -220,8 +221,8 @@ export default function AddPaymentPage() {
                       className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
                       onClick={() => {
                         const selectedProject = projects.find(p => p.id === project.id);
-                        setFormData({ 
-                          ...formData, 
+                        setFormData({
+                          ...formData,
                           projectId: project.id,
                           clientId: selectedProject ? selectedProject.clientId : formData.clientId
                         });
@@ -265,6 +266,29 @@ export default function AddPaymentPage() {
                 <option value="MILESTONE">Milestone</option>
               </select>
             </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Payment Status</label>
+              <select
+                value={formData.status}
+                onChange={(e) => setFormData({ ...formData, status: e.target.value })} 
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"  
+              >
+              <option value="PENDING">Pending</option>
+              <option value="COMPLETED">Completed</option>
+              <option value="FAILED">Failed</option>
+              <option value="CANCELLED">Cancelled</option>
+              <option value="REFUNDED">Refunded</option>
+              <option value="PARTIALLY_PAID">Partially Paid</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Receipt URL</label>
+              <Input 
+                value={formData.receiptUrl}
+                onChange={(e)=> setFormData({ ...formData, receiptUrl: e.target.value})} 
+                placeholder="https://receipt.url/123/23"
+              />
+              </div>
           </div>
           <div className="mt-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
