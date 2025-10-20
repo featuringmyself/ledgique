@@ -30,7 +30,6 @@ export default function CurrencyProvider({ children }: { children: React.ReactNo
         headers: {
           'Content-Type': 'application/json',
         },
-        cache: 'no-store', // Ensure fresh data
       });
 
       if (response.ok) {
