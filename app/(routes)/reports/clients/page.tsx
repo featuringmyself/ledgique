@@ -87,7 +87,7 @@ function BarChart({ data, formatValue, height = 280 }: BarChartProps) {
 
   return (
     <div className="w-full py-6 overflow-x-auto">
-      <div className="relative  min-w-[600px]">
+      <div className="relative min-w-[600px]">
         <div className="absolute left-0 top-0 bottom-0 w-16 flex flex-col justify-between text-xs text-gray-500 dark:text-gray-400 pb-12">
           {ticks.reverse().map((tick, i) => (
             <span key={i}>{formatValue(tick)}</span>
@@ -215,7 +215,7 @@ export default function ClientReportsPage() {
   }
 
   return (
-    <div className="flex w-full flex-1 flex-col gap-2 rounded-tl-2xl border border-neutral-200 bg-gray-50 p-2 md:p-6 dark:border-neutral-700 dark:bg-neutral-900">
+    <div className="flex w-full flex-1 flex-col gap-2 rounded-tl-2xl border border-neutral-200 bg-gray-50 p-2 md:p-6 dark:border-neutral-700 dark:bg-neutral-900 max-w-screen">
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -235,7 +235,7 @@ export default function ClientReportsPage() {
 
         {/* Filters */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 dark:bg-neutral-800 dark:border-neutral-700">
-          <div className="flex flex-col sm:flex-row gap-4 items-end">
+          <div className="flex  sm:flex-row gap-4 items-end">
             <div className="flex-1">
               <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-300">
                 Start Date
