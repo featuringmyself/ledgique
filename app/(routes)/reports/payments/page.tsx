@@ -75,20 +75,20 @@ function BarChart({ data, formatValue, height = 280 }: BarChartProps) {
   const getColor = (index: number) => {
     // Very subtle muted slate-gray shades - barely different from each other
     const subtleShades = [
-'bg-blue-300 hover:bg-blue-400 dark:bg-blue-600 dark:hover:bg-blue-500',
-'bg-purple-200 hover:bg-purple-300 dark:bg-purple-700 dark:hover:bg-purple-600',
-'bg-pink-300 hover:bg-pink-400 dark:bg-pink-600 dark:hover:bg-pink-500',
-'bg-green-300 hover:bg-green-400 dark:bg-green-600 dark:hover:bg-green-500',
-'bg-orange-400 hover:bg-orange-500 dark:bg-orange-500 dark:hover:bg-orange-400',
-'bg-rose-200 hover:bg-rose-300 dark:bg-rose-700 dark:hover:bg-rose-600',
-'bg-indigo-300 hover:bg-indigo-400 dark:bg-indigo-600 dark:hover:bg-indigo-500',
+      'bg-blue-300 hover:bg-blue-400 dark:bg-blue-600 dark:hover:bg-blue-500',
+      'bg-purple-200 hover:bg-purple-300 dark:bg-purple-700 dark:hover:bg-purple-600',
+      'bg-pink-300 hover:bg-pink-400 dark:bg-pink-600 dark:hover:bg-pink-500',
+      'bg-green-300 hover:bg-green-400 dark:bg-green-600 dark:hover:bg-green-500',
+      'bg-orange-400 hover:bg-orange-500 dark:bg-orange-500 dark:hover:bg-orange-400',
+      'bg-rose-200 hover:bg-rose-300 dark:bg-rose-700 dark:hover:bg-rose-600',
+      'bg-indigo-300 hover:bg-indigo-400 dark:bg-indigo-600 dark:hover:bg-indigo-500',
 
     ];
     return subtleShades[index % subtleShades.length];
   };
 
   return (
-    <div className="w-full overflow-x-auto">
+    <div className="w-full overflow-x-auto py-6">
       <div className="relative min-w-[600px]">
         <div className="absolute left-0 top-0 bottom-0 w-16 flex flex-col justify-between text-xs text-gray-500 dark:text-gray-400 pb-12">
           {ticks.reverse().map((tick, i) => (
@@ -118,7 +118,7 @@ function BarChart({ data, formatValue, height = 280 }: BarChartProps) {
           <div className="absolute inset-0 flex items-end justify-between px-4 pb-12 gap-2">
             {data.map((item, index) => {
               const barHeight = getBarHeight(item.value);
-              
+
               return (
                 <div
                   key={`bar-${item.label}-${index}`}
@@ -321,10 +321,10 @@ export default function PaymentReportsPage() {
 
         {/* Time Series Chart */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 dark:bg-neutral-800 dark:border-neutral-700">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 dark:text-white">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4 dark:text-white ">
             Revenue Trend
           </h3>
-          <BarChart 
+          <BarChart
             data={reportData.timeSeries.map(item => ({
               label: formatPeriod(item.period),
               value: item.revenue,
@@ -340,7 +340,7 @@ export default function PaymentReportsPage() {
             <h3 className="text-lg font-semibold text-gray-900 mb-4 dark:text-white">
               Payment Methods
             </h3>
-            <BarChart 
+            <BarChart
               data={reportData.methodBreakdown.map(item => ({
                 label: item.method.replace(/_/g, ' ').slice(0, 10),
                 value: item.total,

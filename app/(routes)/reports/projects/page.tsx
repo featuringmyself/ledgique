@@ -98,7 +98,7 @@ function BarChart({ data, formatValue, height = 280 }: BarChartProps) {
   };
 
   return (
-    <div className="w-full overflow-x-auto">
+    <div className="w-full py-6 overflow-x-auto">
       <div className="relative min-w-[600px]">
         <div className="absolute left-0 top-0 bottom-0 w-16 flex flex-col justify-between text-xs text-gray-500 dark:text-gray-400 pb-12">
           {ticks.reverse().map((tick, i) => (
