@@ -251,7 +251,7 @@ export default function GrowthReportsPage() {
   }
 
   return (
-    <div className="flex w-full flex-1 flex-col gap-2 rounded-tl-2xl border border-neutral-200 bg-gray-50 p-2 md:p-6 dark:border-neutral-700 dark:bg-neutral-900">
+    <div className="flex w-full flex-1 flex-col gap-2 rounded-tl-2xl border border-neutral-200 bg-gray-50 p-2 md:p-6 dark:border-neutral-700 dark:bg-neutral-900 max-w-screen">
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -281,7 +281,7 @@ export default function GrowthReportsPage() {
         </div>
 
         {/* Growth Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           <div className="bg-gradient-to-br from-blue-50 to-cyan-50 p-4 sm:p-6 rounded-3xl border border-blue-100/50">
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-gray-600 text-sm font-medium">Revenue</h3>
@@ -296,7 +296,7 @@ export default function GrowthReportsPage() {
               ) : (
                 <IconTrendingDown size={16} className="mr-1" />
               )}
-              {formatGrowth(reportData.growth.revenue)} vs previous period
+              {formatGrowth(reportData.growth.revenue)} <span className="hidden md:flex ">vs previous period</span>
             </div>
           </div>
 
@@ -314,7 +314,7 @@ export default function GrowthReportsPage() {
               ) : (
                 <IconTrendingDown size={16} className="mr-1" />
               )}
-              {formatGrowth(reportData.growth.clients)} vs previous period
+              {formatGrowth(reportData.growth.clients)} <span className="hidden md:flex ">vs previous period</span>
             </div>
           </div>
 
@@ -332,7 +332,7 @@ export default function GrowthReportsPage() {
               ) : (
                 <IconTrendingDown size={16} className="mr-1" />
               )}
-              {formatGrowth(reportData.growth.projects)} vs previous period
+              {formatGrowth(reportData.growth.projects)} <span className="hidden md:flex ">vs previous period</span>
             </div>
           </div>
 
@@ -350,15 +350,15 @@ export default function GrowthReportsPage() {
               ) : (
                 <IconTrendingDown size={16} className="mr-1" />
               )}
-              {formatGrowth(reportData.growth.profit)} vs previous period
+              {formatGrowth(reportData.growth.profit)} <span className="hidden md:flex ">vs previous period</span>
             </div>
           </div>
         </div>
 
         {/* Monthly Trends */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 dark:bg-neutral-800 dark:border-neutral-700">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+          <div className="flex md:flex-row flex-col items-center justify-between mb-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white leading-tight">
               Monthly Revenue & Profit Trends
             </h3>
             <div className="flex items-center gap-4">
