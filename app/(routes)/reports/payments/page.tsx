@@ -171,11 +171,18 @@ export default function PaymentReportsPage() {
     const date = new Date();
     return date.toISOString().split('T')[0];
   });
+  const [tempStartDate, setTempStartDate] = useState(startDate);
+  const [tempEndDate, setTempEndDate] = useState(endDate);
   const [groupBy, setGroupBy] = useState('month');
 
   useEffect(() => {
     fetchReportData();
   }, [startDate, endDate, groupBy]);
+
+  const handleDateChange = () => {
+    setStartDate(tempStartDate);
+    setEndDate(tempEndDate);
+  };
 
   const fetchReportData = async () => {
     try {
@@ -254,8 +261,12 @@ export default function PaymentReportsPage() {
               </label>
               <Input
                 type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
+                value={tempStartDate}
+                onChange={(e) => setTempStartDate(e.target.value)}
+                onBlur={handleDateChange}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleDateChange();
+                }}
                 className="w-full"
               />
             </div>
@@ -265,8 +276,12 @@ export default function PaymentReportsPage() {
               </label>
               <Input
                 type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
+                value={tempEndDate}
+                onChange={(e) => setTempEndDate(e.target.value)}
+                onBlur={handleDateChange}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleDateChange();
+                }}
                 className="w-full"
               />
             </div>
@@ -397,4 +412,3 @@ export default function PaymentReportsPage() {
     </div>
   );
 }
-
