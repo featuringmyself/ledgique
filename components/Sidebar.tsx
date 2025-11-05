@@ -12,7 +12,8 @@ import {
     IconWallet,
     IconReceipt,
     IconHelpCircle,
-    IconNotebook
+    IconNotebook,
+    IconChartBar
 } from "@tabler/icons-react";
 import { motion } from "motion/react";
 import logo from "@/public/logo.png"
@@ -151,6 +152,38 @@ export function Sidebar({ children }: { children?: React.ReactNode }) {
                     label: "Add Note",
                     href: "/notes/add",
                     icon: <IconNotebook className="h-4 w-4 shrink-0 text-neutral-600 dark:text-neutral-400" />,
+                },
+            ],
+        },
+        {
+            label: "Reports",
+            href: "/reports",
+            icon: <IconChartBar className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />,
+            children: [
+                {
+                    label: "Payment Reports",
+                    href: "/reports/payments",
+                    icon: <IconCreditCardPay className="h-4 w-4 shrink-0 text-neutral-600 dark:text-neutral-400" />,
+                },
+                {
+                    label: "Client Reports",
+                    href: "/reports/clients",
+                    icon: <IconUsers className="h-4 w-4 shrink-0 text-neutral-600 dark:text-neutral-400" />,
+                },
+                {
+                    label: "Growth Reports",
+                    href: "/reports/growth",
+                    icon: <IconChartBar className="h-4 w-4 shrink-0 text-neutral-600 dark:text-neutral-400" />,
+                },
+                {
+                    label: "Project Reports",
+                    href: "/reports/projects",
+                    icon: <IconBriefcase className="h-4 w-4 shrink-0 text-neutral-600 dark:text-neutral-400" />,
+                },
+                {
+                    label: "Expense Reports",
+                    href: "/reports/expenses",
+                    icon: <IconReceipt className="h-4 w-4 shrink-0 text-neutral-600 dark:text-neutral-400" />,
                 },
             ],
         },
