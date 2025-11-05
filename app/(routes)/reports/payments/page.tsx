@@ -234,7 +234,7 @@ export default function PaymentReportsPage() {
   }
 
   return (
-    <div className="flex w-full flex-1 flex-col gap-2 rounded-tl-2xl border border-neutral-200 bg-gray-50 p-2 md:p-6 dark:border-neutral-700 dark:bg-neutral-900">
+    <div className="flex w-full flex-1 flex-col gap-2 rounded-tl-2xl border border-neutral-200 bg-gray-50 p-4 md:p-6 dark:border-neutral-700 dark:bg-neutral-900 max-w-screen">
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -254,9 +254,9 @@ export default function PaymentReportsPage() {
 
         {/* Filters */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 dark:bg-neutral-800 dark:border-neutral-700">
-          <div className="flex flex-col sm:flex-row gap-4 items-end">
+          <div className="grid md:grid-cols-3 grid-cols-2 gap-4 md:items-end items-center ">
             <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-300">
+              <label className="block text-sm font-medium text-gray-700 md:mb-2 mb-1 dark:text-gray-300">
                 Start Date
               </label>
               <Input
@@ -271,7 +271,7 @@ export default function PaymentReportsPage() {
               />
             </div>
             <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-300">
+              <label className="block text-sm font-medium text-gray-700 md:mb-2 mb-1 dark:text-gray-300">
                 End Date
               </label>
               <Input
@@ -285,8 +285,8 @@ export default function PaymentReportsPage() {
                 className="w-full"
               />
             </div>
-            <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-300">
+            <div className="flex-1 md:flex-col flex-row col-span-2 md:col-span-1 flex justify-center md:justify-start items-center md:items-start gap-2 md:gap-0">
+              <label className="block text-sm font-medium text-gray-700 md:mb-2 mb-1 dark:text-gray-300 text-nowrap">
                 Group By
               </label>
               <select
