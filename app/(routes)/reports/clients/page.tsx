@@ -74,9 +74,13 @@ function BarChart({ data, formatValue, height = 280 }: BarChartProps) {
   const getColor = (index: number) => {
     // Very subtle muted slate-gray shades - barely different from each other
     const subtleShades = [
-      'bg-slate-300 hover:bg-slate-400 dark:bg-slate-600 dark:hover:bg-slate-500',
-      'bg-slate-400 hover:bg-slate-500 dark:bg-slate-500 dark:hover:bg-slate-400',
-      'bg-slate-500 hover:bg-slate-600 dark:bg-slate-400 dark:hover:bg-slate-300',
+      'bg-blue-300 hover:bg-blue-400 dark:bg-blue-600 dark:hover:bg-blue-500',
+'bg-purple-200 hover:bg-purple-300 dark:bg-purple-700 dark:hover:bg-purple-600',
+'bg-pink-300 hover:bg-pink-400 dark:bg-pink-600 dark:hover:bg-pink-500',
+'bg-green-300 hover:bg-green-400 dark:bg-green-600 dark:hover:bg-green-500',
+'bg-orange-400 hover:bg-orange-500 dark:bg-orange-500 dark:hover:bg-orange-400',
+'bg-rose-200 hover:bg-rose-300 dark:bg-rose-700 dark:hover:bg-rose-600',
+'bg-indigo-300 hover:bg-indigo-400 dark:bg-indigo-600 dark:hover:bg-indigo-500',
     ];
     return subtleShades[index % subtleShades.length];
   };
