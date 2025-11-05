@@ -1,22 +1,26 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
-import prisma from '@/lib/prisma';
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
+import prisma from "@/lib/prisma";
 
 export async function GET(request: NextRequest) {
   try {
     const { userId } = await auth();
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
-    const startDate = searchParams.get('startDate');
-    const endDate = searchParams.get('endDate');
-    const groupBy = searchParams.get('groupBy') || 'month'; // month, week, day, year
+    const startDate = searchParams.get("startDate");
+    const endDate = searchParams.get("endDate");
+    const groupBy = searchParams.get("groupBy") || "month"; // month, week, day, year
 
     // Default to last 12 months if no dates provided
     const now = new Date();
-    const defaultStartDate = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+    const defaultStartDate = new Date(
+      now.getFullYear(),
+      now.getMonth() - 11,
+      1
+    );
     const defaultEndDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
     const start = startDate ? new Date(startDate) : defaultStartDate;
@@ -39,20 +43,40 @@ export async function GET(request: NextRequest) {
           select: { name: true, status: true },
         },
       },
-      orderBy: { date: 'desc' },
+      orderBy: { date: "desc" },
+    });
+
+    const projects = await prisma.project.findMany({
+      where: {
+        clerkId: userId,
+        budget: { not: null },
+      },
+      select: {
+        budget: true,
+        payments: {
+          select: {
+            amount: true,
+            status: true,
+          },
+        },
+      },
     });
 
     // Calculate totals
     const totalRevenue = payments
-      .filter(p => p.status === 'COMPLETED')
+      .filter((p) => p.status === "COMPLETED")
       .reduce((sum, p) => sum + Number(p.amount), 0);
 
-    const totalPending = payments
-      .filter(p => p.status === 'PENDING')
-      .reduce((sum, p) => sum + Number(p.amount), 0);
+    const totalPending = projects.reduce((total, project) => {
+      const budget = Number(project.budget || 0);
+      const paymentsReceived = project.payments
+        .filter((p) => p.status === "COMPLETED")
+        .reduce((sum, p) => sum + Number(p.amount), 0);
 
+      return total + Math.max(0, budget - paymentsReceived);
+    }, 0);
     const totalFailed = payments
-      .filter(p => p.status === 'FAILED')
+      .filter((p) => p.status === "FAILED")
       .reduce((sum, p) => sum + Number(p.amount), 0);
 
     // Group by payment method
@@ -62,7 +86,7 @@ export async function GET(request: NextRequest) {
         acc[method] = { count: 0, total: 0 };
       }
       acc[method].count++;
-      if (payment.status === 'COMPLETED') {
+      if (payment.status === "COMPLETED") {
         acc[method].total += Number(payment.amount);
       }
       return acc;
@@ -80,35 +104,39 @@ export async function GET(request: NextRequest) {
     }, {} as Record<string, { count: number; total: number }>);
 
     // Time series data based on groupBy
-    const timeSeriesData: Record<string, { revenue: number; count: number }> = {};
-    
+    const timeSeriesData: Record<string, { revenue: number; count: number }> =
+      {};
+
     payments.forEach((payment) => {
       let key: string;
       const date = new Date(payment.date);
-      
+
       switch (groupBy) {
-        case 'day':
-          key = date.toISOString().split('T')[0];
+        case "day":
+          key = date.toISOString().split("T")[0];
           break;
-        case 'week':
+        case "week":
           const weekStart = new Date(date);
           weekStart.setDate(date.getDate() - date.getDay());
-          key = weekStart.toISOString().split('T')[0];
+          key = weekStart.toISOString().split("T")[0];
           break;
-        case 'year':
+        case "year":
           key = date.getFullYear().toString();
           break;
-        case 'month':
+        case "month":
         default:
-          key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+          key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+            2,
+            "0"
+          )}`;
           break;
       }
-      
+
       if (!timeSeriesData[key]) {
         timeSeriesData[key] = { revenue: 0, count: 0 };
       }
-      
-      if (payment.status === 'COMPLETED') {
+
+      if (payment.status === "COMPLETED") {
         timeSeriesData[key].revenue += Number(payment.amount);
       }
       timeSeriesData[key].count++;
@@ -116,7 +144,7 @@ export async function GET(request: NextRequest) {
 
     // Top clients by revenue
     const clientRevenue = payments
-      .filter(p => p.status === 'COMPLETED')
+      .filter((p) => p.status === "COMPLETED")
       .reduce((acc, payment) => {
         const clientId = payment.clientId;
         if (!acc[clientId]) {
@@ -137,10 +165,12 @@ export async function GET(request: NextRequest) {
       .slice(0, 10);
 
     // Average payment amount
-    const completedPayments = payments.filter(p => p.status === 'COMPLETED');
-    const averagePayment = completedPayments.length > 0
-      ? completedPayments.reduce((sum, p) => sum + Number(p.amount), 0) / completedPayments.length
-      : 0;
+    const completedPayments = payments.filter((p) => p.status === "COMPLETED");
+    const averagePayment =
+      completedPayments.length > 0
+        ? completedPayments.reduce((sum, p) => sum + Number(p.amount), 0) /
+          completedPayments.length
+        : 0;
 
     return NextResponse.json({
       summary: {
@@ -154,17 +184,21 @@ export async function GET(request: NextRequest) {
       timeSeries: Object.entries(timeSeriesData)
         .map(([period, data]) => ({ period, ...data }))
         .sort((a, b) => a.period.localeCompare(b.period)),
-      methodBreakdown: Object.entries(methodBreakdown).map(([method, data]) => ({
-        method,
-        count: data.count,
-        total: data.total,
-        percentage: totalRevenue > 0 ? (data.total / totalRevenue) * 100 : 0,
-      })),
-      statusBreakdown: Object.entries(statusBreakdown).map(([status, data]) => ({
-        status,
-        count: data.count,
-        total: data.total,
-      })),
+      methodBreakdown: Object.entries(methodBreakdown).map(
+        ([method, data]) => ({
+          method,
+          count: data.count,
+          total: data.total,
+          percentage: totalRevenue > 0 ? (data.total / totalRevenue) * 100 : 0,
+        })
+      ),
+      statusBreakdown: Object.entries(statusBreakdown).map(
+        ([status, data]) => ({
+          status,
+          count: data.count,
+          total: data.total,
+        })
+      ),
       topClients,
       dateRange: {
         start: start.toISOString(),
@@ -172,8 +206,10 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Error fetching payment reports:', error);
-    return NextResponse.json({ error: 'Failed to fetch payment reports' }, { status: 500 });
+    console.error("Error fetching payment reports:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch payment reports" },
+      { status: 500 }
+    );
   }
 }
-
