@@ -246,7 +246,7 @@ export default function ExpenseReportsPage() {
 
         {/* Filters */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 dark:bg-neutral-800 dark:border-neutral-700">
-          <div className="flex flex-col sm:flex-row gap-4 items-end">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 items-end">
             <div className="flex-1">
               <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-300">
                 Start Date
@@ -269,7 +269,7 @@ export default function ExpenseReportsPage() {
                 className="w-full"
               />
             </div>
-            <div className="flex-1">
+            <div className="flex md:flex-col text-nowrap md:items-start items-center md:gap-2 gap-4 grid-cols-2">
               <label className="block text-sm font-medium text-gray-700 mb-2 dark:text-gray-300">
                 Group By
               </label>
