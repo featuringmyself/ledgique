@@ -9,10 +9,22 @@ const isProtectedRoute = createRouteMatcher([
   '/team(.*)',
   '/profile(.*)',
   '/settings(.*)',
-  // Remove '/(.*)' - this was protecting ALL routes
+])
+
+const isPublicRoute = createRouteMatcher([
+  '/',
+  '/sign-in(.*)',
+  '/sign-up(.*)',
+  '/sso-callback(.*)', // Add this line
 ])
 
 export default clerkMiddleware((auth, req) => {
+  // Don't protect public routes
+  if (isPublicRoute(req)) {
+    return
+  }
+  
+  // Protect all other matched routes
   if (isProtectedRoute(req)) {
     auth.protect()
   }
