@@ -47,9 +47,9 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.variable} antialiased`}>
         <ClerkProvider>
-          
+          <CurrencyProvider>
             <ConditionalLayout>{children}</ConditionalLayout>
-          
+          </CurrencyProvider>
         </ClerkProvider>
       </body>
     </html>

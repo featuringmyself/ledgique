@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth, SignIn } from "@clerk/nextjs";
+import { useAuth, SignIn, Waitlist } from "@clerk/nextjs";
 import { Sidebar } from "./Sidebar";
 import { SidebarStateProvider } from "./providers/SidebarProvider";
 import { AiChatWidget } from "./AiChatWidget";
@@ -21,7 +21,7 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
   if (!isSignedIn) {
     return (
       <div className="flex items-center justify-center h-screen">
-      <SignIn />
+      <Waitlist />
       </div>
     );
   }
