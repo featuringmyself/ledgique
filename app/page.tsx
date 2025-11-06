@@ -307,7 +307,6 @@ export default function Home() {
   const fmt = Intl.NumberFormat('en', { notation: 'compact' });
   
   return (
-    <CurrencyProvider>
     <div className="flex h-full w-full flex-1 flex-col gap-2 rounded-tl-2xl border border-neutral-200 bg-gray-50 p-2 md:p-6 dark:border-neutral-700 dark:bg-neutral-900">
       <div className="space-y-6">
         {/* Top Stats Cards */}
@@ -693,6 +692,6 @@ export default function Home() {
         </div>
       </div>
     </div>
-    </CurrencyProvider>
+    
   );
 }
