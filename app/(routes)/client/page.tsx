@@ -157,7 +157,7 @@ export default function ClientPage() {
           </button>
         </Link>
         <div className="relative w-full sm:w-auto sm:ml-auto">
-          <IconSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <IconSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
             placeholder="Search clients..."
             className="pl-10 w-full sm:w-64 border-gray-300"
@@ -301,12 +301,13 @@ export default function ClientPage() {
                               left: `${window.dropdownPosition?.left || 0}px`
                             }}
                           >
-                            <button 
-                              onClick={() => handleView(client)}
-                              className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
-                            >
-                              <IconEye size={14} /> View
-                            </button>
+                            <Link href={`/client/${client.id}`}>
+                              <button 
+                                className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
+                              >
+                                <IconEye size={14} /> View
+                              </button>
+                            </Link>
                             <Link href={`/client/edit/${client.id}`}>
                               <button className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2">
                                 <IconEdit size={14} /> Edit
@@ -369,12 +370,13 @@ export default function ClientPage() {
                       onClick={(e) => e.stopPropagation()}
                       className="absolute right-0 top-8 bg-white border rounded-lg shadow-xl z-50 w-32"
                     >
-                      <button 
-                        onClick={() => handleView(client)}
-                        className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
-                      >
-                        <IconEye size={14} /> View
-                      </button>
+                      <Link href={`/client/${client.id}`}>
+                        <button 
+                          className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
+                        >
+                          <IconEye size={14} /> View
+                        </button>
+                      </Link>
                       <Link href={`/client/edit/${client.id}`}>
                         <button className="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2">
                           <IconEdit size={14} /> Edit

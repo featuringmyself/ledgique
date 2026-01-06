@@ -170,7 +170,7 @@ export default function ProjectsPage() {
           </button>
         </div>
         <div className="relative w-full sm:w-auto sm:ml-auto">
-          <IconSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <IconSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
             placeholder="Search projects..."
             className="pl-10 w-full sm:w-64 border-gray-300"
@@ -200,7 +200,7 @@ export default function ProjectsPage() {
               {projects.map((project) => (
                 <tr key={project.id} className="border-t border-gray-100 hover:bg-gray-50">
                   <td className="p-4">
-                    <div className="flex items-center gap-3">
+                    <Link href={`/project/${project.id}`} className="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer">
                       <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center">
                         <span className="text-sm font-medium text-white">
                           {project.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
@@ -212,7 +212,7 @@ export default function ProjectsPage() {
                           <div className="text-sm text-gray-500 truncate max-w-xs">{project.description}</div>
                         )}
                       </div>
-                    </div>
+                    </Link>
                   </td>
                   <td className="p-4">
                     <div>
@@ -323,7 +323,7 @@ export default function ProjectsPage() {
         {projects.map((project) => (
           <div key={project.id} className="bg-white rounded-lg border p-4">
             <div className="flex items-start justify-between mb-3">
-              <div className="flex items-center gap-3">
+              <Link href={`/project/${project.id}`} className="flex items-center gap-3 flex-1 hover:opacity-80 transition-opacity cursor-pointer">
                 <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-blue-500 rounded-full flex items-center justify-center">
                   <span className="text-sm font-medium text-white">
                     {project.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
@@ -335,7 +335,7 @@ export default function ProjectsPage() {
                     <div className="text-sm text-gray-500 line-clamp-2">{project.description}</div>
                   )}
                 </div>
-              </div>
+              </Link>
               <div className="relative">
                 <button 
                   onClick={() => setOpenDropdown(openDropdown === project.id ? null : project.id)}

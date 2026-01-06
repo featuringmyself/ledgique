@@ -173,7 +173,7 @@ export default function InvoicePage() {
           </button>
         </div>
         <div className="w-full sm:w-auto sm:ml-auto relative">
-          <IconSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <IconSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
             placeholder="Search invoices..."
             className="pl-10 w-full sm:w-64 border-gray-300"
