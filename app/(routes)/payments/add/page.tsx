@@ -156,7 +156,7 @@ export default function AddPaymentPage() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Date *</label>
               <div className="relative">
-                <IconCalendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <IconCalendar className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
                   type="date"
                   value={formData.date}
