@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { useCurrency } from '@/components/providers/CurrencyProvider';
 import axios from "axios";
 import {
@@ -315,7 +316,11 @@ export default function ClientReportsPage() {
             </h3>
             <div className="space-y-3">
               {reportData.topClients.map((client, index) => (
-                <div key={client.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg dark:bg-neutral-700">
+                <Link
+                  key={client.id}
+                  href={`/client/${client.id}`}
+                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg dark:bg-neutral-700 hover:bg-gray-100 dark:hover:bg-neutral-600 transition-colors"
+                >
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center text-white font-semibold text-sm">
                       {index + 1}
@@ -340,7 +345,7 @@ export default function ClientReportsPage() {
                       {formatCurrency(client.totalRevenue)}
                     </div>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           </div>

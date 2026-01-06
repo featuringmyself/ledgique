@@ -9,8 +9,65 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       where: { id },
       include: {
         clientSource: true,
-        projects: { select: { name: true } },
-        _count: { select: { projects: true, payments: true } }
+        projects: {
+          select: {
+            id: true,
+            name: true,
+            status: true,
+            budget: true,
+            startDate: true,
+            endDate: true,
+            createdAt: true
+          },
+          orderBy: { createdAt: 'desc' }
+        },
+        invoices: {
+          include: {
+            project: { select: { name: true } },
+            items: true,
+            payments: {
+              select: {
+                id: true,
+                amount: true,
+                date: true,
+                status: true
+              }
+            }
+          },
+          orderBy: { createdAt: 'desc' }
+        },
+        payments: {
+          include: {
+            project: { select: { name: true } },
+            invoice: { select: { invoiceNumber: true, title: true } }
+          },
+          orderBy: { date: 'desc' }
+        },
+        notes: {
+          orderBy: { createdAt: 'desc' }
+        },
+        expenses: {
+          include: {
+            project: { select: { name: true } }
+          },
+          orderBy: { date: 'desc' }
+        },
+        retainers: {
+          include: {
+            project: { select: { name: true } }
+          },
+          orderBy: { createdAt: 'desc' }
+        },
+        _count: {
+          select: {
+            projects: true,
+            payments: true,
+            invoices: true,
+            notes: true,
+            expenses: true,
+            retainers: true
+          }
+        }
       }
     });
 
@@ -19,7 +76,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     return NextResponse.json(client);
-  } catch {
+  } catch (error) {
+    console.error('Error fetching client:', error);
     return NextResponse.json({ error: 'Failed to fetch client' }, { status: 500 });
   }
 }

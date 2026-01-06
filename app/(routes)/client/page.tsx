@@ -204,9 +204,12 @@ export default function ClientPage() {
               </thead>
               <tbody>
                 {clients.map((client) => (
-                  <tr key={client.id} className="border-t border-gray-100 hover:bg-gray-50">
+                  <tr 
+                    key={client.id} 
+                    className="border-t border-gray-100 hover:bg-gray-50"
+                  >
                     <td className="p-4">
-                      <div className="flex items-center gap-3">
+                      <Link href={`/client/${client.id}`} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
                         <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center">
                           <span className="text-sm font-medium text-white">
                             {client.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
@@ -221,7 +224,7 @@ export default function ClientPage() {
                             </div>
                           )}
                         </div>
-                      </div>
+                      </Link>
                     </td>
                     <td className="p-4">
                       <div className="space-y-1">
@@ -329,9 +332,12 @@ export default function ClientPage() {
         {/* Mobile/Tablet Cards */}
         <div className="lg:hidden space-y-3">
           {clients.map((client) => (
-            <div key={client.id} className="bg-white rounded-lg border p-4">
+            <div 
+              key={client.id} 
+              className="bg-white rounded-lg border p-4 hover:bg-gray-50 transition-colors"
+            >
               <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center gap-3">
+                <Link href={`/client/${client.id}`} className="flex items-center gap-3 flex-1 hover:opacity-80 transition-opacity">
                   <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center">
                     <span className="text-sm font-medium text-white">
                       {client.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
@@ -346,7 +352,7 @@ export default function ClientPage() {
                       </div>
                     )}
                   </div>
-                </div>
+                </Link>
                 <div className="relative dropdown-container">
                   <button 
                     onClick={(e) => {
