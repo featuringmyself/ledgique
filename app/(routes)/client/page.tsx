@@ -2,7 +2,7 @@
 import axios from "axios";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
-import { IconPlus, IconSearch, IconCalendar, IconDots, IconMail, IconPhone, IconBuilding, IconEdit, IconTrash, IconEye } from "@tabler/icons-react";
+import { IconPlus, IconSearch, IconCalendar, IconDots, IconMail, IconPhone, IconBuilding, IconEdit, IconTrash, IconEye, IconFilter, IconSortDescending, IconSortAscending } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 
 interface Project {
@@ -17,7 +17,7 @@ interface Client {
   phone: string[];
   company?: string;
   address?: string;
-  clientSource: { name: string } | null;
+  clientSource: { name: string; id: string } | null;
   status: string;
   createdAt: string;
   projects: Project[];
@@ -25,6 +25,11 @@ interface Client {
     projects: number;
     payments: number;
   };
+}
+
+interface ClientSource {
+  id: string;
+  name: string;
 }
 
 interface PaginationInfo {
@@ -60,14 +65,54 @@ export default function ClientPage() {
   });
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [clientSourceFilter, setClientSourceFilter] = useState("ALL");
+  const [sortBy, setSortBy] = useState("createdAt");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [clientSources, setClientSources] = useState<ClientSource[]>([]);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [viewClient, setViewClient] = useState<Client | null>(null);
+  const [showFilters, setShowFilters] = useState(false);
+
+  useEffect(() => {
+    const fetchClientSources = async () => {
+      try {
+        const response = await axios.get('/api/client-sources');
+        setClientSources(response.data);
+      } catch (error) {
+        console.error('Error fetching client sources:', error);
+      }
+    };
+
+    fetchClientSources();
+  }, []);
+
+  // Debounce search term
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   useEffect(() => {
     const fetchClients = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`/api/clients?page=${pagination.currentPage}&limit=${pagination.limit}`);
+        const params = new URLSearchParams({
+          page: pagination.currentPage.toString(),
+          limit: pagination.limit.toString(),
+        });
+
+        if (debouncedSearchTerm) params.append('search', debouncedSearchTerm);
+        if (statusFilter !== 'ALL') params.append('status', statusFilter);
+        if (clientSourceFilter !== 'ALL') params.append('clientSourceId', clientSourceFilter);
+        if (sortBy) params.append('sortBy', sortBy);
+        if (sortOrder) params.append('sortOrder', sortOrder);
+
+        const response = await axios.get(`/api/clients?${params.toString()}`);
         const { clients: fetchedClients, pagination: paginationInfo } = response.data;
         
         // Ensure projects have id for navigation
@@ -89,7 +134,7 @@ export default function ClientPage() {
     }
 
     fetchClients();
-  }, [pagination.currentPage, pagination.limit]);
+  }, [pagination.currentPage, pagination.limit, debouncedSearchTerm, statusFilter, clientSourceFilter, sortBy, sortOrder]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -130,6 +175,25 @@ export default function ClientPage() {
     setPagination(prev => ({ ...prev, limit: newLimit, currentPage: 1 }));
   };
 
+  const handleSortChange = (newSortBy: string) => {
+    if (sortBy === newSortBy) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(newSortBy);
+      setSortOrder('desc');
+    }
+    setPagination(prev => ({ ...prev, currentPage: 1 }));
+  };
+
+  const clearFilters = () => {
+    setSearchTerm("");
+    setStatusFilter("ALL");
+    setClientSourceFilter("ALL");
+    setSortBy("createdAt");
+    setSortOrder("desc");
+    setPagination(prev => ({ ...prev, currentPage: 1 }));
+  };
+
 
   if (loading) {
     return (
@@ -149,23 +213,136 @@ export default function ClientPage() {
         </div>
 
       {/* Top Actions */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
-        <Link href="/client/add" className="w-full sm:w-auto">
-          <button className="w-full sm:w-auto flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-            <IconPlus size={20} />
-            Add Client
+      <div className="flex flex-col gap-3 sm:gap-4 mb-4 sm:mb-6">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+          <Link href="/client/add" className="w-full sm:w-auto">
+            <button className="w-full sm:w-auto flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+              <IconPlus size={20} />
+              Add Client
+            </button>
+          </Link>
+          <div className="relative flex-1 sm:max-w-xs">
+            <IconSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              placeholder="Search clients..."
+              className="pl-10 w-full border-gray-300"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors ${
+              statusFilter !== 'ALL' || clientSourceFilter !== 'ALL' || debouncedSearchTerm
+                ? 'border-blue-500 bg-blue-50 text-blue-700'
+                : 'border-gray-300 hover:bg-gray-50'
+            }`}
+          >
+            <IconFilter size={20} />
+            Filters
+            {(statusFilter !== 'ALL' || clientSourceFilter !== 'ALL' || debouncedSearchTerm) && (
+              <span className="ml-1 px-2 py-0.5 text-xs bg-blue-600 text-white rounded-full">
+                {[statusFilter !== 'ALL' ? 1 : 0, clientSourceFilter !== 'ALL' ? 1 : 0, debouncedSearchTerm ? 1 : 0].reduce((a, b) => a + b, 0)}
+              </span>
+            )}
           </button>
-        </Link>
-        <div className="relative w-full sm:w-auto sm:ml-auto">
-          <IconSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
-            placeholder="Search clients..."
-            className="pl-10 w-full sm:w-64 border-gray-300"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
         </div>
+
+        {/* Filters Panel */}
+        {showFilters && (
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-4">
+            <div className="flex flex-wrap gap-4 items-end">
+              <div className="flex-1 min-w-[200px]">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => {
+                    setStatusFilter(e.target.value);
+                    setPagination(prev => ({ ...prev, currentPage: 1 }));
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900"
+                >
+                  <option value="ALL">All Status</option>
+                  <option value="ACTIVE">Active</option>
+                  <option value="INACTIVE">Inactive</option>
+                  <option value="ARCHIVED">Archived</option>
+                </select>
+              </div>
+
+              <div className="flex-1 min-w-[200px]">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Client Source</label>
+                <select
+                  value={clientSourceFilter}
+                  onChange={(e) => {
+                    setClientSourceFilter(e.target.value);
+                    setPagination(prev => ({ ...prev, currentPage: 1 }));
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900"
+                >
+                  <option value="ALL">All Sources</option>
+                  {clientSources.map((source) => (
+                    <option key={source.id} value={source.id}>
+                      {source.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex-1 min-w-[200px]">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
+                <div className="flex gap-2">
+                  <select
+                    value={sortBy}
+                    onChange={(e) => handleSortChange(e.target.value)}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg bg-white text-gray-900"
+                  >
+                    <option value="createdAt">Date Created</option>
+                    <option value="name">Name</option>
+                    <option value="status">Status</option>
+                  </select>
+                  <button
+                    onClick={() => {
+                      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+                      setPagination(prev => ({ ...prev, currentPage: 1 }));
+                    }}
+                    className="px-3 py-2 border border-gray-300 rounded-lg bg-white hover:bg-gray-50 transition-colors"
+                    title={sortOrder === 'asc' ? 'Ascending' : 'Descending'}
+                  >
+                    {sortOrder === 'asc' ? <IconSortAscending size={20} /> : <IconSortDescending size={20} />}
+                  </button>
+                </div>
+              </div>
+
+              <button
+                onClick={clearFilters}
+                className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                Clear Filters
+              </button>
+            </div>
+          </div>
+        )}
       </div>
+
+        {/* Results Summary */}
+        {(debouncedSearchTerm || statusFilter !== 'ALL' || clientSourceFilter !== 'ALL') && (
+          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-blue-800">
+                Showing <span className="font-semibold">{pagination.totalCount}</span> client{pagination.totalCount !== 1 ? 's' : ''} 
+                {debouncedSearchTerm && ` matching "${debouncedSearchTerm}"`}
+                {statusFilter !== 'ALL' && ` with status "${statusFilter}"`}
+                {clientSourceFilter !== 'ALL' && ` from source "${clientSources.find(s => s.id === clientSourceFilter)?.name || 'Unknown'}"`}
+              </div>
+              <button
+                onClick={clearFilters}
+                className="text-sm text-blue-600 hover:text-blue-800 underline"
+              >
+                Clear all filters
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Stats Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
@@ -193,12 +370,42 @@ export default function ClientPage() {
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr className="text-left text-sm text-gray-500">
-                  <th className="p-4 font-medium">Client</th>
+                  <th className="p-4 font-medium">
+                    <button
+                      onClick={() => handleSortChange('name')}
+                      className="flex items-center gap-1 hover:text-gray-700 transition-colors"
+                    >
+                      Client
+                      {sortBy === 'name' && (
+                        sortOrder === 'asc' ? <IconSortAscending size={16} /> : <IconSortDescending size={16} />
+                      )}
+                    </button>
+                  </th>
                   <th className="p-4 font-medium">Contact</th>
                   <th className="p-4 font-medium">Projects</th>
                   <th className="p-4 font-medium">Source</th>
-                  <th className="p-4 font-medium">Status</th>
-                  <th className="p-4 font-medium">Created</th>
+                  <th className="p-4 font-medium">
+                    <button
+                      onClick={() => handleSortChange('status')}
+                      className="flex items-center gap-1 hover:text-gray-700 transition-colors"
+                    >
+                      Status
+                      {sortBy === 'status' && (
+                        sortOrder === 'asc' ? <IconSortAscending size={16} /> : <IconSortDescending size={16} />
+                      )}
+                    </button>
+                  </th>
+                  <th className="p-4 font-medium">
+                    <button
+                      onClick={() => handleSortChange('createdAt')}
+                      className="flex items-center gap-1 hover:text-gray-700 transition-colors"
+                    >
+                      Created
+                      {sortBy === 'createdAt' && (
+                        sortOrder === 'asc' ? <IconSortAscending size={16} /> : <IconSortDescending size={16} />
+                      )}
+                    </button>
+                  </th>
                   <th className="p-2 font-medium w-12"></th>
                 </tr>
               </thead>

@@ -14,15 +14,58 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
     const skip = (page - 1) * limit;
+    const search = searchParams.get('search');
+    const status = searchParams.get('status');
+    const clientSourceId = searchParams.get('clientSourceId');
+    const sortBy = searchParams.get('sortBy') || 'createdAt';
+    const sortOrder = searchParams.get('sortOrder') || 'desc';
+
+    // Build where clause
+    const where: any = {
+      clerkId: userId,
+    };
+
+    if (status && status !== 'ALL') {
+      where.status = status;
+    }
+
+    if (clientSourceId && clientSourceId !== 'ALL') {
+      where.clientSourceId = clientSourceId;
+    }
+
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { company: { contains: search, mode: 'insensitive' } },
+        { address: { contains: search, mode: 'insensitive' } },
+      ];
+      // For array fields, we'll search if any element contains the search term
+      // Note: Prisma doesn't support partial matching in arrays directly,
+      // so we search for exact matches in email/phone arrays
+      const emailMatch = { email: { has: search } };
+      const phoneMatch = { phone: { has: search } };
+      where.OR.push(emailMatch, phoneMatch);
+    }
+
+    // Build orderBy clause
+    const orderBy: any = {};
+    if (sortBy === 'name') {
+      orderBy.name = sortOrder;
+    } else if (sortBy === 'status') {
+      orderBy.status = sortOrder;
+    } else if (sortBy === 'createdAt') {
+      orderBy.createdAt = sortOrder;
+    } else {
+      orderBy.createdAt = 'desc';
+    }
 
     const [clients, totalCount] = await Promise.all([
       prisma.client.findMany({
-        where: {
-          clerkId: userId,
-        },
+        where,
         include: {
           clientSource: {
             select: {
+              id: true,
               name: true
             }
           },
@@ -43,16 +86,12 @@ export async function GET(request: NextRequest) {
             }
           }
         },
-        orderBy: {
-          createdAt: 'desc'
-        },
+        orderBy,
         skip,
         take: limit,
       }),
       prisma.client.count({
-        where: {
-          clerkId: userId,
-        }
+        where
       })
     ]);
 
