@@ -23,6 +23,7 @@ import {
   IconMessageCircle
 } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
+import { Skeleton, SkeletonStatsGrid, SkeletonListCard } from "@/components/ui/skeleton";
 
 interface Note {
   id: string;
@@ -243,44 +244,48 @@ export default function NotesPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Notes</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{totalNotes}</p>
+      {loading ? (
+        <SkeletonStatsGrid count={4} />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Notes</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{totalNotes}</p>
+              </div>
+              <IconNotes className="h-8 w-8 text-gray-600" />
             </div>
-            <IconNotes className="h-8 w-8 text-gray-600" />
+          </div>
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Active</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{activeNotes}</p>
+              </div>
+              <IconClock className="h-8 w-8 text-yellow-600" />
+            </div>
+          </div>
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Completed</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{completedNotes}</p>
+              </div>
+              <IconCheck className="h-8 w-8 text-green-600" />
+            </div>
+          </div>
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Overdue</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-white">{overdueNotes}</p>
+              </div>
+              <IconAlertCircle className="h-8 w-8 text-red-600" />
+            </div>
           </div>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Active</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{activeNotes}</p>
-            </div>
-            <IconClock className="h-8 w-8 text-yellow-600" />
-          </div>
-        </div>
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Completed</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{completedNotes}</p>
-            </div>
-            <IconCheck className="h-8 w-8 text-green-600" />
-          </div>
-        </div>
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Overdue</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{overdueNotes}</p>
-            </div>
-            <IconAlertCircle className="h-8 w-8 text-red-600" />
-          </div>
-        </div>
-      </div>
+      )}
 
       {/* Tabs */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
@@ -352,9 +357,31 @@ export default function NotesPage() {
       {/* Notes List */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
         {loading ? (
-          <div className="p-8 text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-2 text-gray-600 dark:text-gray-400">Loading notes...</p>
+          <div className="divide-y divide-gray-200 dark:divide-gray-700">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="p-6">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-start gap-3 flex-1 min-w-0">
+                    <Skeleton className="h-5 w-5 rounded mt-1" />
+                    <div className="flex-1 min-w-0">
+                      <Skeleton className="h-6 w-48 mb-2" />
+                      <Skeleton className="h-4 w-full mb-2" />
+                      <Skeleton className="h-4 w-3/4 mb-3" />
+                      <div className="flex items-center gap-4">
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="h-4 w-20" />
+                        <Skeleton className="h-4 w-16" />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 ml-4">
+                    <Skeleton className="h-8 w-8 rounded" />
+                    <Skeleton className="h-8 w-8 rounded" />
+                    <Skeleton className="h-8 w-8 rounded" />
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         ) : notes.length === 0 ? (
           <div className="p-8 text-center">

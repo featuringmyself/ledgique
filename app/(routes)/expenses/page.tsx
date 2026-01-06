@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { IconPlus, IconFilter, IconSortDescending, IconSearch, IconCalendar, IconDots, IconCurrencyDollar, IconReceipt } from '@tabler/icons-react';
 import Link from 'next/link';
 import { useCurrency } from '@/components/providers/CurrencyProvider';
+import { Skeleton, SkeletonStatsGrid, SkeletonTable } from '@/components/ui/skeleton';
 
 interface Expense {
   id: string;
@@ -80,14 +81,6 @@ export default function ExpensesPage() {
   }, {} as Record<string, number>);
   const topCategory = Object.entries(expensesByCategory).sort(([,a], [,b]) => b - a)[0];
 
-  if (loading) {
-    return (
-      <div className="flex h-screen w-full items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
-      </div>
-    );
-  }
-
   return (
     <div className="p-6 bg-white w-full min-h-screen">
       {/* Header */}
@@ -97,83 +90,102 @@ export default function ExpensesPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-4 gap-4 mb-6">
-        <div className="bg-red-50 p-4 rounded-lg border border-red-100">
-          <h3 className="text-sm font-medium text-red-600 mb-1">Total Expenses</h3>
-          <p className="text-2xl font-bold text-red-900">{currency}{totalExpenses.toLocaleString()}</p>
+      {loading ? (
+        <SkeletonStatsGrid count={4} />
+      ) : (
+        <div className="grid grid-cols-4 gap-4 mb-6">
+          <div className="bg-red-50 p-4 rounded-lg border border-red-100">
+            <h3 className="text-sm font-medium text-red-600 mb-1">Total Expenses</h3>
+            <p className="text-2xl font-bold text-red-900">{currency}{totalExpenses.toLocaleString()}</p>
+          </div>
+          <div className="bg-orange-50 p-4 rounded-lg border border-orange-100">
+            <h3 className="text-sm font-medium text-orange-600 mb-1">This Month</h3>
+            <p className="text-2xl font-bold text-orange-900">{currency}{thisMonthExpenses.toLocaleString()}</p>
+          </div>
+          <div className="bg-purple-50 p-4 rounded-lg border border-purple-100">
+            <h3 className="text-sm font-medium text-purple-600 mb-1">Total Records</h3>
+            <p className="text-2xl font-bold text-purple-900">{expenses.length}</p>
+          </div>
+          <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
+            <h3 className="text-sm font-medium text-blue-600 mb-1">Top Category</h3>
+            <p className="text-lg font-bold text-blue-900">{topCategory ? topCategory[0].replace('_', ' ') : 'N/A'}</p>
+            <p className="text-sm text-blue-700">{topCategory ? `${currency}${topCategory[1].toLocaleString()}` : ''}</p>
+          </div>
         </div>
-        <div className="bg-orange-50 p-4 rounded-lg border border-orange-100">
-          <h3 className="text-sm font-medium text-orange-600 mb-1">This Month</h3>
-          <p className="text-2xl font-bold text-orange-900">{currency}{thisMonthExpenses.toLocaleString()}</p>
-        </div>
-        <div className="bg-purple-50 p-4 rounded-lg border border-purple-100">
-          <h3 className="text-sm font-medium text-purple-600 mb-1">Total Records</h3>
-          <p className="text-2xl font-bold text-purple-900">{expenses.length}</p>
-        </div>
-        <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
-          <h3 className="text-sm font-medium text-blue-600 mb-1">Top Category</h3>
-          <p className="text-lg font-bold text-blue-900">{topCategory ? topCategory[0].replace('_', ' ') : 'N/A'}</p>
-          <p className="text-sm text-blue-700">{topCategory ? `{currency}${topCategory[1].toLocaleString()}` : ''}</p>
-        </div>
-      </div>
+      )}
 
       {/* Top Actions */}
       <div className="flex items-center gap-4 mb-6">
-        <Link href="/expenses/add">
-          <button className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-            <IconPlus size={20} />
-            Add Expense
-          </button>
-        </Link>
-        <select 
-          className="px-3 py-2 border border-gray-300 rounded-lg"
-          value={categoryFilter}
-          onChange={(e) => setCategoryFilter(e.target.value)}
-        >
-          <option value="ALL">All Categories</option>
-          <option value="OFFICE_SUPPLIES">Office Supplies</option>
-          <option value="TRAVEL">Travel</option>
-          <option value="MEALS">Meals</option>
-          <option value="SOFTWARE">Software</option>
-          <option value="EQUIPMENT">Equipment</option>
-          <option value="MARKETING">Marketing</option>
-          <option value="UTILITIES">Utilities</option>
-          <option value="RENT">Rent</option>
-          <option value="OTHER">Other</option>
-        </select>
-        <button className="p-2 hover:bg-gray-100 rounded-lg border">
-          <IconFilter size={20} />
-        </button>
-        <button className="p-2 hover:bg-gray-100 rounded-lg border">
-          <IconSortDescending size={20} />
-        </button>
-        <div className="ml-auto relative">
-          <IconSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
-            placeholder="Search expenses..."
-            className="pl-10 w-64 border-gray-300"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
+        {loading ? (
+          <>
+            <Skeleton className="h-10 w-32" />
+            <Skeleton className="h-10 w-40" />
+            <Skeleton className="h-10 w-10" />
+            <Skeleton className="h-10 w-10" />
+            <Skeleton className="h-10 w-64 ml-auto" />
+          </>
+        ) : (
+          <>
+            <Link href="/expenses/add">
+              <button className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                <IconPlus size={20} />
+                Add Expense
+              </button>
+            </Link>
+            <select 
+              className="px-3 py-2 border border-gray-300 rounded-lg"
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+            >
+              <option value="ALL">All Categories</option>
+              <option value="OFFICE_SUPPLIES">Office Supplies</option>
+              <option value="TRAVEL">Travel</option>
+              <option value="MEALS">Meals</option>
+              <option value="SOFTWARE">Software</option>
+              <option value="EQUIPMENT">Equipment</option>
+              <option value="MARKETING">Marketing</option>
+              <option value="UTILITIES">Utilities</option>
+              <option value="RENT">Rent</option>
+              <option value="OTHER">Other</option>
+            </select>
+            <button className="p-2 hover:bg-gray-100 rounded-lg border">
+              <IconFilter size={20} />
+            </button>
+            <button className="p-2 hover:bg-gray-100 rounded-lg border">
+              <IconSortDescending size={20} />
+            </button>
+            <div className="ml-auto relative">
+              <IconSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Search expenses..."
+                className="pl-10 w-64 border-gray-300"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </>
+        )}
       </div>
 
       {/* Table */}
       <div className="bg-white rounded-lg border overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-gray-50">
-            <tr className="text-left text-sm text-gray-500">
-              <th className="p-4 font-medium">Expense</th>
-              <th className="p-4 font-medium">Amount</th>
-              <th className="p-4 font-medium">Category</th>
-              <th className="p-4 font-medium">Project</th>
-              <th className="p-4 font-medium">Date</th>
-              <th className="p-4 font-medium">Receipt</th>
-              <th className="p-4 font-medium"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {expenses.map((expense) => (
+        {loading ? (
+          <SkeletonTable rows={5} columns={7} />
+        ) : (
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr className="text-left text-sm text-gray-500">
+                <th className="p-4 font-medium">Expense</th>
+                <th className="p-4 font-medium">Amount</th>
+                <th className="p-4 font-medium">Category</th>
+                <th className="p-4 font-medium">Project</th>
+                <th className="p-4 font-medium">Date</th>
+                <th className="p-4 font-medium">Receipt</th>
+                <th className="p-4 font-medium"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {expenses.map((expense) => (
               <tr key={expense.id} className="border-t border-gray-100 hover:bg-gray-50">
                 <td className="p-4">
                   <div className="flex items-center gap-3">
@@ -224,11 +236,12 @@ export default function ExpensesPage() {
                   </button>
                 </td>
               </tr>
-            ))}
-          </tbody>
-        </table>
+              ))}
+            </tbody>
+          </table>
+        )}
         
-        {expenses.length === 0 && (
+        {!loading && expenses.length === 0 && (
           <div className="text-center py-12">
             <p className="text-gray-500">No expenses found</p>
           </div>
@@ -236,7 +249,8 @@ export default function ExpensesPage() {
       </div>
 
       {/* Pagination Controls */}
-      <div className="flex items-center justify-between mt-6 pr-20">
+      {!loading && (
+        <div className="flex items-center justify-between mt-6 pr-20">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-600">Show</span>
@@ -303,7 +317,8 @@ export default function ExpensesPage() {
             Next
           </button>
         </div>
-      </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { IconPlus, IconSearch, IconCalendar, IconDots, IconMail, IconPhone, IconBuilding, IconEdit, IconTrash, IconEye, IconFilter, IconSortDescending, IconSortAscending } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
+import { Skeleton, SkeletonStatsGrid, SkeletonTable, SkeletonListCard } from "@/components/ui/skeleton";
 
 interface Project {
   id?: string;
@@ -195,14 +196,6 @@ export default function ClientPage() {
   };
 
 
-  if (loading) {
-    return (
-      <div className="flex h-screen w-full items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
-      </div>
-    );
-  }
-
   return (
     <div className="w-full min-h-screen bg-white">
       <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6">
@@ -215,37 +208,47 @@ export default function ClientPage() {
       {/* Top Actions */}
       <div className="flex flex-col gap-3 sm:gap-4 mb-4 sm:mb-6">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
-          <Link href="/client/add" className="w-full sm:w-auto">
-            <button className="w-full sm:w-auto flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-              <IconPlus size={20} />
-              Add Client
-            </button>
-          </Link>
-          <div className="relative flex-1 sm:max-w-xs">
-            <IconSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="Search clients..."
-              className="pl-10 w-full border-gray-300"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors ${
-              statusFilter !== 'ALL' || clientSourceFilter !== 'ALL' || debouncedSearchTerm
-                ? 'border-blue-500 bg-blue-50 text-blue-700'
-                : 'border-gray-300 hover:bg-gray-50'
-            }`}
-          >
-            <IconFilter size={20} />
-            Filters
-            {(statusFilter !== 'ALL' || clientSourceFilter !== 'ALL' || debouncedSearchTerm) && (
-              <span className="ml-1 px-2 py-0.5 text-xs bg-blue-600 text-white rounded-full">
-                {[statusFilter !== 'ALL' ? 1 : 0, clientSourceFilter !== 'ALL' ? 1 : 0, debouncedSearchTerm ? 1 : 0].reduce((a, b) => a + b, 0)}
-              </span>
-            )}
-          </button>
+          {loading ? (
+            <>
+              <Skeleton className="h-10 w-32" />
+              <Skeleton className="h-10 flex-1 sm:max-w-xs" />
+              <Skeleton className="h-10 w-24" />
+            </>
+          ) : (
+            <>
+              <Link href="/client/add" className="w-full sm:w-auto">
+                <button className="w-full sm:w-auto flex items-center justify-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                  <IconPlus size={20} />
+                  Add Client
+                </button>
+              </Link>
+              <div className="relative flex-1 sm:max-w-xs">
+                <IconSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Search clients..."
+                  className="pl-10 w-full border-gray-300"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={`flex items-center gap-2 px-4 py-2 border rounded-lg transition-colors ${
+                  statusFilter !== 'ALL' || clientSourceFilter !== 'ALL' || debouncedSearchTerm
+                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                    : 'border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                <IconFilter size={20} />
+                Filters
+                {(statusFilter !== 'ALL' || clientSourceFilter !== 'ALL' || debouncedSearchTerm) && (
+                  <span className="ml-1 px-2 py-0.5 text-xs bg-blue-600 text-white rounded-full">
+                    {[statusFilter !== 'ALL' ? 1 : 0, clientSourceFilter !== 'ALL' ? 1 : 0, debouncedSearchTerm ? 1 : 0].reduce((a, b) => a + b, 0)}
+                  </span>
+                )}
+              </button>
+            </>
+          )}
         </div>
 
         {/* Filters Panel */}
@@ -345,72 +348,79 @@ export default function ClientPage() {
         )}
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
-          <div className="bg-blue-50 p-3 sm:p-4 rounded-lg border border-blue-100">
-            <h3 className="text-xs sm:text-sm font-medium text-blue-600 mb-1">Total Clients</h3>
-            <p className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-900">{pagination.totalCount}</p>
+        {loading ? (
+          <SkeletonStatsGrid count={4} />
+        ) : (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
+            <div className="bg-blue-50 p-3 sm:p-4 rounded-lg border border-blue-100">
+              <h3 className="text-xs sm:text-sm font-medium text-blue-600 mb-1">Total Clients</h3>
+              <p className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-900">{pagination.totalCount}</p>
+            </div>
+            <div className="bg-green-50 p-3 sm:p-4 rounded-lg border border-green-100">
+              <h3 className="text-xs sm:text-sm font-medium text-green-600 mb-1">Active Clients</h3>
+              <p className="text-lg sm:text-xl lg:text-2xl font-bold text-green-900">{clients.filter(c => c.status === 'ACTIVE').length}</p>
+            </div>
+            <div className="bg-purple-50 p-3 sm:p-4 rounded-lg border border-purple-100">
+              <h3 className="text-xs sm:text-sm font-medium text-purple-600 mb-1">Total Projects</h3>
+              <p className="text-lg sm:text-xl lg:text-2xl font-bold text-purple-900">{clients.reduce((sum, c) => sum + c._count.projects, 0)}</p>
+            </div>
+            <div className="bg-orange-50 p-3 sm:p-4 rounded-lg border border-orange-100">
+              <h3 className="text-xs sm:text-sm font-medium text-orange-600 mb-1">Total Payments</h3>
+              <p className="text-lg sm:text-xl lg:text-2xl font-bold text-orange-900">{clients.reduce((sum, c) => sum + c._count.payments, 0)}</p>
+            </div>
           </div>
-          <div className="bg-green-50 p-3 sm:p-4 rounded-lg border border-green-100">
-            <h3 className="text-xs sm:text-sm font-medium text-green-600 mb-1">Active Clients</h3>
-            <p className="text-lg sm:text-xl lg:text-2xl font-bold text-green-900">{clients.filter(c => c.status === 'ACTIVE').length}</p>
-          </div>
-          <div className="bg-purple-50 p-3 sm:p-4 rounded-lg border border-purple-100">
-            <h3 className="text-xs sm:text-sm font-medium text-purple-600 mb-1">Total Projects</h3>
-            <p className="text-lg sm:text-xl lg:text-2xl font-bold text-purple-900">{clients.reduce((sum, c) => sum + c._count.projects, 0)}</p>
-          </div>
-          <div className="bg-orange-50 p-3 sm:p-4 rounded-lg border border-orange-100">
-            <h3 className="text-xs sm:text-sm font-medium text-orange-600 mb-1">Total Payments</h3>
-            <p className="text-lg sm:text-xl lg:text-2xl font-bold text-orange-900">{clients.reduce((sum, c) => sum + c._count.payments, 0)}</p>
-          </div>
-        </div>
+        )}
 
         {/* Desktop Table */}
         <div className="hidden lg:block bg-white rounded-lg border overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr className="text-left text-sm text-gray-500">
-                  <th className="p-4 font-medium">
-                    <button
-                      onClick={() => handleSortChange('name')}
-                      className="flex items-center gap-1 hover:text-gray-700 transition-colors"
-                    >
-                      Client
-                      {sortBy === 'name' && (
-                        sortOrder === 'asc' ? <IconSortAscending size={16} /> : <IconSortDescending size={16} />
-                      )}
-                    </button>
-                  </th>
-                  <th className="p-4 font-medium">Contact</th>
-                  <th className="p-4 font-medium">Projects</th>
-                  <th className="p-4 font-medium">Source</th>
-                  <th className="p-4 font-medium">
-                    <button
-                      onClick={() => handleSortChange('status')}
-                      className="flex items-center gap-1 hover:text-gray-700 transition-colors"
-                    >
-                      Status
-                      {sortBy === 'status' && (
-                        sortOrder === 'asc' ? <IconSortAscending size={16} /> : <IconSortDescending size={16} />
-                      )}
-                    </button>
-                  </th>
-                  <th className="p-4 font-medium">
-                    <button
-                      onClick={() => handleSortChange('createdAt')}
-                      className="flex items-center gap-1 hover:text-gray-700 transition-colors"
-                    >
-                      Created
-                      {sortBy === 'createdAt' && (
-                        sortOrder === 'asc' ? <IconSortAscending size={16} /> : <IconSortDescending size={16} />
-                      )}
-                    </button>
-                  </th>
-                  <th className="p-2 font-medium w-12"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {clients.map((client) => (
+          {loading ? (
+            <SkeletonTable rows={5} columns={7} />
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr className="text-left text-sm text-gray-500">
+                    <th className="p-4 font-medium">
+                      <button
+                        onClick={() => handleSortChange('name')}
+                        className="flex items-center gap-1 hover:text-gray-700 transition-colors"
+                      >
+                        Client
+                        {sortBy === 'name' && (
+                          sortOrder === 'asc' ? <IconSortAscending size={16} /> : <IconSortDescending size={16} />
+                        )}
+                      </button>
+                    </th>
+                    <th className="p-4 font-medium">Contact</th>
+                    <th className="p-4 font-medium">Projects</th>
+                    <th className="p-4 font-medium">Source</th>
+                    <th className="p-4 font-medium">
+                      <button
+                        onClick={() => handleSortChange('status')}
+                        className="flex items-center gap-1 hover:text-gray-700 transition-colors"
+                      >
+                        Status
+                        {sortBy === 'status' && (
+                          sortOrder === 'asc' ? <IconSortAscending size={16} /> : <IconSortDescending size={16} />
+                        )}
+                      </button>
+                    </th>
+                    <th className="p-4 font-medium">
+                      <button
+                        onClick={() => handleSortChange('createdAt')}
+                        className="flex items-center gap-1 hover:text-gray-700 transition-colors"
+                      >
+                        Created
+                        {sortBy === 'createdAt' && (
+                          sortOrder === 'asc' ? <IconSortAscending size={16} /> : <IconSortDescending size={16} />
+                        )}
+                      </button>
+                    </th>
+                    <th className="p-2 font-medium w-12"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {clients.map((client) => (
                   <tr 
                     key={client.id} 
                     className="border-t border-gray-100 hover:bg-gray-50"
@@ -531,15 +541,21 @@ export default function ClientPage() {
                       </div>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
 
         {/* Mobile/Tablet Cards */}
         <div className="lg:hidden space-y-3">
-          {clients.map((client) => (
+          {loading ? (
+            Array.from({ length: 5 }).map((_, i) => (
+              <SkeletonListCard key={i} />
+            ))
+          ) : (
+            clients.map((client) => (
             <div 
               key={client.id} 
               className="bg-white rounded-lg border p-4 hover:bg-gray-50 transition-colors"
@@ -647,84 +663,87 @@ export default function ClientPage() {
                 </div>
               </div>
             </div>
-          ))}
+            ))
+          )}
         </div>
         
-        {clients.length === 0 && (
+        {!loading && clients.length === 0 && (
           <div className="text-center py-12">
             <p className="text-gray-500">No clients found</p>
           </div>
         )}
 
         {/* Pagination Controls */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mt-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">Show</span>
-              <select 
-                value={pagination.limit} 
-                onChange={(e) => handleLimitChange(parseInt(e.target.value))}
-                className="px-3 py-1 border rounded text-sm"
+        {!loading && (
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mt-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600">Show</span>
+                <select 
+                  value={pagination.limit} 
+                  onChange={(e) => handleLimitChange(parseInt(e.target.value))}
+                  className="px-3 py-1 border rounded text-sm"
+                >
+                  <option value={5}>5</option>
+                  <option value={10}>10</option>
+                  <option value={25}>25</option>
+                  <option value={50}>50</option>
+                </select>
+                <span className="text-sm text-gray-600">per page</span>
+              </div>
+              <div className="text-sm text-gray-600">
+                Showing {((pagination.currentPage - 1) * pagination.limit) + 1} to {Math.min(pagination.currentPage * pagination.limit, pagination.totalCount)} of {pagination.totalCount} clients
+              </div>
+            </div>
+            
+            <div className="flex items-center justify-center sm:justify-end gap-2">
+              <button
+                onClick={() => handlePageChange(pagination.currentPage - 1)}
+                disabled={!pagination.hasPrevPage}
+                className="px-3 py-1 text-sm border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <option value={5}>5</option>
-                <option value={10}>10</option>
-                <option value={25}>25</option>
-                <option value={50}>50</option>
-              </select>
-              <span className="text-sm text-gray-600">per page</span>
-            </div>
-            <div className="text-sm text-gray-600">
-              Showing {((pagination.currentPage - 1) * pagination.limit) + 1} to {Math.min(pagination.currentPage * pagination.limit, pagination.totalCount)} of {pagination.totalCount} clients
+                Previous
+              </button>
+              
+              <div className="flex items-center gap-1">
+                {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
+                  let pageNum;
+                  if (pagination.totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (pagination.currentPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (pagination.currentPage >= pagination.totalPages - 2) {
+                    pageNum = pagination.totalPages - 4 + i;
+                  } else {
+                    pageNum = pagination.currentPage - 2 + i;
+                  }
+                  
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => handlePageChange(pageNum)}
+                      className={`px-3 py-1 text-sm border rounded ${
+                        pageNum === pagination.currentPage 
+                          ? 'bg-blue-600 text-white border-blue-600' 
+                          : 'hover:bg-gray-50'
+                      }`}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
+              </div>
+              
+              <button
+                onClick={() => handlePageChange(pagination.currentPage + 1)}
+                disabled={!pagination.hasNextPage}
+                className="px-3 py-1 text-sm border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
             </div>
           </div>
-          
-          <div className="flex items-center justify-center sm:justify-end gap-2">
-            <button
-              onClick={() => handlePageChange(pagination.currentPage - 1)}
-              disabled={!pagination.hasPrevPage}
-              className="px-3 py-1 text-sm border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Previous
-            </button>
-            
-            <div className="flex items-center gap-1">
-              {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
-                let pageNum;
-                if (pagination.totalPages <= 5) {
-                  pageNum = i + 1;
-                } else if (pagination.currentPage <= 3) {
-                  pageNum = i + 1;
-                } else if (pagination.currentPage >= pagination.totalPages - 2) {
-                  pageNum = pagination.totalPages - 4 + i;
-                } else {
-                  pageNum = pagination.currentPage - 2 + i;
-                }
-                
-                return (
-                  <button
-                    key={pageNum}
-                    onClick={() => handlePageChange(pageNum)}
-                    className={`px-3 py-1 text-sm border rounded ${
-                      pageNum === pagination.currentPage 
-                        ? 'bg-blue-600 text-white border-blue-600' 
-                        : 'hover:bg-gray-50'
-                    }`}
-                  >
-                    {pageNum}
-                  </button>
-                );
-              })}
-            </div>
-            
-            <button
-              onClick={() => handlePageChange(pagination.currentPage + 1)}
-              disabled={!pagination.hasNextPage}
-              className="px-3 py-1 text-sm border rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Next
-            </button>
-          </div>
-        </div>
+        )}
 
         {/* View Modal */}
         {viewClient && (

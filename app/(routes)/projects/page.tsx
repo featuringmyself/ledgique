@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { IconPlus, IconFilter, IconSortDescending, IconSearch, IconCalendar, IconDots, IconCurrencyDollar, IconEye, IconEdit, IconTrash } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { useCurrency } from '@/components/providers/CurrencyProvider';
+import { Skeleton, SkeletonStatsGrid, SkeletonTable, SkeletonListCard } from "@/components/ui/skeleton";
 
 interface Project {
   id: string;
@@ -93,14 +94,6 @@ export default function ProjectsPage() {
     setPagination(prev => ({ ...prev, limit: newLimit, currentPage: 1 }));
   };
 
-  if (loading) {
-    return (
-      <div className="flex h-screen w-full items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
-      </div>
-    );
-  }
-
   return (
     <div className="p-4 sm:p-6 bg-white w-full min-h-screen">
       {/* Header */}
@@ -110,94 +103,112 @@ export default function ProjectsPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
-        <div className="bg-blue-50 p-3 sm:p-4 rounded-lg border border-blue-100">
-          <h3 className="text-xs sm:text-sm font-medium text-blue-600 mb-1">Total Projects</h3>
-          <p className="text-lg sm:text-2xl font-bold text-blue-900">{totalProjects}</p>
+      {loading ? (
+        <SkeletonStatsGrid count={4} />
+      ) : (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
+          <div className="bg-blue-50 p-3 sm:p-4 rounded-lg border border-blue-100">
+            <h3 className="text-xs sm:text-sm font-medium text-blue-600 mb-1">Total Projects</h3>
+            <p className="text-lg sm:text-2xl font-bold text-blue-900">{totalProjects}</p>
+          </div>
+          <div className="bg-green-50 p-3 sm:p-4 rounded-lg border border-green-100">
+            <h3 className="text-xs sm:text-sm font-medium text-green-600 mb-1">Active Projects</h3>
+            <p className="text-lg sm:text-2xl font-bold text-green-900">{activeProjects}</p>
+          </div>
+          <div className="bg-purple-50 p-3 sm:p-4 rounded-lg border border-purple-100">
+            <h3 className="text-xs sm:text-sm font-medium text-purple-600 mb-1">Completed</h3>
+            <p className="text-lg sm:text-2xl font-bold text-purple-900">{completedProjects}</p>
+          </div>
+          <div className="bg-orange-50 p-3 sm:p-4 rounded-lg border border-orange-100">
+            <h3 className="text-xs sm:text-sm font-medium text-orange-600 mb-1">Total Budget</h3>
+            <p className="text-lg sm:text-2xl font-bold text-orange-900">{currency}{totalBudget.toLocaleString()}</p>
+          </div>
         </div>
-        <div className="bg-green-50 p-3 sm:p-4 rounded-lg border border-green-100">
-          <h3 className="text-xs sm:text-sm font-medium text-green-600 mb-1">Active Projects</h3>
-          <p className="text-lg sm:text-2xl font-bold text-green-900">{activeProjects}</p>
-        </div>
-        <div className="bg-purple-50 p-3 sm:p-4 rounded-lg border border-purple-100">
-          <h3 className="text-xs sm:text-sm font-medium text-purple-600 mb-1">Completed</h3>
-          <p className="text-lg sm:text-2xl font-bold text-purple-900">{completedProjects}</p>
-        </div>
-        <div className="bg-orange-50 p-3 sm:p-4 rounded-lg border border-orange-100">
-          <h3 className="text-xs sm:text-sm font-medium text-orange-600 mb-1">Total Budget</h3>
-          <p className="text-lg sm:text-2xl font-bold text-orange-900">{currency}{totalBudget.toLocaleString()}</p>
-        </div>
-      </div>
+      )}
 
       {/* Top Actions */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
-        <div className="flex flex-wrap items-center gap-2 sm:gap-4 w-full sm:w-auto">
-          <Link href="/projects/add">
-            <button className="flex items-center gap-2 bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base">
-              <IconPlus size={18} />
-              <span className="hidden sm:inline">Add Project</span>
-              <span className="sm:hidden">Add</span>
-            </button>
-          </Link>
-          <select 
-            className="px-2 sm:px-3 py-2 border border-gray-300 rounded-lg text-sm"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-          >
-            <option value="ALL">All Status</option>
-            <option value="PENDING">Pending</option>
-            <option value="IN_PROGRESS">In Progress</option>
-            <option value="COMPLETED">Completed</option>
-            <option value="ON_HOLD">On Hold</option>
-            <option value="CANCELLED">Cancelled</option>
-          </select>
-          <select 
-            className="px-2 sm:px-3 py-2 border border-gray-300 rounded-lg text-sm"
-            value={priorityFilter}
-            onChange={(e) => setPriorityFilter(e.target.value)}
-          >
-            <option value="ALL">All Priority</option>
-            <option value="LOW">Low</option>
-            <option value="MEDIUM">Medium</option>
-            <option value="HIGH">High</option>
-            <option value="URGENT">Urgent</option>
-          </select>
-          <button className="p-2 hover:bg-gray-100 rounded-lg border">
-            <IconFilter size={18} />
-          </button>
-          <button className="p-2 hover:bg-gray-100 rounded-lg border">
-            <IconSortDescending size={18} />
-          </button>
-        </div>
-        <div className="relative w-full sm:w-auto sm:ml-auto">
-          <IconSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
-            placeholder="Search projects..."
-            className="pl-10 w-full sm:w-64 border-gray-300"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
+        {loading ? (
+          <>
+            <Skeleton className="h-10 w-32" />
+            <Skeleton className="h-10 w-32" />
+            <Skeleton className="h-10 w-32" />
+            <Skeleton className="h-10 w-64 sm:ml-auto" />
+          </>
+        ) : (
+          <>
+            <div className="flex flex-wrap items-center gap-2 sm:gap-4 w-full sm:w-auto">
+              <Link href="/projects/add">
+                <button className="flex items-center gap-2 bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base">
+                  <IconPlus size={18} />
+                  <span className="hidden sm:inline">Add Project</span>
+                  <span className="sm:hidden">Add</span>
+                </button>
+              </Link>
+              <select 
+                className="px-2 sm:px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+              >
+                <option value="ALL">All Status</option>
+                <option value="PENDING">Pending</option>
+                <option value="IN_PROGRESS">In Progress</option>
+                <option value="COMPLETED">Completed</option>
+                <option value="ON_HOLD">On Hold</option>
+                <option value="CANCELLED">Cancelled</option>
+              </select>
+              <select 
+                className="px-2 sm:px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                value={priorityFilter}
+                onChange={(e) => setPriorityFilter(e.target.value)}
+              >
+                <option value="ALL">All Priority</option>
+                <option value="LOW">Low</option>
+                <option value="MEDIUM">Medium</option>
+                <option value="HIGH">High</option>
+                <option value="URGENT">Urgent</option>
+              </select>
+              <button className="p-2 hover:bg-gray-100 rounded-lg border">
+                <IconFilter size={18} />
+              </button>
+              <button className="p-2 hover:bg-gray-100 rounded-lg border">
+                <IconSortDescending size={18} />
+              </button>
+            </div>
+            <div className="relative w-full sm:w-auto sm:ml-auto">
+              <IconSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Search projects..."
+                className="pl-10 w-full sm:w-64 border-gray-300"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </>
+        )}
       </div>
 
       {/* Desktop Table View */}
       <div className="hidden lg:block bg-white rounded-lg border overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[800px]">
-            <thead className="bg-gray-50">
-              <tr className="text-left text-sm text-gray-500">
-                <th className="p-4 font-medium">Project</th>
-                <th className="p-4 font-medium">Client</th>
-                <th className="p-4 font-medium">Budget</th>
-                <th className="p-4 font-medium">Priority</th>
-                <th className="p-4 font-medium">Status</th>
-                <th className="p-4 font-medium">Start Date</th>
-                <th className="p-4 font-medium">Due Date</th>
-                <th className="p-4 font-medium"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {projects.map((project) => (
+        {loading ? (
+          <SkeletonTable rows={5} columns={8} />
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[800px]">
+              <thead className="bg-gray-50">
+                <tr className="text-left text-sm text-gray-500">
+                  <th className="p-4 font-medium">Project</th>
+                  <th className="p-4 font-medium">Client</th>
+                  <th className="p-4 font-medium">Budget</th>
+                  <th className="p-4 font-medium">Priority</th>
+                  <th className="p-4 font-medium">Status</th>
+                  <th className="p-4 font-medium">Start Date</th>
+                  <th className="p-4 font-medium">Due Date</th>
+                  <th className="p-4 font-medium"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {projects.map((project) => (
                 <tr key={project.id} className="border-t border-gray-100 hover:bg-gray-50">
                   <td className="p-4">
                     <Link href={`/project/${project.id}`} className="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer">
@@ -306,12 +317,13 @@ export default function ProjectsPage() {
                     </div>
                   </td>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
         
-        {projects.length === 0 && (
+        {!loading && projects.length === 0 && (
           <div className="text-center py-12">
             <p className="text-gray-500">No projects found</p>
           </div>
@@ -320,7 +332,12 @@ export default function ProjectsPage() {
 
       {/* Mobile Card View */}
       <div className="lg:hidden space-y-3">
-        {projects.map((project) => (
+        {loading ? (
+          Array.from({ length: 5 }).map((_, i) => (
+            <SkeletonListCard key={i} />
+          ))
+        ) : (
+          projects.map((project) => (
           <div key={project.id} className="bg-white rounded-lg border p-4">
             <div className="flex items-start justify-between mb-3">
               <Link href={`/project/${project.id}`} className="flex items-center gap-3 flex-1 hover:opacity-80 transition-opacity cursor-pointer">
@@ -434,9 +451,10 @@ export default function ProjectsPage() {
               </div>
             </div>
           </div>
-        ))}
+          ))
+        )}
         
-        {projects.length === 0 && (
+        {!loading && projects.length === 0 && (
           <div className="text-center py-12">
             <p className="text-gray-500">No projects found</p>
           </div>
@@ -444,7 +462,8 @@ export default function ProjectsPage() {
       </div>
 
       {/* Pagination Controls */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-4 sm:mt-6">
+      {!loading && (
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-4 sm:mt-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-600">Show</span>
@@ -512,7 +531,8 @@ export default function ProjectsPage() {
             Next
           </button>
         </div>
-      </div>
+        </div>
+      )}
     </div>
   );
 }
