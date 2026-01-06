@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { IconPlus, IconFilter, IconSortDescending, IconSearch, IconCalendar, IconDots, IconWallet, IconClock, IconCheck, IconX } from '@tabler/icons-react';
 import Link from 'next/link';
 import { useCurrency } from '@/components/providers/CurrencyProvider';
+import { Skeleton, SkeletonStatsGrid, SkeletonTable, SkeletonListCard } from '@/components/ui/skeleton';
 
 interface Retainer {
   id: string;
@@ -92,14 +93,6 @@ export default function RetainersPage() {
   const totalRetainerValue = retainers.reduce((sum, ret) => sum + ret.totalAmount, 0);
   const activeCount = retainers.filter(ret => ret.status === 'ACTIVE').length;
 
-  if (loading) {
-    return (
-      <div className="flex h-screen w-full items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
-      </div>
-    );
-  }
-
   return (
     <div className="p-4 sm:p-6 bg-white w-full min-h-screen">
       {/* Header */}
@@ -109,76 +102,140 @@ export default function RetainersPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
-        <div className="bg-blue-50 p-3 sm:p-4 rounded-lg border border-blue-100">
-          <h3 className="text-xs sm:text-sm font-medium text-blue-600 mb-1">Total Value</h3>
-          <p className="text-lg sm:text-2xl font-bold text-blue-900">{currency}{totalRetainerValue.toLocaleString()}</p>
+      {loading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
+          {Array.from({ length: 2 }).map((_, i) => (
+            <div key={i} className="bg-gray-50 p-3 sm:p-4 rounded-lg border border-gray-100">
+              <Skeleton className="h-4 w-24 mb-1" />
+              <Skeleton className="h-8 w-32" />
+            </div>
+          ))}
         </div>
-        <div className="bg-purple-50 p-3 sm:p-4 rounded-lg border border-purple-100">
-          <h3 className="text-xs sm:text-sm font-medium text-purple-600 mb-1">Active Retainers</h3>
-          <p className="text-lg sm:text-2xl font-bold text-purple-900">{activeCount}</p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
+          <div className="bg-blue-50 p-3 sm:p-4 rounded-lg border border-blue-100">
+            <h3 className="text-xs sm:text-sm font-medium text-blue-600 mb-1">Total Value</h3>
+            <p className="text-lg sm:text-2xl font-bold text-blue-900">{currency}{totalRetainerValue.toLocaleString()}</p>
+          </div>
+          <div className="bg-purple-50 p-3 sm:p-4 rounded-lg border border-purple-100">
+            <h3 className="text-xs sm:text-sm font-medium text-purple-600 mb-1">Active Retainers</h3>
+            <p className="text-lg sm:text-2xl font-bold text-purple-900">{activeCount}</p>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Top Actions */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
-        <div className="flex items-center gap-2 sm:gap-4">
-          <Link href="/retainers/add">
-            <button className="flex items-center gap-2 bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base">
-              <IconPlus size={16} className="sm:w-5 sm:h-5" />
-              <span className="hidden sm:inline">Add Retainer</span>
-              <span className="sm:hidden">Add</span>
-            </button>
-          </Link>
-          <select 
-            className="px-2 sm:px-3 py-2 border border-gray-300 rounded-lg text-sm"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-          >
-            <option value="ALL">All Status</option>
-            <option value="ACTIVE">Active</option>
-            <option value="DEPLETED">Depleted</option>
-            <option value="EXPIRED">Expired</option>
-            <option value="CANCELLED">Cancelled</option>
-          </select>
-        </div>
-        <div className="flex items-center gap-2">
-          <button className="p-2 hover:bg-gray-100 rounded-lg border">
-            <IconFilter size={16} className="sm:w-5 sm:h-5" />
-          </button>
-          <button className="p-2 hover:bg-gray-100 rounded-lg border">
-            <IconSortDescending size={16} className="sm:w-5 sm:h-5" />
-          </button>
-        </div>
-        <div className="relative flex-1 sm:ml-auto sm:max-w-xs">
-          <IconSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
-            placeholder="Search retainers..."
-            className="pl-10 w-full border-gray-300 text-sm"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
+        {loading ? (
+          <>
+            <Skeleton className="h-10 w-32" />
+            <Skeleton className="h-10 w-32" />
+            <Skeleton className="h-10 w-10" />
+            <Skeleton className="h-10 w-10" />
+            <Skeleton className="h-10 flex-1 sm:ml-auto sm:max-w-xs" />
+          </>
+        ) : (
+          <>
+            <div className="flex items-center gap-2 sm:gap-4">
+              <Link href="/retainers/add">
+                <button className="flex items-center gap-2 bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base">
+                  <IconPlus size={16} className="sm:w-5 sm:h-5" />
+                  <span className="hidden sm:inline">Add Retainer</span>
+                  <span className="sm:hidden">Add</span>
+                </button>
+              </Link>
+              <select 
+                className="px-2 sm:px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+              >
+                <option value="ALL">All Status</option>
+                <option value="ACTIVE">Active</option>
+                <option value="DEPLETED">Depleted</option>
+                <option value="EXPIRED">Expired</option>
+                <option value="CANCELLED">Cancelled</option>
+              </select>
+            </div>
+            <div className="flex items-center gap-2">
+              <button className="p-2 hover:bg-gray-100 rounded-lg border">
+                <IconFilter size={16} className="sm:w-5 sm:h-5" />
+              </button>
+              <button className="p-2 hover:bg-gray-100 rounded-lg border">
+                <IconSortDescending size={16} className="sm:w-5 sm:h-5" />
+              </button>
+            </div>
+            <div className="relative flex-1 sm:ml-auto sm:max-w-xs">
+              <IconSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Search retainers..."
+                className="pl-10 w-full border-gray-300 text-sm"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </>
+        )}
       </div>
 
       {/* Table - Desktop View */}
       <div className="bg-white rounded-lg border">
-        <div className="hidden lg:block">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[800px]">
-            <thead className="bg-gray-50">
-              <tr className="text-left text-sm text-gray-500">
-                <th className="p-4 font-medium">Retainer</th>
-                <th className="p-4 font-medium">Client</th>
-                <th className="p-4 font-medium">Project</th>
-                <th className="p-4 font-medium">Amount</th>
-                <th className="p-4 font-medium">Status</th>
-                <th className="p-4 font-medium">Start Date</th>
-                <th className="p-4 font-medium"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {retainers.map((retainer) => (
+        {loading ? (
+          <>
+            {/* Desktop Table Skeleton */}
+            <div className="hidden lg:block">
+              <SkeletonTable rows={5} columns={7} />
+            </div>
+            {/* Tablet Table Skeleton */}
+            <div className="hidden md:block lg:hidden">
+              <SkeletonTable rows={5} columns={6} />
+            </div>
+            {/* Mobile Card Skeleton */}
+            <div className="md:hidden">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="border-b border-gray-100 p-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <Skeleton className="h-10 w-10 rounded-full" />
+                      <div className="flex-1">
+                        <Skeleton className="h-4 w-32 mb-2" />
+                        <Skeleton className="h-3 w-48" />
+                      </div>
+                    </div>
+                    <Skeleton className="h-8 w-8 rounded" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    {Array.from({ length: 4 }).map((_, j) => (
+                      <div key={j}>
+                        <Skeleton className="h-3 w-16 mb-1" />
+                        <Skeleton className="h-4 w-24" />
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-3 pt-3 border-t border-gray-100">
+                    <Skeleton className="h-4 w-32" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="hidden lg:block">
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[800px]">
+                <thead className="bg-gray-50">
+                  <tr className="text-left text-sm text-gray-500">
+                    <th className="p-4 font-medium">Retainer</th>
+                    <th className="p-4 font-medium">Client</th>
+                    <th className="p-4 font-medium">Project</th>
+                    <th className="p-4 font-medium">Amount</th>
+                    <th className="p-4 font-medium">Status</th>
+                    <th className="p-4 font-medium">Start Date</th>
+                    <th className="p-4 font-medium"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {retainers.map((retainer) => (
                 <tr key={retainer.id} className="border-t border-gray-100 hover:bg-gray-50">
                   <td className="p-4">
                     <div className="flex items-center gap-3">
@@ -236,29 +293,29 @@ export default function RetainersPage() {
                       <IconDots size={16} className="text-gray-400" />
                     </button>
                   </td>
-                </tr>
-              ))}
-            </tbody>
-            </table>
-          </div>
-        </div>
+                  </tr>
+                  ))}
+                </tbody>
+                </table>
+              </div>
+            </div>
 
-        {/* Tablet Table View */}
-        <div className="hidden md:block lg:hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[600px]">
-              <thead className="bg-gray-50">
-                <tr className="text-left text-sm text-gray-500">
-                  <th className="p-3 font-medium">Retainer</th>
-                  <th className="p-3 font-medium">Client</th>
-                  <th className="p-3 font-medium">Amount</th>
-                  <th className="p-3 font-medium">Status</th>
-                  <th className="p-3 font-medium">Start Date</th>
-                  <th className="p-3 font-medium"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {retainers.map((retainer) => (
+            {/* Tablet Table View */}
+            <div className="hidden md:block lg:hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[600px]">
+                  <thead className="bg-gray-50">
+                    <tr className="text-left text-sm text-gray-500">
+                      <th className="p-3 font-medium">Retainer</th>
+                      <th className="p-3 font-medium">Client</th>
+                      <th className="p-3 font-medium">Amount</th>
+                      <th className="p-3 font-medium">Status</th>
+                      <th className="p-3 font-medium">Start Date</th>
+                      <th className="p-3 font-medium"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {retainers.map((retainer) => (
                   <tr key={retainer.id} className="border-t border-gray-100 hover:bg-gray-50">
                     <td className="p-3">
                       <div className="flex items-center gap-2">
@@ -308,16 +365,16 @@ export default function RetainersPage() {
                         <IconDots size={14} className="text-gray-400" />
                       </button>
                     </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+                    </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
 
-        {/* Mobile Card View */}
-        <div className="md:hidden">
-          {retainers.map((retainer) => (
+            {/* Mobile Card View */}
+            <div className="md:hidden">
+              {retainers.map((retainer) => (
             <div key={retainer.id} className="border-b border-gray-100 p-4 hover:bg-gray-50">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">
@@ -380,12 +437,14 @@ export default function RetainersPage() {
                     {new Date(retainer.endDate).toLocaleDateString()}
                   </div>
                 )}
+                </div>
               </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </>
+        )}
         
-        {retainers.length === 0 && (
+        {!loading && retainers.length === 0 && (
           <div className="text-center py-12">
             <IconWallet size={48} className="mx-auto text-gray-300 mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No retainers found</h3>
@@ -400,7 +459,8 @@ export default function RetainersPage() {
       </div>
 
       {/* Pagination Controls */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mt-4 sm:mt-6">
+      {!loading && (
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mt-4 sm:mt-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-600">Show</span>
@@ -468,7 +528,8 @@ export default function RetainersPage() {
             Next
           </button>
         </div>
-      </div>
+        </div>
+      )}
     </div>
   );
 }

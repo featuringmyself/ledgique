@@ -26,6 +26,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
+import { Skeleton, SkeletonStatsGrid, SkeletonTable, SkeletonListCard } from "@/components/ui/skeleton";
 
 
 interface Payment {
@@ -120,8 +121,53 @@ function IncompletePaymentsTab() {
 
   if (loading) {
     return (
-      <div className="flex h-64 w-full items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+      <div className="space-y-6">
+        {/* Summary Card Skeleton */}
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+          <Skeleton className="h-6 w-64 mb-3" />
+          <Skeleton className="h-4 w-96 mb-4" />
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="bg-white rounded-lg p-3 border border-yellow-200">
+                <Skeleton className="h-4 w-24 mb-2" />
+                <Skeleton className="h-6 w-32" />
+              </div>
+            ))}
+          </div>
+        </div>
+        {/* Projects List Skeleton */}
+        <div className="space-y-4">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="bg-white rounded-lg border border-gray-200 p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-12 w-12 rounded-full" />
+                  <div>
+                    <Skeleton className="h-5 w-48 mb-2" />
+                    <Skeleton className="h-4 w-32" />
+                  </div>
+                </div>
+                <Skeleton className="h-10 w-32" />
+              </div>
+              <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-4">
+                {Array.from({ length: 4 }).map((_, j) => (
+                  <div key={j}>
+                    <Skeleton className="h-4 w-24 mb-2" />
+                    <Skeleton className="h-5 w-32" />
+                  </div>
+                ))}
+              </div>
+              <div className="border-t border-gray-200 pt-4">
+                <Skeleton className="h-4 w-32 mb-3" />
+                <div className="space-y-3">
+                  {Array.from({ length: 2 }).map((_, k) => (
+                    <Skeleton key={k} className="h-16 w-full rounded-lg" />
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -542,39 +588,55 @@ export default function PaymentsPage() {
     }
   }, [activeDropdown]);
 
-  if (loading) {
-    return (
-      <div className="flex h-screen w-full items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
-      </div>
-    );
-  }
-
-
   const fmt = Intl.NumberFormat('en', { notation: 'compact' });
   return (
     <div className="flex w-full flex-1 flex-col gap-2 rounded-tl-2xl border border-neutral-200 bg-gray-50 p-2 md:p-6 dark:border-neutral-700 dark:bg-neutral-900">
       <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
-              Payments
-            </h1>
-            <p className="text-gray-600 dark:text-gray-400 mt-1">
-              Track and manage all payment transactions
-            </p>
-          </div>
-          <Link href="/payments/add">
-            <Button className="bg-gray-900 hover:bg-gray-800 text-white w-full sm:w-auto">
-              <IconCreditCard className="h-4 w-4 mr-2" />
-              Add Payment
-            </Button>
-          </Link>
+          {loading ? (
+            <>
+              <div>
+                <Skeleton className="h-8 w-32 mb-2" />
+                <Skeleton className="h-4 w-64" />
+              </div>
+              <Skeleton className="h-10 w-32" />
+            </>
+          ) : (
+            <>
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">
+                  Payments
+                </h1>
+                <p className="text-gray-600 dark:text-gray-400 mt-1">
+                  Track and manage all payment transactions
+                </p>
+              </div>
+              <Link href="/payments/add">
+                <Button className="bg-gray-900 hover:bg-gray-800 text-white w-full sm:w-auto">
+                  <IconCreditCard className="h-4 w-4 mr-2" />
+                  Add Payment
+                </Button>
+              </Link>
+            </>
+          )}
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+        {loading ? (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="bg-gradient-to-br from-gray-50 to-gray-100 p-4 sm:p-6 rounded-3xl border border-gray-200">
+                <Skeleton className="h-4 w-24 mb-3" />
+                <div className="flex items-end justify-between">
+                  <Skeleton className="h-8 w-32" />
+                  <Skeleton className="h-4 w-12" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
           <div className="bg-gradient-to-br from-blue-50 to-cyan-50 p-4 sm:p-6 rounded-3xl border border-blue-100/50">
             <h3 className="text-gray-600 text-sm font-medium mb-3">
               Total Revenue
@@ -653,9 +715,18 @@ export default function PaymentsPage() {
             </div>
           </div>
         </div>
+        )}
 
         {/* Tab Navigation */}
         <div className="mb-6">
+          {loading ? (
+            <div className="border-b border-gray-200">
+              <div className="flex space-x-8">
+                <Skeleton className="h-10 w-32" />
+                <Skeleton className="h-10 w-40" />
+              </div>
+            </div>
+          ) : (
           <div className="border-b border-gray-200">
             <nav className="-mb-px flex space-x-8">
               <button
@@ -680,13 +751,22 @@ export default function PaymentsPage() {
               </button>
             </nav>
           </div>
+          )}
         </div>
 
         {/* Tab Content */}
         {activeTab === 'all-payments' && (
           <>
             {/* Search and Filter Controls */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
+            {loading ? (
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
+                <Skeleton className="h-10 w-32" />
+                <Skeleton className="h-10 w-10" />
+                <Skeleton className="h-10 w-10" />
+                <Skeleton className="h-10 flex-1 sm:max-w-xs" />
+              </div>
+            ) : (
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-6">
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
             <select 
               className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
@@ -717,50 +797,86 @@ export default function PaymentsPage() {
             />
           </div>
         </div>
+        )}
 
         {/* All Payments Table */}
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-4 sm:p-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-            <h3 className="text-lg sm:text-xl font-semibold text-gray-900">
-              All Payments ({pagination.totalCount})
-            </h3>
-            <div className="flex space-x-2">
-              <Button variant="outline" size="sm" className="w-full sm:w-auto">
-                Export
-              </Button>
-            </div>
-          </div>
+          {loading ? (
+            <>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                <Skeleton className="h-6 w-48" />
+                <Skeleton className="h-10 w-24" />
+              </div>
+              {/* Desktop Table Skeleton */}
+              <div className="hidden lg:block">
+                <SkeletonTable rows={5} columns={7} />
+              </div>
+              {/* Mobile Card Skeleton */}
+              <div className="lg:hidden space-y-4">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <Skeleton className="h-10 w-10 rounded-full" />
+                        <div>
+                          <Skeleton className="h-4 w-32 mb-2" />
+                          <Skeleton className="h-3 w-40" />
+                        </div>
+                      </div>
+                      <Skeleton className="h-8 w-8 rounded" />
+                    </div>
+                    <div className="space-y-2">
+                      <Skeleton className="h-3 w-full" />
+                      <Skeleton className="h-3 w-3/4" />
+                      <Skeleton className="h-3 w-1/2" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                <h3 className="text-lg sm:text-xl font-semibold text-gray-900">
+                  All Payments ({pagination.totalCount})
+                </h3>
+                <div className="flex space-x-2">
+                  <Button variant="outline" size="sm" className="w-full sm:w-auto">
+                    Export
+                  </Button>
+                </div>
+              </div>
 
-          {/* Desktop Table View */}
-          <div className="hidden lg:block overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-100">
-                  <th className="text-left py-4 px-2 text-sm font-medium text-gray-600">
-                    Client
-                  </th>
-                  <th className="text-left py-4 px-2 text-sm font-medium text-gray-600">
-                    Project
-                  </th>
-                  <th className="text-left py-4 px-2 text-sm font-medium text-gray-600">
-                    Amount
-                  </th>
-                  <th className="text-left py-4 px-2 text-sm font-medium text-gray-600">
-                    Method
-                  </th>
-                  <th className="text-left py-4 px-2 text-sm font-medium text-gray-600">
-                    Status
-                  </th>
-                  <th className="text-left py-4 px-2 text-sm font-medium text-gray-600">
-                    Date
-                  </th>
-                  <th className="text-left py-4 px-2 text-sm font-medium text-gray-600">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {allPayments.map((payment) => (
+              {/* Desktop Table View */}
+              <div className="hidden lg:block overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-gray-100">
+                      <th className="text-left py-4 px-2 text-sm font-medium text-gray-600">
+                        Client
+                      </th>
+                      <th className="text-left py-4 px-2 text-sm font-medium text-gray-600">
+                        Project
+                      </th>
+                      <th className="text-left py-4 px-2 text-sm font-medium text-gray-600">
+                        Amount
+                      </th>
+                      <th className="text-left py-4 px-2 text-sm font-medium text-gray-600">
+                        Method
+                      </th>
+                      <th className="text-left py-4 px-2 text-sm font-medium text-gray-600">
+                        Status
+                      </th>
+                      <th className="text-left py-4 px-2 text-sm font-medium text-gray-600">
+                        Date
+                      </th>
+                      <th className="text-left py-4 px-2 text-sm font-medium text-gray-600">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {allPayments.map((payment) => (
                   <tr
                     key={payment.id}
                     className="border-b border-gray-50 hover:bg-gray-50"
@@ -891,14 +1007,14 @@ export default function PaymentsPage() {
                       </div>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
-          {/* Mobile Card View */}
-          <div className="lg:hidden space-y-4">
-            {allPayments.map((payment) => (
+              {/* Mobile Card View */}
+              <div className="lg:hidden space-y-4">
+                {allPayments.map((payment) => (
               <div key={payment.id} className="bg-gray-50 rounded-xl p-4 border border-gray-200">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3">
@@ -1032,10 +1148,12 @@ export default function PaymentsPage() {
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
+                ))}
+              </div>
+            </>
+          )}
             
-          {allPayments.length === 0 && (
+          {!loading && allPayments.length === 0 && (
             <div className="text-center py-12">
               <p className="text-gray-500">No payments found</p>
             </div>
@@ -1043,7 +1161,8 @@ export default function PaymentsPage() {
         </div>
 
         {/* Pagination Controls */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-6">
+        {!loading && (
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-6">
           <div className="flex flex-col sm:flex-row sm:items-center gap-4">
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-600">Show</span>
@@ -1111,22 +1230,38 @@ export default function PaymentsPage() {
             </button>
           </div>
         </div>
+        )}
 
             {/* Payment Stats */}
-            <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-4 sm:p-6 mb-6">
-              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">
-                Payment Stats
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {paymentMethods.map((method, index) => (
-                  <div key={index} className="text-center p-4 bg-gray-50 rounded-xl">
-                    <p className="text-sm text-gray-600">{capitalize.words(method.method.replace("_", " "))}</p>
-                    <p className="text-xl sm:text-2xl font-bold text-gray-900">{method.percentage}%</p>
-                    <p className="text-xs text-gray-500">{method.count} payments</p>
-                  </div>
-                ))}
+            {loading ? (
+              <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-4 sm:p-6 mb-6">
+                <Skeleton className="h-6 w-32 mb-4" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="text-center p-4 bg-gray-50 rounded-xl">
+                      <Skeleton className="h-4 w-24 mx-auto mb-2" />
+                      <Skeleton className="h-8 w-16 mx-auto mb-1" />
+                      <Skeleton className="h-3 w-20 mx-auto" />
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-4 sm:p-6 mb-6">
+                <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">
+                  Payment Stats
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {paymentMethods.map((method, index) => (
+                    <div key={index} className="text-center p-4 bg-gray-50 rounded-xl">
+                      <p className="text-sm text-gray-600">{capitalize.words(method.method.replace("_", " "))}</p>
+                      <p className="text-xl sm:text-2xl font-bold text-gray-900">{method.percentage}%</p>
+                      <p className="text-xs text-gray-500">{method.count} payments</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </>
         )}
 

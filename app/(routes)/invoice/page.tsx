@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { IconPlus, IconFilter, IconSortDescending, IconSearch, IconCalendar, IconDots, IconFileInvoice, IconEye, IconDownload, IconSend, IconCheck } from '@tabler/icons-react';
 import Link from 'next/link';
 import { useCurrency } from '@/components/providers/CurrencyProvider';
+import { Skeleton, SkeletonStatsGrid, SkeletonTable, SkeletonListCard } from '@/components/ui/skeleton';
 
 interface Invoice {
   id: string;
@@ -108,14 +109,6 @@ export default function InvoicePage() {
     setPagination(prev => ({ ...prev, limit: newLimit, currentPage: 1 }));
   };
 
-  if (loading) {
-    return (
-      <div className="flex h-screen w-full items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
-      </div>
-    );
-  }
-
   return (
     <div className="p-4 sm:p-6 bg-white w-full min-h-screen">
       {/* Header */}
@@ -125,83 +118,141 @@ export default function InvoicePage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
-        <div className="bg-blue-50 p-3 sm:p-4 rounded-lg border border-blue-100">
-          <h3 className="text-xs sm:text-sm font-medium text-blue-600 mb-1">Total Invoiced</h3>
-          <p className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-900">{currency}{totalAmount.toLocaleString()}</p>
+      {loading ? (
+        <SkeletonStatsGrid count={4} />
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
+          <div className="bg-blue-50 p-3 sm:p-4 rounded-lg border border-blue-100">
+            <h3 className="text-xs sm:text-sm font-medium text-blue-600 mb-1">Total Invoiced</h3>
+            <p className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-900">{currency}{totalAmount.toLocaleString()}</p>
+          </div>
+          <div className="bg-green-50 p-3 sm:p-4 rounded-lg border border-green-100">
+            <h3 className="text-xs sm:text-sm font-medium text-green-600 mb-1">Paid Amount</h3>
+            <p className="text-lg sm:text-xl lg:text-2xl font-bold text-green-900">{currency}{paidAmount.toLocaleString()}</p>
+          </div>
+          <div className="bg-yellow-50 p-3 sm:p-4 rounded-lg border border-yellow-100">
+            <h3 className="text-xs sm:text-sm font-medium text-yellow-600 mb-1">Pending Amount</h3>
+            <p className="text-lg sm:text-xl lg:text-2xl font-bold text-yellow-900">{currency}{pendingAmount.toLocaleString()}</p>
+          </div>
+          <div className="bg-red-50 p-3 sm:p-4 rounded-lg border border-red-100">
+            <h3 className="text-xs sm:text-sm font-medium text-red-600 mb-1">Overdue</h3>
+            <p className="text-lg sm:text-xl lg:text-2xl font-bold text-red-900">{overdueCount}</p>
+          </div>
         </div>
-        <div className="bg-green-50 p-3 sm:p-4 rounded-lg border border-green-100">
-          <h3 className="text-xs sm:text-sm font-medium text-green-600 mb-1">Paid Amount</h3>
-          <p className="text-lg sm:text-xl lg:text-2xl font-bold text-green-900">{currency}{paidAmount.toLocaleString()}</p>
-        </div>
-        <div className="bg-yellow-50 p-3 sm:p-4 rounded-lg border border-yellow-100">
-          <h3 className="text-xs sm:text-sm font-medium text-yellow-600 mb-1">Pending Amount</h3>
-          <p className="text-lg sm:text-xl lg:text-2xl font-bold text-yellow-900">{currency}{pendingAmount.toLocaleString()}</p>
-        </div>
-        <div className="bg-red-50 p-3 sm:p-4 rounded-lg border border-red-100">
-          <h3 className="text-xs sm:text-sm font-medium text-red-600 mb-1">Overdue</h3>
-          <p className="text-lg sm:text-xl lg:text-2xl font-bold text-red-900">{overdueCount}</p>
-        </div>
-      </div>
+      )}
 
       {/* Top Actions */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
-        <div className="flex flex-wrap items-center gap-2 sm:gap-4">
-          <Link href="/invoice/create">
-            <button className="flex items-center gap-2 bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base">
-              <IconPlus size={18} className="sm:w-5 sm:h-5" />
-              <span className="hidden sm:inline">Create Invoice</span>
-              <span className="sm:hidden">Create</span>
-            </button>
-          </Link>
-          <select 
-            className="px-2 sm:px-3 py-2 border border-gray-300 rounded-lg text-sm"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-          >
-            <option value="ALL">All Status</option>
-            <option value="DRAFT">Draft</option>
-            <option value="SENT">Sent</option>
-            <option value="PAID">Paid</option>
-            <option value="OVERDUE">Overdue</option>
-          </select>
-          <button className="p-2 hover:bg-gray-100 rounded-lg border">
-            <IconFilter size={18} className="sm:w-5 sm:h-5" />
-          </button>
-          <button className="p-2 hover:bg-gray-100 rounded-lg border">
-            <IconSortDescending size={18} className="sm:w-5 sm:h-5" />
-          </button>
-        </div>
-        <div className="w-full sm:w-auto sm:ml-auto relative">
-          <IconSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
-            placeholder="Search invoices..."
-            className="pl-10 w-full sm:w-64 border-gray-300"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
+        {loading ? (
+          <>
+            <Skeleton className="h-10 w-32" />
+            <Skeleton className="h-10 w-32" />
+            <Skeleton className="h-10 w-10" />
+            <Skeleton className="h-10 w-10" />
+            <Skeleton className="h-10 w-full sm:w-64 sm:ml-auto" />
+          </>
+        ) : (
+          <>
+            <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+              <Link href="/invoice/create">
+                <button className="flex items-center gap-2 bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base">
+                  <IconPlus size={18} className="sm:w-5 sm:h-5" />
+                  <span className="hidden sm:inline">Create Invoice</span>
+                  <span className="sm:hidden">Create</span>
+                </button>
+              </Link>
+              <select 
+                className="px-2 sm:px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+              >
+                <option value="ALL">All Status</option>
+                <option value="DRAFT">Draft</option>
+                <option value="SENT">Sent</option>
+                <option value="PAID">Paid</option>
+                <option value="OVERDUE">Overdue</option>
+              </select>
+              <button className="p-2 hover:bg-gray-100 rounded-lg border">
+                <IconFilter size={18} className="sm:w-5 sm:h-5" />
+              </button>
+              <button className="p-2 hover:bg-gray-100 rounded-lg border">
+                <IconSortDescending size={18} className="sm:w-5 sm:h-5" />
+              </button>
+            </div>
+            <div className="w-full sm:w-auto sm:ml-auto relative">
+              <IconSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Search invoices..."
+                className="pl-10 w-full sm:w-64 border-gray-300"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </>
+        )}
       </div>
 
       {/* Table */}
       <div className="bg-white rounded-lg border overflow-hidden">
-        {/* Desktop Table */}
-        <div className="hidden lg:block overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr className="text-left text-sm text-gray-500">
-                <th className="p-4 font-medium">Invoice</th>
-                <th className="p-4 font-medium">Client</th>
-                <th className="p-4 font-medium">Project</th>
-                <th className="p-4 font-medium">Amount</th>
-                <th className="p-4 font-medium">Status</th>
-                <th className="p-4 font-medium">Issue Date</th>
-                <th className="p-4 font-medium">Due Date</th>
-                <th className="p-4 font-medium">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {invoices.map((invoice) => (
+        {loading ? (
+          <>
+            {/* Desktop Table Skeleton */}
+            <div className="hidden lg:block">
+              <SkeletonTable rows={5} columns={8} />
+            </div>
+            {/* Mobile Card Skeleton */}
+            <div className="lg:hidden">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="border-b border-gray-100 p-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <Skeleton className="h-10 w-10 rounded-full" />
+                      <div>
+                        <Skeleton className="h-4 w-32 mb-2" />
+                        <Skeleton className="h-3 w-48" />
+                      </div>
+                    </div>
+                    <Skeleton className="h-6 w-16 rounded-full" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3 mb-3">
+                    {Array.from({ length: 4 }).map((_, j) => (
+                      <div key={j}>
+                        <Skeleton className="h-3 w-16 mb-1" />
+                        <Skeleton className="h-4 w-24" />
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Skeleton className="h-4 w-32" />
+                    <div className="flex items-center gap-2">
+                      {Array.from({ length: 5 }).map((_, k) => (
+                        <Skeleton key={k} className="h-8 w-8 rounded" />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        ) : (
+          <>
+            {/* Desktop Table */}
+            <div className="hidden lg:block overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr className="text-left text-sm text-gray-500">
+                    <th className="p-4 font-medium">Invoice</th>
+                    <th className="p-4 font-medium">Client</th>
+                    <th className="p-4 font-medium">Project</th>
+                    <th className="p-4 font-medium">Amount</th>
+                    <th className="p-4 font-medium">Status</th>
+                    <th className="p-4 font-medium">Issue Date</th>
+                    <th className="p-4 font-medium">Due Date</th>
+                    <th className="p-4 font-medium">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {invoices.map((invoice) => (
                 <tr key={invoice.id} className="border-t border-gray-100 hover:bg-gray-50">
                   <td className="p-4">
                     <div className="flex items-center gap-3">
@@ -275,15 +326,15 @@ export default function InvoicePage() {
                       </button>
                     </div>
                   </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                  </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
 
-        {/* Mobile Card Layout */}
-        <div className="lg:hidden">
-          {invoices.map((invoice) => (
+            {/* Mobile Card Layout */}
+            <div className="lg:hidden">
+              {invoices.map((invoice) => (
             <div key={invoice.id} className="border-b border-gray-100 p-4 hover:bg-gray-50">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">
@@ -353,12 +404,14 @@ export default function InvoicePage() {
                     <IconDots size={16} className="text-gray-400" />
                   </button>
                 </div>
+                </div>
               </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </>
+        )}
         
-        {invoices.length === 0 && (
+        {!loading && invoices.length === 0 && (
           <div className="text-center py-12">
             <p className="text-gray-500">No invoices found</p>
           </div>
@@ -366,7 +419,8 @@ export default function InvoicePage() {
       </div>
 
       {/* Pagination Controls */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-4 sm:mt-6">
+      {!loading && (
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mt-4 sm:mt-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-600">Show</span>
@@ -434,7 +488,8 @@ export default function InvoicePage() {
             Next
           </button>
         </div>
-      </div>
+        </div>
+      )}
     </div>
   );
 }
