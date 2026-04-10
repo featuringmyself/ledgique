@@ -38,8 +38,29 @@ export async function GET(request: NextRequest) {
 
     const totalPages = Math.ceil(totalCount / limit);
 
+    const normalizedInvoices = invoices.map((invoice) => ({
+      ...invoice,
+      subtotal: Number(invoice.subtotal),
+      taxRate: invoice.taxRate != null ? Number(invoice.taxRate) : null,
+      taxAmount: invoice.taxAmount != null ? Number(invoice.taxAmount) : null,
+      discountAmount: invoice.discountAmount != null ? Number(invoice.discountAmount) : null,
+      totalAmount: Number(invoice.totalAmount),
+      items: invoice.items.map((item) => ({
+        ...item,
+        unitPrice: Number(item.unitPrice),
+        totalPrice: Number(item.totalPrice),
+      })),
+      payments: invoice.payments.map((payment) => ({
+        ...payment,
+        amount: Number(payment.amount),
+        taxAmount: payment.taxAmount != null ? Number(payment.taxAmount) : null,
+        discountAmount: payment.discountAmount != null ? Number(payment.discountAmount) : null,
+        netAmount: payment.netAmount != null ? Number(payment.netAmount) : null,
+      })),
+    }));
+
     return NextResponse.json({
-      invoices,
+      invoices: normalizedInvoices,
       pagination: {
         currentPage: page,
         totalPages,

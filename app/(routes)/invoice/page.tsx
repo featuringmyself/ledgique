@@ -96,9 +96,17 @@ export default function InvoicePage() {
     }
   };
 
-  const totalAmount = invoices.reduce((sum, inv) => sum + inv.totalAmount, 0);
-  const paidAmount = invoices.filter(inv => inv.status === 'PAID').reduce((sum, inv) => sum + inv.totalAmount, 0);
-  const pendingAmount = invoices.filter(inv => inv.status !== 'PAID').reduce((sum, inv) => sum + inv.totalAmount, 0);
+  const money = (v: unknown) => {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : 0;
+  };
+  const totalAmount = invoices.reduce((sum, inv) => sum + money(inv.totalAmount), 0);
+  const paidAmount = invoices
+    .filter((inv) => inv.status === 'PAID')
+    .reduce((sum, inv) => sum + money(inv.totalAmount), 0);
+  const pendingAmount = invoices
+    .filter((inv) => inv.status !== 'PAID')
+    .reduce((sum, inv) => sum + money(inv.totalAmount), 0);
   const overdueCount = invoices.filter(inv => inv.status === 'OVERDUE').length;
 
   const handlePageChange = (newPage: number) => {
@@ -124,15 +132,15 @@ export default function InvoicePage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
           <div className="bg-blue-50 p-3 sm:p-4 rounded-lg border border-blue-100">
             <h3 className="text-xs sm:text-sm font-medium text-blue-600 mb-1">Total Invoiced</h3>
-            <p className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-900">{currency}{totalAmount.toLocaleString()}</p>
+            <p className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-900">{currency}{money(totalAmount).toLocaleString()}</p>
           </div>
           <div className="bg-green-50 p-3 sm:p-4 rounded-lg border border-green-100">
             <h3 className="text-xs sm:text-sm font-medium text-green-600 mb-1">Paid Amount</h3>
-            <p className="text-lg sm:text-xl lg:text-2xl font-bold text-green-900">{currency}{paidAmount.toLocaleString()}</p>
+            <p className="text-lg sm:text-xl lg:text-2xl font-bold text-green-900">{currency}{money(paidAmount).toLocaleString()}</p>
           </div>
           <div className="bg-yellow-50 p-3 sm:p-4 rounded-lg border border-yellow-100">
             <h3 className="text-xs sm:text-sm font-medium text-yellow-600 mb-1">Pending Amount</h3>
-            <p className="text-lg sm:text-xl lg:text-2xl font-bold text-yellow-900">{currency}{pendingAmount.toLocaleString()}</p>
+            <p className="text-lg sm:text-xl lg:text-2xl font-bold text-yellow-900">{currency}{money(pendingAmount).toLocaleString()}</p>
           </div>
           <div className="bg-red-50 p-3 sm:p-4 rounded-lg border border-red-100">
             <h3 className="text-xs sm:text-sm font-medium text-red-600 mb-1">Overdue</h3>
@@ -316,7 +324,7 @@ export default function InvoicePage() {
                         <button 
                           className="p-1 hover:bg-green-100 rounded text-green-600" 
                           title="Mark as Paid"
-                          onClick={() => markAsPaid(invoice.id, invoice.totalAmount)}
+                          onClick={() => markAsPaid(invoice.id, Number(invoice.totalAmount))}
                         >
                           <IconCheck size={16} />
                         </button>
@@ -395,7 +403,7 @@ export default function InvoicePage() {
                     <button 
                       className="p-1 hover:bg-green-100 rounded text-green-600" 
                       title="Mark as Paid"
-                      onClick={() => markAsPaid(invoice.id, invoice.totalAmount)}
+                      onClick={() => markAsPaid(invoice.id, Number(invoice.totalAmount))}
                     >
                       <IconCheck size={16} />
                     </button>
