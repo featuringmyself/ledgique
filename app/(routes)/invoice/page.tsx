@@ -109,6 +109,8 @@ export default function InvoicePage() {
     .reduce((sum, inv) => sum + money(inv.totalAmount), 0);
   const overdueCount = invoices.filter(inv => inv.status === 'OVERDUE').length;
 
+  const fmt = Intl.NumberFormat('en', { notation: 'compact' });
+
   const handlePageChange = (newPage: number) => {
     setPagination(prev => ({ ...prev, currentPage: newPage }));
   };
@@ -132,15 +134,15 @@ export default function InvoicePage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
           <div className="bg-blue-50 p-3 sm:p-4 rounded-lg border border-blue-100">
             <h3 className="text-xs sm:text-sm font-medium text-blue-600 mb-1">Total Invoiced</h3>
-            <p className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-900">{currency}{money(totalAmount).toLocaleString()}</p>
+            <p className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-900">{currency}{fmt.format(money(totalAmount))}</p>
           </div>
           <div className="bg-green-50 p-3 sm:p-4 rounded-lg border border-green-100">
             <h3 className="text-xs sm:text-sm font-medium text-green-600 mb-1">Paid Amount</h3>
-            <p className="text-lg sm:text-xl lg:text-2xl font-bold text-green-900">{currency}{money(paidAmount).toLocaleString()}</p>
+            <p className="text-lg sm:text-xl lg:text-2xl font-bold text-green-900">{currency}{fmt.format(money(paidAmount))}</p>
           </div>
           <div className="bg-yellow-50 p-3 sm:p-4 rounded-lg border border-yellow-100">
             <h3 className="text-xs sm:text-sm font-medium text-yellow-600 mb-1">Pending Amount</h3>
-            <p className="text-lg sm:text-xl lg:text-2xl font-bold text-yellow-900">{currency}{money(pendingAmount).toLocaleString()}</p>
+            <p className="text-lg sm:text-xl lg:text-2xl font-bold text-yellow-900">{currency}{fmt.format(money(pendingAmount))}</p>
           </div>
           <div className="bg-red-50 p-3 sm:p-4 rounded-lg border border-red-100">
             <h3 className="text-xs sm:text-sm font-medium text-red-600 mb-1">Overdue</h3>
