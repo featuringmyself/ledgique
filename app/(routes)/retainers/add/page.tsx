@@ -17,6 +17,19 @@ interface Project {
   name: string;
 }
 
+const normalizeProjectsResponse = (data: unknown): Project[] => {
+  if (Array.isArray(data)) return data as Project[];
+  if (
+    data &&
+    typeof data === "object" &&
+    "projects" in data &&
+    Array.isArray((data as { projects: unknown }).projects)
+  ) {
+    return (data as { projects: Project[] }).projects;
+  }
+  return [];
+};
+
 export default function AddRetainerPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -57,9 +70,10 @@ export default function AddRetainerPage() {
       const fetchProjects = async () => {
         try {
           const response = await axios.get(`/api/projects?clientId=${formData.clientId}`);
-          setProjects(response.data);
+          setProjects(normalizeProjectsResponse(response.data));
         } catch (error) {
           console.error('Error fetching projects:', error);
+          setProjects([]);
         }
       };
 
