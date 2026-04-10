@@ -46,7 +46,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} antialiased`}>
-        <ClerkProvider>
+        <ClerkProvider
+          signInFallbackRedirectUrl="/"
+          signUpFallbackRedirectUrl="/"
+        >
           <CurrencyProvider>
             <ConditionalLayout>{children}</ConditionalLayout>
           </CurrencyProvider>

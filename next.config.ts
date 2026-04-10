@@ -3,10 +3,16 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
-  images:{
-    domains:["images.unsplash.com","res.cloudinary.com","lh3.googleusercontent.com", "assets.aceternity.com", "img.clerk.com", "cdn-icons-png.flaticon.com"]
-
-  }
+  images: {
+    remotePatterns: [
+      { protocol: "https", hostname: "images.unsplash.com" },
+      { protocol: "https", hostname: "res.cloudinary.com" },
+      { protocol: "https", hostname: "lh3.googleusercontent.com" },
+      { protocol: "https", hostname: "assets.aceternity.com" },
+      { protocol: "https", hostname: "img.clerk.com" },
+      { protocol: "https", hostname: "cdn-icons-png.flaticon.com" },
+    ],
+  },
 };
 
 export default withSentryConfig(nextConfig, {

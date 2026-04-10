@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth, SignIn, Waitlist, SignUp } from "@clerk/nextjs";
+import { useAuth } from "@clerk/nextjs";
 import { Sidebar } from "./Sidebar";
 import { SidebarStateProvider } from "./providers/SidebarProvider";
 import { AiChatWidget } from "./AiChatWidget";
@@ -17,13 +17,9 @@ export function ConditionalLayout({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // Show sign-in page for unauthenticated users
+  // Middleware now protects all app routes, so signed-out states should not render here.
   if (!isSignedIn) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-      <SignUp />
-      </div>
-    );
+    return null;
   }
 
   // Show sidebar layout for authenticated users

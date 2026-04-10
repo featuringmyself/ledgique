@@ -1,32 +1,15 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 
-const isProtectedRoute = createRouteMatcher([
-  '/dashboard(.*)',
-  '/client(.*)',
-  '/invoice(.*)',
-  '/payments(.*)',
-  '/reports(.*)',
-  '/team(.*)',
-  '/profile(.*)',
-  '/settings(.*)',
-])
-
 const isPublicRoute = createRouteMatcher([
-  '/',
   '/sign-in(.*)',
   '/sign-up(.*)',
-  '/sso-callback(.*)', // Add this line
+  '/sso-callback(.*)',
 ])
 
-export default clerkMiddleware((auth, req) => {
-  // Don't protect public routes
-  if (isPublicRoute(req)) {
-    return
-  }
-  
-  // Protect all other matched routes
-  if (isProtectedRoute(req)) {
-    auth.protect()
+export default clerkMiddleware(async (auth, req) => {
+  // Protect everything except Clerk auth/public callback routes.
+  if (!isPublicRoute(req)) {
+    await auth.protect()
   }
 })
 
