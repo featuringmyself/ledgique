@@ -212,9 +212,9 @@ export function Sidebar({ children }: { children?: React.ReactNode }) {
                                 icon: (
                                     <Image
                                         src={user?.imageUrl || "https://cdn-icons-png.flaticon.com/128/1326/1326377.png"}
-                                        className="h-7 w-7 shrink-0 rounded-full"
-                                        width={50}
-                                        height={50}
+                                        className="h-6 w-6 shrink-0 rounded-full"
+                                        width={24}
+                                        height={24}
                                         alt="Avatar"
                                     />
                                 ),
@@ -224,9 +224,8 @@ export function Sidebar({ children }: { children?: React.ReactNode }) {
                     </div>
                 </SidebarBody>
             </SidebarUI>
-            <main className={`flex flex-1 pt-12 md:pt-0 transition-all duration-300 ease-in-out ${
-                open ? 'md:ml-[280px]' : 'md:ml-[60px]'
-            }`}>
+            <main className={`flex flex-1 pt-12 md:pt-0 transition-all duration-300 ease-in-out ${open ? 'md:ml-[280px]' : 'md:ml-[60px]'
+                }`}>
                 {children || <Dashboard />}
             </main>
         </div>
@@ -246,8 +245,8 @@ const LogoutButton = () => {
 
     return (
         <SignOutButton>
-            <div className="flex items-center gap-2 p-2 mb-2 text-sm font-normal text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors cursor-pointer">
-                <IconArrowLeft className="h-5 w-5 shrink-0" />
+            <div className="flex items-center gap-2 py-2 mb-2 text-sm font-normal text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors cursor-pointer">
+                <IconArrowLeft className="h-6 w-6 shrink-0" />
                 {effectiveOpen && <span>Logout</span>}
             </div>
         </SignOutButton>
@@ -264,11 +263,11 @@ const HelpButton = () => {
     };
 
     return (
-        <div 
+        <div
             onClick={handleHelpClick}
-            className="flex items-center gap-2 p-2 mb-2 text-sm font-normal text-zinc-500  hover:bg-zinc-50 rounded-md transition-colors cursor-pointer"
+            className="flex items-center gap-2 py-2 mb-2 text-sm font-normal text-zinc-500 hover:bg-zinc-50 rounded-md transition-colors cursor-pointer"
         >
-            <IconHelpCircle className="h-5 w-5 shrink-0" />
+            <IconHelpCircle className="h-6 w-6 shrink-0" />
             {effectiveOpen && <span>Need Help?</span>}
         </div>
     );
