@@ -5,6 +5,7 @@ export interface DashboardCacheData {
     clientCount: string;
     pendingAmount: string;
     revenue: string;
+    retainerRevenue: string;
     revenueChange: string;
     projectChange: string;
     clientChange: string;

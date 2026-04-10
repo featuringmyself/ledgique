@@ -59,6 +59,7 @@ export default function Home() {
   const [clientCount, setClientCount] = useState("-")
   const [pendingAmount, setPendingAmount] = useState("-")
   const [revenue, setRevenue] = useState("-")
+  const [retainerRevenue, setRetainerRevenue] = useState("0")
   const [revenueChange, setRevenueChange] = useState("+0.00%")
   const [projectChange, setProjectChange] = useState("+0.00%")
   const [clientChange, setClientChange] = useState("+0.00%")
@@ -97,6 +98,7 @@ export default function Home() {
         setClientCount(cachedData.criticalData.clientCount);
         setPendingAmount(cachedData.criticalData.pendingAmount);
         setRevenue(cachedData.criticalData.revenue);
+        setRetainerRevenue(cachedData.criticalData.retainerRevenue ?? "0");
         setRevenueChange(cachedData.criticalData.revenueChange);
         setProjectChange(cachedData.criticalData.projectChange);
         setClientChange(cachedData.criticalData.clientChange);
@@ -122,15 +124,17 @@ export default function Home() {
           axios.get('/api/projects/active/count'),
           axios.get('/api/clients/active/count'),
           axios.get('/api/payments/revenue'),
-          axios.get('/api/payments/pending/count')
+          axios.get('/api/payments/pending/count'),
+          axios.get('/api/retainers?limit=1')
         ];
 
-        const [projectsRes, clientsRes, revenueRes, pendingRes] = await Promise.all(criticalPromises);
+        const [projectsRes, clientsRes, revenueRes, pendingRes, retainersRes] = await Promise.all(criticalPromises);
         
         const freshCriticalData = {
           projectCount: projectsRes.data,
           clientCount: clientsRes.data,
           revenue: revenueRes.data,
+          retainerRevenue: retainersRes.data?.totalRetainerValue ?? 0,
           pendingAmount: pendingRes.data.totalPendingAmount,
           revenueChange: "+0.00%",
           projectChange: "+0.00%",
@@ -184,6 +188,7 @@ export default function Home() {
           setClientCount(freshCriticalData.clientCount);
           setPendingAmount(freshCriticalData.pendingAmount);
           setRevenue(freshCriticalData.revenue);
+          setRetainerRevenue(freshCriticalData.retainerRevenue);
           setRevenueChange(freshCriticalData.revenueChange);
           setProjectChange(freshCriticalData.projectChange);
           setClientChange(freshCriticalData.clientChange);
@@ -305,6 +310,10 @@ export default function Home() {
   }
 
   const fmt = Intl.NumberFormat('en', { notation: 'compact' });
+  const totalRevenueWithRetainers =
+    revenue === '-'
+      ? '-'
+      : fmt.format(Number(revenue) + Number(retainerRevenue || 0));
   
   return (
     <div className="flex h-full w-full flex-1 flex-col gap-2 rounded-tl-2xl border border-neutral-200 bg-gray-50 p-2 md:p-6 dark:border-neutral-700 dark:bg-neutral-900">
@@ -312,7 +321,7 @@ export default function Home() {
         {/* Top Stats Cards */}
         <div className="grid md:grid-cols-4 grid-cols-2 gap-6">
           {[
-            { title: "Total Revenue", value: `${currency}${revenue === '-' ? revenue : fmt.format(Number(revenue))}`, change: revenueChange, bg: "bg-[#E3F5FF]", border: "border-blue-100/50" },
+            { title: "Total Revenue", value: `${currency}${totalRevenueWithRetainers}`, change: revenueChange, bg: "bg-[#E3F5FF]", border: "border-blue-100/50" },
             { title: "Active Projects", value: projectCount, change: projectChange, bg: "bg-[#E5ECF6]", border: "border-purple-100/50" },
             { title: "Active Clients", value: clientCount, change: clientChange, bg: "bg-[#E3F5FF]", border: "border-blue-100/50" },
             { title: "Pending Payments", value: `${currency}${typeof pendingAmount === 'string' && pendingAmount !== '-' ? fmt.format(Number(pendingAmount)) : fmt.format(Number(pendingAmount))}`, change: pendingChange, bg: "bg-[#E5ECF6]", border: "border-purple-100/50" }

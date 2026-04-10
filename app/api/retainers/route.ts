@@ -14,11 +14,13 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10');
     const skip = (page - 1) * limit;
 
-    const [retainers, totalCount] = await Promise.all([
+    const retainerWhere = {
+      client: { clerkId: userId }
+    };
+
+    const [retainers, totalCount, retainerTotals] = await Promise.all([
       prisma.retainer.findMany({
-        where: { 
-          client: { clerkId: userId }
-        },
+        where: retainerWhere,
         include: {
           client: { select: { name: true, company: true } },
           project: { select: { name: true } }
@@ -28,10 +30,14 @@ export async function GET(request: NextRequest) {
         take: limit,
       }),
       prisma.retainer.count({
-        where: { 
-          client: { clerkId: userId }
+        where: retainerWhere
+      }),
+      prisma.retainer.aggregate({
+        where: retainerWhere,
+        _sum: {
+          totalAmount: true
         }
-      })
+      }),
     ]);
 
     const totalPages = Math.ceil(totalCount / limit);
@@ -43,6 +49,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       retainers: normalizedRetainers,
+      totalRetainerValue: Number(retainerTotals._sum.totalAmount ?? 0),
       pagination: {
         currentPage: page,
         totalPages,
