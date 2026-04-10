@@ -35,9 +35,14 @@ export async function GET(request: NextRequest) {
     ]);
 
     const totalPages = Math.ceil(totalCount / limit);
+    const normalizedRetainers = retainers.map((retainer) => ({
+      ...retainer,
+      totalAmount: Number(retainer.totalAmount),
+      hourlyRate: retainer.hourlyRate !== null ? Number(retainer.hourlyRate) : null,
+    }));
 
     return NextResponse.json({
-      retainers,
+      retainers: normalizedRetainers,
       pagination: {
         currentPage: page,
         totalPages,

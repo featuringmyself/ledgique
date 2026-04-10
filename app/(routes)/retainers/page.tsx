@@ -90,7 +90,7 @@ export default function RetainersPage() {
     }
   };
 
-  const totalRetainerValue = retainers.reduce((sum, ret) => sum + ret.totalAmount, 0);
+  const totalRetainerValue = retainers.reduce((sum, ret) => sum + Number(ret.totalAmount), 0);
   const activeCount = retainers.filter(ret => ret.status === 'ACTIVE').length;
 
   return (
